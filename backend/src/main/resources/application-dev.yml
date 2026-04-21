@@ -1,0 +1,18 @@
+# 개발 환경: Neon PostgreSQL 사용 (기존 로컬 DB는 주석).
+spring:
+  datasource:
+    # 기존 로컬 DB 연결 (주석)
+    # url: jdbc:postgresql://localhost:5432/shopeasy4
+    # username: aini
+    # password: aini12#$
+    # Neon PostgreSQL
+    url: jdbc:postgresql://ep-long-unit-a1ckjskl-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require&options=-c%20TimeZone%3DAsia/Seoul
+    username: neondb_owner
+    password: npg_87fZtkEOIzlv
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    com.shopeasy: DEBUG
+    # 쿼리/쿼리결과 로그 숨김 (TRACE/DEBUG 시 SQL·파라미터·결과 출력됨)
+    com.shopeasy.mapper: INFO

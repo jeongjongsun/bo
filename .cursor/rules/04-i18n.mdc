@@ -1,0 +1,20 @@
+---
+description: 다국어(i18n) 작업 시 메시지 키·번역 파일·API 연동 표준 참고
+globs: "**/locales/**/*,**/i18n*.ts,**/i18n*.tsx"
+alwaysApply: false
+---
+
+# 다국어(i18n) 작업 시 참고할 표준
+
+- **전문**: `docs/09-다국어-표준.md`
+
+요약:
+- **문구는 키로만 참조**: 코드에 하드코딩 금지. `t('common.save')`, `t('error.not_found')` 형태.
+- **키 규칙**: 점(.) 구분, 소문자. 접두어: `common`, `menu`, `error`, `validation`, 도메인(예: `order.list.title`).
+- **번역 파일**: `src/locales/{locale}/` 아래 네임스페이스별 JSON(common.json, error.json 등). 동일 키를 모든 언어 파일에 두고 fallback은 기본 언어.
+- **라이브러리**: react-i18next. 설정은 `src/i18n.ts` 또는 `src/locales/index.ts`.
+- **API**: message는 **메시지 키**로 내려받고 프론트에서 `t(message)` 로 표시(권장). 또는 Accept-Language로 서버 번역. 메뉴는 키 기반 권장.
+- **날짜/숫자/통화**: Intl + 현재 locale. API 전송은 ISO 8601.
+- **새 키 추가**: 기본 언어 JSON에 먼저 추가 후, 다른 언어에 동일 키로 번역 추가.
+
+다국어 관련 수정 시 `docs/09-다국어-표준.md`를 열어 전체 규칙을 확인하세요.

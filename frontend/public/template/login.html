@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default" th:with="locale=${#locale}">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <!-- ===============================================-->
+    <!--    Document Title-->
+    <!-- ===============================================-->
+    <title th:text="#{login.title}">로그인</title>
+
+
+    <!-- ===============================================-->
+    <!--    Favicons-->
+    <!-- ===============================================-->
+    <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicons/favicon.ico">
+    <link rel="manifest" href="/img/favicons/manifest.json">
+    <meta name="msapplication-TileImage" content="/img/favicons/mstile-150x150.png">
+    <meta name="theme-color" content="#ffffff">
+    <script src="/vendors/simplebar/simplebar.min.js"></script>
+    <script src="/js/config.js"></script>
+
+
+    <!-- ===============================================-->
+    <!--    Stylesheets-->
+    <!-- ===============================================-->
+    <!-- Noto Sans KR 구글 폰트 사용 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="/vendors/simplebar/simplebar.min.css" rel="stylesheet">
+    <!-- unicons는 아이콘 폰트이므로 텍스트 폰트와 별개로 사용 -->
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <link href="/css/theme.min.css" type="text/css" rel="stylesheet" id="style-default">
+    <link href="/css/user.min.css" type="text/css" rel="stylesheet" id="user-style-default">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  </head>
+
+
+  <body>
+    <!-- 언어 선택 (페이지 상단 오른쪽) - 언어팩 사용 여부에 따라 표시 -->
+    <div th:if="${messagesEnabled}" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+      <div class="d-flex align-items-center gap-2">
+        <label class="form-label mb-0 small d-flex align-items-center gap-1">
+          <span class="fas fa-globe text-body-tertiary"></span>
+          <span th:text="#{login.language}">언어</span>
+        </label>
+        <select id="languageSelect" class="form-select form-select-sm" style="width: auto;" onchange="changeLanguage(this.value)">
+          <option value="ko" th:selected="${locale.language == 'ko'}" th:text="#{login.language.ko}">한국어</option>
+          <option value="en" th:selected="${locale.language == 'en'}" th:text="#{login.language.en}">English</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ===============================================-->
+    <!--    Main Content-->
+    <!-- ===============================================-->
+    <main class="main" id="top">
+      <div class="container">
+        <div class="row flex-center min-vh-100 py-5">
+          <div class="col-sm-10 col-md-8 col-lg-5 col-xl-5 col-xxl-3"><a class="d-flex flex-center text-decoration-none mb-4" href="/">
+              <div class="d-flex align-items-center fw-bolder fs-3 d-inline-block"><img src="/img/icons/logo.png" alt="ShopEasy" width="58" />
+              </div>
+            </a>
+            <div class="text-center mb-4">
+              <h3 class="text-body-highlight" th:text="#{login.title}">로그인</h3>
+              <p class="text-body-tertiary" th:text="#{login.subtitle}">계정에 접근하세요</p>
+            </div>
+            <!-- 에러 메시지 표시 영역 -->
+            <div id="errorMessage" class="alert alert-danger d-none mb-3" role="alert"></div>
+            <!-- 언어팩 메시지 (JavaScript에서 사용) -->
+            <script th:inline="javascript">
+              var loginMessages = {
+                fail: /*[[#{login.error.fail}]]*/ '로그인에 실패했습니다.',
+                server: /*[[#{login.error.server}]]*/ '로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.'
+              };
+            </script>
+            <form id="loginForm">
+              <div class="mb-3 text-start">
+                <label class="form-label" for="userId" th:text="#{login.email}">이메일</label>
+                <div class="form-icon-container">
+                  <input class="form-control form-icon-input" id="userId" name="userId" type="email" placeholder="name@example.com" autocomplete="email" th:value="${savedUserId}" required /><span class="fas fa-user text-body fs-9 form-icon"></span>
+                </div>
+              </div>
+              <div class="mb-3 text-start">
+                <label class="form-label" for="password" th:text="#{login.password}">비밀번호</label>
+                <div class="form-icon-container" data-password="data-password">
+                  <input class="form-control form-icon-input pe-6" id="password" name="password" type="password" placeholder="Password" data-password-input="data-password-input" autocomplete="current-password" required /><span class="fas fa-key text-body fs-9 form-icon"></span>
+                  <button class="btn px-3 py-0 h-100 position-absolute top-0 end-0 fs-7 text-body-tertiary" type="button" data-password-toggle="data-password-toggle"><span class="uil uil-eye show"></span><span class="uil uil-eye-slash hide"></span></button>
+                </div>
+              </div>
+              <div class="row flex-between-center mb-7">
+                <div class="col-auto">
+                  <div class="form-check mb-0">
+                    <input class="form-check-input" id="rememberMe" name="rememberMe" type="checkbox" th:checked="${savedUserId != null}" />
+                    <label class="form-check-label mb-0" for="rememberMe" th:text="#{login.remember.me}">아이디 저장 하기</label>
+                  </div>
+                </div>
+                <div class="col-auto"><a class="fs-9 fw-semibold" href="../../../pages/authentication/simple/forgot-password.html" th:text="#{login.forgot.password}">비밀번호를 잊으셨나요?</a></div>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 mb-3" th:text="#{login.button}">로그인</button>
+            </form>
+            <div class="text-center"><a class="fs-9 fw-bold" href="../../../pages/authentication/simple/sign-up.html" th:text="#{login.create.account}">계정 만들기</a></div>
+          </div>
+        </div>
+      </div>
+      <script>
+        // 언어 변경 함수
+        function changeLanguage(lang) {
+          window.location.href = '/login?lang=' + lang;
+        }
+
+        // 로그인 폼 제출 처리
+        $(document).ready(function() {
+          $('#loginForm').on('submit', function(e) {
+            e.preventDefault(); // 기본 폼 제출 방지
+            
+            var userId = $('#userId').val();
+            var password = $('#password').val();
+            var rememberMe = $('#rememberMe').is(':checked'); // '아이디 저장 하기' 체크박스 상태
+            
+            // 에러 메시지 숨기기
+            $('#errorMessage').addClass('d-none');
+            
+            // 로그인 요청
+            $.ajax({
+              url: '/loginProc',
+              type: 'POST',
+              data: {
+                userId: userId,
+                password: password,
+                rememberMe: rememberMe
+              },
+              success: function(response) {
+                if (response.success) {
+                  // 로그인 성공 시 메인 페이지로 이동
+                  window.location.href = '/';
+                } else {
+                  // 로그인 실패 시 에러 메시지 표시
+                  $('#errorMessage').text(response.message || loginMessages.fail);
+                  $('#errorMessage').removeClass('d-none');
+                }
+              },
+              error: function(xhr, status, error) {
+                // 서버 오류 처리
+                $('#errorMessage').text(loginMessages.server);
+                $('#errorMessage').removeClass('d-none');
+              }
+            });
+          });
+        });
+      </script>
+    </main>
+    <!-- ===============================================-->
+    <!--    End of Main Content-->
+    <!-- ===============================================-->
+
+
+    <!-- ===============================================-->
+    <!--    JavaScripts-->
+    <!-- ===============================================-->
+    <script src="/vendors/popper/popper.min.js"></script>
+    <script src="/vendors/bootstrap/bootstrap.min.js"></script>
+    <script src="/vendors/is/is.min.js"></script>
+    <script src="/vendors/fontawesome/all.min.js"></script>
+    <script src="/js/phoenix.js"></script>
+
+  </body>
+
+</html>

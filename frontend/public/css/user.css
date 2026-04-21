@@ -1,0 +1,299 @@
+/* prettier-ignore */
+/*# sourceMappingURL=user.css.map */
+
+/* Noto Sans KR 구글 폰트 사용 (HTML head에서 로드) */
+
+/* CSS 변수 오버라이드 - theme.css의 폰트 변수를 Noto Sans KR로 변경 */
+:root,
+[data-bs-theme=light],
+[data-bs-theme=dark],
+html,
+body {
+    --phoenix-font-sans-serif: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' !important;
+    --phoenix-body-font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* 사이트 전체에 Noto Sans KR 폰트 적용 - body와 주요 요소에만 적용 (font-weight 600으로 더 굵게) */
+html,
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    font-weight: 600 !important;
+}
+
+/* 주요 텍스트 요소에 폰트 적용 (드롭다운 메뉴는 제외) - font-weight 600으로 더 굵게 */
+h1, h2, h3, h4, h5, h6,
+p, span:not(.uil):not([class*="icon"]), 
+a:not(.dropdown-item), 
+button:not(.dropdown-toggle), 
+input, textarea, select,
+.card, .card-body, .card-title, .card-text {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    font-weight: 600 !important;
+}
+
+/* Tabulator 그리드 폰트를 메뉴 텍스트와 동일하게 통일 */
+.tabulator,
+.tabulator .tabulator-header,
+.tabulator .tabulator-row,
+.tabulator .tabulator-cell {
+    font-family: var(--phoenix-font-sans-serif) !important;
+    font-size: 0.8rem;
+    font-weight: 600 !important;
+}
+
+/* btn-search 스타일 (btn-lg 기반) */
+.btn-search, .btn-group-search > .btn {
+    --phoenix-btn-padding-y: 0.875rem;
+    --phoenix-btn-padding-x: 1.5rem;
+    --phoenix-btn-font-size: 0.875rem;
+    --phoenix-btn-border-radius: 0.3rem;
+} 
+
+
+.tabulator-row .tabulator-cell {
+    border-right: 1px solid #dee2e6;
+}
+
+/* 마지막 행의 border-bottom 제거 */
+.tabulator-row:last-child .tabulator-cell {
+    border-bottom: 0 !important;
+}
+
+/* .col-auto의 padding 조정 */
+.row > .col-auto {
+    padding-right: calc(var(--phoenix-gutter-x) * 0.3) !important;
+    padding-left: calc(var(--phoenix-gutter-x) * 0) !important;
+}
+
+/* 헤더/셀 공통: 오른쪽 경계선, 마지막 열은 제거 */
+.tabulator .tabulator-header {
+    border-right: 0 !important; /* 헤더 컨테이너의 테두리를 제거해 이중선 방지 */
+}
+.tabulator .tabulator-header .tabulator-col {
+    border-right: 1px solid #dee2e6;
+    text-align: center !important;
+}
+.tabulator .tabulator-header .tabulator-col .tabulator-col-title {
+    font-weight: 700;
+}
+.tabulator .tabulator-header .tabulator-col:last-child {
+    border-right: 0 !important;
+}
+.tabulator-row .tabulator-cell:last-child {
+    border-right: 0 !important;
+}
+
+/* Tabulator 기본 분리선(box-shadow)까지 제거하여 마지막 열 이중선 방지 */
+.tabulator .tabulator-header .tabulator-col:last-child,
+.tabulator .tabulator-header .tabulator-col:last-of-type {
+    border-right: 0 !important;
+    box-shadow: none !important;
+}
+.tabulator .tabulator-row .tabulator-cell:last-child,
+.tabulator .tabulator-row .tabulator-cell:last-of-type {
+    border-right: 0 !important;
+    box-shadow: none !important;
+}
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell:last-child,
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell:last-of-type {
+    border-right: 0 !important;
+    box-shadow: none !important;
+}
+.tabulator .tabulator-row:last-child .tabulator-cell:last-child,
+.tabulator .tabulator-row:last-of-type .tabulator-cell:last-of-type {
+    border-right: 0 !important;
+    box-shadow: none !important;
+}
+.tabulator .tabulator-tableholder,
+.tabulator .tabulator-header {
+    border-right: 0 !important;
+}
+.tabulator .tabulator-table {
+    border-right: 0 !important;
+}
+
+/* 최우선 순위로 데이터 셀 경계 적용: 모든 셀은 오른쪽 선, 마지막 열은 제거 */
+.tabulator .tabulator-row .tabulator-cell {
+    border-right: 1px solid #dee2e6 !important;
+}
+.tabulator .tabulator-row .tabulator-cell:last-child,
+.tabulator .tabulator-row .tabulator-cell:last-of-type,
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell:last-child,
+.tabulator .tabulator-tableholder .tabulator-table .tabulator-row .tabulator-cell:last-of-type {
+    border-right: 0 !important;
+    box-shadow: none !important;
+}
+
+/* 마지막 셀 판단이 어려워져서, 데이터 셀은 왼쪽 경계선 기준으로 통일 */
+.tabulator .tabulator-row .tabulator-cell {
+    border-right: 0 !important;
+    border-left: 1px solid #dee2e6 !important;
+}
+.tabulator .tabulator-row .tabulator-cell:first-of-type {
+    border-left: 0 !important;
+}
+.tabulator .tabulator-header .tabulator-col {
+    border-right: 0 !important;
+    border-left: 1px solid #dee2e6 !important;
+}
+.tabulator .tabulator-header .tabulator-col:first-of-type {
+    border-left: 0 !important;
+}
+
+/* 기본 그리드 높이 확보 */
+.tabulator-grid {
+    min-height: 400px;
+}
+
+/* Tabulator 마진 조정 */
+.tabulator {
+    margin: 0.5em 0 !important;
+}
+
+/* Tabulator 행 높이 및 패딩 줄이기 */
+.tabulator .tabulator-row {
+    min-height: 30px !important;
+    height: 30px !important;
+}
+
+.tabulator .tabulator-row .tabulator-cell {
+    padding: 4px 4px !important;
+    line-height: 22px !important;
+    vertical-align: middle !important;
+    text-align: center;
+}
+
+/* SweetAlert2 모달 폰트 적용 */
+.swal2-popup,
+.swal2-title,
+.swal2-html-container,
+.swal2-content,
+.swal2-confirm,
+.swal2-cancel,
+.swal2-deny {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    font-weight: 600 !important;
+}
+
+/* Form Validation 스타일 - 통과 시 체크 아이콘 및 테두리 색상 변경 제거 */
+/* Validation 통과 시: 기본 테두리 색상 유지, 체크 아이콘 제거 */
+.was-validated .form-control:valid,
+.was-validated .form-select:valid,
+.was-validated .form-control.is-valid,
+.was-validated .form-select.is-valid {
+    border-color: var(--phoenix-border-color, #dee2e6) !important;
+    background-image: none !important;
+    padding-right: 0.75rem !important;
+}
+
+/* Validation 실패 시: 빨간색 테두리 표시 */
+.was-validated .form-control:invalid,
+.was-validated .form-select:invalid,
+.was-validated .form-control.is-invalid,
+.was-validated .form-select.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+/* 사용자 프로필 드롭다운 화살표 위치 조정 */
+.navbar-nav-icons .dropdown-menu.navbar-dropdown-caret::after {
+    left: auto !important;
+    right: 1.3rem !important; /* 아바타 중간에 위치하도록 조정 */
+}
+
+.navbar-nav-icons .dropdown-menu.navbar-dropdown-caret::before {
+    left: auto !important;
+    right: 2.0rem !important; /* 아바타 중간에 위치하도록 조정 */
+    border-bottom-color: rgba(0, 0, 0, 0) !important; /* 아래쪽 삼각형 더 명확하게 */
+    opacity: 0.5 !important;
+}
+
+/* 사용자 프로필 드롭다운 토글 버튼의 아래쪽 화살표 제거 */
+.navbar-nav-icons .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* 주문 툴바: 기간 input 테두리 제거 (wrap만 테두리 보이게) */
+.orders-daterange-wrap .form-control.orders-daterange-from,
+.orders-daterange-wrap .form-control.orders-daterange-to {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+/* ~ 구분 영역 가로 패딩 */
+.orders-daterange-input-group .orders-daterange-sep {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+/* 주문 툴바: 날짜/검색 addon 패딩 */
+.orders-filter-row .input-group-text.orders-toolbar-addon {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 사이트 전체 Finder 스타일 (미니멀·연한 테두리·#333 텍스트·여백)            */
+/* -------------------------------------------------------------------------- */
+:root,
+[data-bs-theme=light] {
+    /* OMS 전용 토큰 (사이드바·탑바·탭·모달 등 layout.css에서 사용) */
+    --om-text: #333;
+    --om-text-muted: #86868b;
+    --om-border: rgba(0, 0, 0, 0.06);
+    --om-border-strong: rgba(0, 0, 0, 0.08);
+    --om-hover-bg: rgba(0, 0, 0, 0.04);
+    --om-active-bg: rgba(0, 0, 0, 0.06);
+
+    /* Phoenix 테마 변수 오버라이드 — 사이트 전체 톤 통일 */
+    --phoenix-body-color: #333;
+    --phoenix-body-color-rgb: 51, 51, 51;
+    --phoenix-emphasis-color: #333;
+    --phoenix-secondary-color: #515154;
+    --phoenix-secondary-color-rgb: 81, 81, 84;
+    --phoenix-tertiary-color: #86868b;
+    --phoenix-tertiary-color-rgb: 134, 134, 139;
+    --phoenix-border-color: rgba(0, 0, 0, 0.08);
+    --phoenix-border-color-translucent: rgba(0, 0, 0, 0.06);
+    --phoenix-gray-400: #86868b;
+    --phoenix-gray-500: #86868b;
+    --phoenix-gray-600: #515154;
+    --phoenix-gray-700: #333;
+    --phoenix-gray-800: #333;
+    --phoenix-navbar-top-border-color: rgba(0, 0, 0, 0.06);
+    --phoenix-secondary-bg: rgba(0, 0, 0, 0.04);
+    --phoenix-light: #f5f5f7;
+    --phoenix-gray-100: #f5f5f7;
+    --phoenix-gray-200: rgba(0, 0, 0, 0.06);
+    --phoenix-gray-300: rgba(0, 0, 0, 0.1);
+}
+
+/* dark 테마에서도 동일 토큰 사용 가능 (값은 dark용으로 조정) */
+[data-bs-theme=dark] {
+    --om-text: #e5e5e7;
+    --om-text-muted: #a1a1a6;
+    --om-border: rgba(255, 255, 255, 0.1);
+    --om-border-strong: rgba(255, 255, 255, 0.14);
+    --om-hover-bg: rgba(255, 255, 255, 0.06);
+    --om-active-bg: rgba(255, 255, 255, 0.1);
+
+    --phoenix-body-color: #e5e5e7;
+    --phoenix-body-color-rgb: 229, 229, 231;
+    --phoenix-emphasis-color: #e5e5e7;
+    --phoenix-secondary-color: #a1a1a6;
+    --phoenix-secondary-color-rgb: 161, 161, 166;
+    --phoenix-tertiary-color: #86868b;
+    --phoenix-tertiary-color-rgb: 134, 134, 139;
+    --phoenix-border-color: rgba(255, 255, 255, 0.14);
+    --phoenix-border-color-translucent: rgba(255, 255, 255, 0.1);
+    --phoenix-gray-400: #a1a1a6;
+    --phoenix-gray-500: #a1a1a6;
+    --phoenix-gray-600: #c0c0c4;
+    --phoenix-gray-700: #e5e5e7;
+    --phoenix-gray-800: #e5e5e7;
+    --phoenix-navbar-top-border-color: rgba(255, 255, 255, 0.1);
+    --phoenix-secondary-bg: rgba(255, 255, 255, 0.06);
+    --phoenix-light: #2c2c2e;
+    --phoenix-gray-100: #2c2c2e;
+    --phoenix-gray-200: rgba(255, 255, 255, 0.1);
+    --phoenix-gray-300: rgba(255, 255, 255, 0.14);
+}
+

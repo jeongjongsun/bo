@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmUserMMapper">
+
+    <resultMap id="omUserM" type="OmUserM">
+        <id     property="userId"   column="user_id" />
+        <result property="userNm"   column="user_nm" />
+        <result property="userInfo" column="user_info" />
+    </resultMap>
+
+    <!-- 사용자 조회 (로그인용) -->
+    <select id="selectByUserId" resultMap="omUserM">
+        SELECT user_id
+             , user_nm
+             , user_info::text AS user_info
+          FROM om_user_m
+         WHERE user_id = #{userId}
+    </select>
+
+    <!-- userId 목록으로 user_id, user_nm 일괄 조회 (성능: 1회 쿼리) -->
+    <select id="selectByUserIds" resultMap="omUserM">
+        SELECT user_id
+             , user_nm
+          FROM om_user_m
+         WHERE user_id IN
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">#{uid}</foreach>
+    </select>
+
+    <!-- 공통 검색 조건 -->
+    <sql id="userListWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (user_id ILIKE '%' || #{keyword} || '%'
+                  OR user_nm ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 사용자 목록 (페이징) -->
+    <select id="selectUserList" resultType="com.shopeasy.dto.UserListItem">
+        SELECT user_id
+             , user_nm
+             , user_info ->> 'corporation_cd'   AS corporation_cd
+             , user_info ->> 'grade_cd'         AS grade_cd
+             , user_info ->> 'user_type'        AS user_type
+             , user_info ->> 'user_status'      AS user_status
+             , user_info ->> 'auth_group'       AS auth_group
+             , user_info ->> 'mobile_no'        AS mobile_no
+             , user_info ->> 'email_id'         AS email_id
+             , user_info ->> 'privacy_access'   AS privacy_access
+             , user_info ->> 'second_auth_yn'   AS second_auth_yn
+             , user_info ->> 'access_ip_limit'  AS access_ip_limit
+             , user_info ->> 'access_ip'        AS access_ip
+             , (user_info ->> 'password_fail_cnt')::int AS password_fail_cnt
+             , user_info ->> 'last_login_dtm'   AS last_login_dtm
+          FROM om_user_m
+        <include refid="userListWhere"/>
+         ORDER BY user_id
+         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 사용자 목록 건수 -->
+    <select id="selectUserListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_user_m
+        <include refid="userListWhere"/>
+    </select>
+
+    <!-- 로그인 사용자 프로필 수정 (이름, user_info JSONB, updated_at, updated_by) -->
+    <update id="updateProfile">
+        UPDATE om_user_m
+           SET user_nm = #{userNm}
+             , user_info = #{userInfo}::jsonb
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE user_id = #{userId}
+    </update>
+
+</mapper>

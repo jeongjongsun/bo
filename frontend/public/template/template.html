@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en-US" dir="ltr" data-navigation-type="default" data-navbar-horizontal-shape="default" th:with="locale=${#locale}">
+  <head th:replace="~{common/head :: head}"></head>
+  <body>
+    <!-- ===============================================-->
+    <!--    Main Content-->
+    <!-- ===============================================-->
+    <main class="main" id="top">
+      <div th:replace="~{common/navbar :: vertical-navbar}"></div>
+      <div th:replace="~{common/navbar :: top-navbar}"></div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="tab-container" id="dynamicTabsContainer" style="display: none;">
+          <ul class="nav nav-tabs border-bottom" id="dynamicTabsList" role="tablist">
+            <!-- Tabs will be dynamically added here -->
+          </ul>
+          <div class="tab-content" id="dynamicTabsContent">
+            <!-- Tab contents will be dynamically added here -->
+          </div>
+        </div>
+        
+        <!-- Default Content (shown when no tabs) -->
+        <div class="default-content" id="defaultContent">
+          <!-- 페이지별 내용을 여기에 작성하세요 -->
+        </div>
+      </div>
+    </main>
+    <!-- ===============================================-->
+    <!--    End of Main Content-->
+    <!-- ===============================================-->
+
+    <div th:replace="~{common/theme-customizer :: theme-customizer}"></div>
+    <div th:replace="~{common/scripts :: scripts}"></div>
+  </body>
+
+</html>
+

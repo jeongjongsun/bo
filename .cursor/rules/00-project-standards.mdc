@@ -1,0 +1,39 @@
+---
+description: 프로젝트 표준 문서 참조 - 개발/실행 시 항상 docs 규칙 준수
+alwaysApply: true
+---
+
+# 프로젝트 표준 (항상 참고)
+
+이 프로젝트의 **모든 개발·코드 리뷰·실행**에서는 `docs/` 아래 표준 문서를 따릅니다.  
+전문은 해당 md 파일을 열어 확인하고, 아래는 요약입니다.
+
+## 문서 위치 및 용도
+
+| 문서 | 경로 | 용도 |
+|------|------|------|
+| 01 인덱스 | `docs/01-표준-인덱스.md` | 전체 목록·참고 순서·추가 표준 후보 |
+| 02 개발 표준 | `docs/02-개발-표준.md` | API 응답·에러·페이징, 권한/메뉴, React Query, 폴더 구조 |
+| 03 부록 타입 | `docs/03-부록-타입.md` | ApiResponse/PagedData 타입, API·훅·화면 예시(복사용) |
+| 04 코딩 스타일 | `docs/04-코딩-스타일.md` | 네이밍, 포맷팅, import, 주석, ESLint/Prettier, Checkstyle |
+| 05 로깅 표준 | `docs/05-로깅-표준.md` | 로그 레벨, 백엔드/프론트 로깅, 보안·개인정보 |
+| 06 보안 표준 | `docs/06-보안-표준.md` | 인증·인가, 입력 검증, XSS/CSRF, 세션/쿠키, 헤더 |
+| 07 테스트 표준 | `docs/07-테스트-표준.md` | 단위/통합, 백엔드·프론트 테스트, 위치·네이밍 |
+| 08 DB 표준 | `docs/08-DB-표준.md` | 테이블·컬럼·인덱스 네이밍, 공통 컬럼, 마이그레이션 |
+| 09 다국어 표준 | `docs/09-다국어-표준.md` | 메시지 키·번역 파일, API 연동, 날짜/숫자/통화, react-i18next |
+| 10 CSS 표준 | `docs/10-CSS-표준.md` | public/css/ 기존 스타일 우선, 필요 시에만 layout.css에 커스텀 추가 |
+| 11 트랜잭션 표준 | `docs/11-트랜잭션-표준.md` | Service 계층 트랜잭션 경계, readOnly/쓰기 기준, 동시성 처리 |
+
+## 반드시 지킬 것
+
+- **API**: 응답은 `success`, `data`, `message`, `code` 래퍼. 목록은 `items`, `page`, `size`, `total`, `totalPages`. 에러 코드 `ERR_*`.
+- **권한**: 인증/메뉴는 `GET /api/v1/auth/me`. 401→로그인 리다이렉트, 403→권한 없음.
+- **React**: API·훅은 `api/`, `features/xxx/hooks`. 쿼리키 `['도메인','list'|'detail', params]`. credentials include.
+- **보안**: 비밀·개인정보 로그/에러에 넣지 않음. 입력은 서버 검증, SQL은 파라미터 바인딩만.
+- **코드**: 네이밍·포맷은 `docs/04-코딩-스타일.md`, DB는 `docs/08-DB-표준.md` 준수.
+- **트랜잭션**: 여러 테이블 쓰기/조회→검증→쓰기 로직은 Service 메서드에 `@Transactional`, 단순 조회는 `@Transactional(readOnly = true)` 적용 (`docs/11-트랜잭션-표준.md`).
+- **다국어**: UI 문구는 메시지 키만 사용(`t('key')`). 키 규칙·번역 파일 구조는 `docs/09-다국어-표준.md` 준수.
+- **CSS**: `frontend/public/css/`(theme.css 등) 기존 스타일을 최대한 사용. 커스텀은 필요 시 `layout.css`에만 추가. **기본(보조) 버튼**은 콘텐츠 배경과 구분되도록 `btn-default-visible` 클래스 적용. `docs/10-CSS-표준.md`, `.cursor/rules/05-css.mdc` 참고.
+- **메뉴 문서**: 새 메뉴(화면)를 추가할 때마다 `docs/menu/메뉴명.md` 파일을 생성한다. 규칙: `.cursor/rules/07-menu-docs.mdc`, 참고 예시: `docs/menu/상품관리.md`.
+
+새 기능·수정 시 해당 영역의 docs를 열어 전체 규칙을 확인한 뒤 작업하세요.

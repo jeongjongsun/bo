@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmMallMMapper">
+
+    <sql id="mallListWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (mall_cd ILIKE '%' || #{keyword} || '%'
+                  OR mall_nm ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectMallList" resultType="com.shopeasy.dto.MallListItem">
+        SELECT mall_id
+             , mall_cd
+             , mall_nm
+             , mall_info ->> 'mall_url'       AS mall_url
+             , mall_info ->> 'api_url'        AS api_url
+             , mall_info ->> 'delivery_type'  AS delivery_type
+             , mall_info ->> 'collection_type' AS collection_type
+             , mall_info ->> 'sales_type_cd'  AS sales_type_cd
+             , is_active
+             , TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at
+             , TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updated_at
+             , created_by
+             , updated_by
+          FROM om_mall_m
+        <include refid="mallListWhere"/>
+         ORDER BY mall_cd
+         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="selectMallListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_mall_m
+        <include refid="mallListWhere"/>
+    </select>
+
+    <!-- 쇼핑몰+상점 조인 목록 (상점 단위). corporationCd 있으면 해당 법인 상점만 -->
+    <sql id="mallStoreListWhere">
+        <where>
+            <if test="corporationCd != null and corporationCd != ''">
+                AND s.corporation_cd = #{corporationCd}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (m.mall_cd ILIKE '%' || #{keyword} || '%'
+                  OR m.mall_nm ILIKE '%' || #{keyword} || '%'
+                  OR s.store_cd ILIKE '%' || #{keyword} || '%'
+                  OR s.store_nm ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectMallStoreList" resultType="com.shopeasy.dto.MallStoreListItem">
+        SELECT s.store_id    AS store_id
+             , m.mall_cd     AS mall_cd
+             , m.mall_nm     AS mall_nm
+             , s.store_cd    AS store_cd
+             , s.store_nm    AS store_nm
+             , m.mall_info ->> 'delivery_type'   AS delivery_type
+             , m.mall_info ->> 'collection_type' AS collection_type
+             , m.mall_info ->> 'sales_type_cd'   AS sales_type_cd
+             , s.is_active
+             , s.store_info::text                AS store_info
+             , TO_CHAR(s.created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at
+             , s.created_by
+          FROM om_mall_m m
+          JOIN om_mall_store_m s ON m.mall_cd = s.mall_cd
+        <include refid="mallStoreListWhere"/>
+         ORDER BY m.mall_cd, s.store_cd
+         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="selectMallStoreListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_mall_m m
+          JOIN om_mall_store_m s ON m.mall_cd = s.mall_cd
+        <include refid="mallStoreListWhere"/>
+    </select>
+
+    <update id="updateStoreNm">
+        UPDATE om_mall_store_m
+           SET store_nm = #{storeNm}
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE store_id = #{storeId}
+    </update>
+
+    <update id="updateStore">
+        UPDATE om_mall_store_m
+        <set>
+            <if test="mallCd != null and mallCd != ''">mall_cd = #{mallCd},</if>
+            <if test="storeNm != null">store_nm = #{storeNm},</if>
+            <if test="storeInfoJson != null">store_info = #{storeInfoJson}::jsonb,</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            updated_at = CURRENT_TIMESTAMP,
+            updated_by = #{updatedBy}
+        </set>
+        WHERE store_id = #{storeId}
+    </update>
+
+    <select id="selectMallOptions" resultType="com.shopeasy.dto.MallOption">
+        SELECT mall_cd AS mall_cd, mall_nm AS mall_nm
+          FROM om_mall_m
+         WHERE is_active = true
+         ORDER BY mall_cd
+    </select>
+
+    <select id="selectStoreCountByMallAndCorporation" resultType="int">
+        SELECT COUNT(*) FROM om_mall_store_m
+         WHERE mall_cd = #{mallCd} AND corporation_cd = #{corporationCd}
+    </select>
+
+    <insert id="insertStore">
+        INSERT INTO om_mall_store_m (mall_cd, corporation_cd, store_cd, store_nm, store_info, is_active, created_by)
+        VALUES (#{mallCd}, #{corporationCd}, #{storeCd}, #{storeNm}, #{storeInfoJson}::jsonb, #{isActive}, #{createdBy})
+    </insert>
+
+    <select id="selectStoreByCorporationAndStoreCd" resultType="com.shopeasy.dto.MallStoreListItem">
+        SELECT s.store_id AS storeId
+             , m.mall_cd AS mallCd
+             , m.mall_nm AS mallNm
+             , s.store_cd AS storeCd
+             , s.store_nm AS storeNm
+             , m.mall_info ->> 'delivery_type' AS deliveryType
+             , m.mall_info ->> 'collection_type' AS collectionType
+             , m.mall_info ->> 'sales_type_cd' AS salesTypeCd
+             , s.is_active AS isActive
+             , s.store_info::text AS storeInfo
+             , TO_CHAR(s.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , s.created_by AS createdBy
+          FROM om_mall_m m
+          JOIN om_mall_store_m s ON m.mall_cd = s.mall_cd
+         WHERE s.corporation_cd = #{corporationCd}
+           AND s.store_cd = #{storeCd}
+         LIMIT 1
+    </select>
+</mapper>

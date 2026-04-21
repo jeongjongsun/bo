@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmUserSettingMMapper">
+
+    <resultMap id="UserSettingRowResult" type="com.shopeasy.dto.UserSettingRow">
+        <result property="userId" column="user_id"/>
+        <result property="settingValues" column="setting_values"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="UserSettingRowResult">
+        SELECT user_id, setting_values::text AS setting_values
+          FROM om_user_setting_m
+         WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO om_user_setting_m (user_id, setting_values, created_at, updated_at, created_by, updated_by)
+        VALUES (#{userId}, #{settingValues}::jsonb, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, #{userId}, #{userId})
+    </insert>
+
+    <update id="update">
+        UPDATE om_user_setting_m
+           SET setting_values = #{settingValues}::jsonb,
+               updated_at = CURRENT_TIMESTAMP,
+               updated_by = #{userId}
+         WHERE user_id = #{userId}
+    </update>
+
+</mapper>

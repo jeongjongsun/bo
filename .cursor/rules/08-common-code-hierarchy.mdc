@@ -1,0 +1,39 @@
+---
+description: 공통코드(CM_CODE_M) 추가 시 하이어라키 구조 준수
+globs: "**/cm_code*.sql,**/CmCode*.java,**/CmCode*"
+alwaysApply: false
+---
+
+# 공통코드(CM_CODE_M) 하이어라키 구조
+
+**공통코드를 추가할 때** 반드시 다음 2단계 하이어라키를 따른다.
+
+## 구조
+
+| 단계 | main_cd | sub_cd | code_nm | 설명 |
+|------|---------|--------|---------|------|
+| **1) 그룹 정의** | `CODE` | 그룹코드 (예: CURRENCY, STORE_TYPE) | 그룹 표시명 (다국어) | 코드 그룹 자체를 한 건 등록 |
+| **2) 상세 코드** | 그룹코드 | 코드값 (예: KRW, OWN) | 코드 표시명 (다국어) | 실제 사용하는 코드값들 |
+
+- **그룹 정의**: `main_cd = 'CODE'`, `sub_cd = 그룹코드`, `code_nm = 그룹의 화면 표시명` (예: 통화코드, 상점구분).
+- **상세 코드**: `main_cd = 그룹코드`, `sub_cd = 코드값`, `code_nm = 해당 코드의 표시명`.
+
+## 예시
+
+**통화코드 추가 시**
+
+1. 그룹 정의 1건: `('CODE', 'CURRENCY', '{"ko":"통화코드","en":"Currency"}', ...)`
+2. 상세 코드 N건: `('CURRENCY', 'KRW', ...)`, `('CURRENCY', 'USD', ...)` …
+
+**상점구분 추가 시**
+
+1. 그룹 정의 1건: `('CODE', 'STORE_TYPE', '{"ko":"상점구분","en":"Store Type"}', ...)`
+2. 상세 코드 N건: `('STORE_TYPE', 'OWN', ...)`, `('STORE_TYPE', 'OPEN', ...)` …
+
+## 참고
+
+- DDL: `docs/ddl/cm_code_m.sql`
+- 데이터 예시: `docs/ddl/cm_code_m_data_store_currency.sql`
+- `code_nm`은 JSONB `{"ko":"…","en":"…"}` 다국어, `code_info`는 `{"use_yn":"Y","disp_seq":n}` 등.
+
+새 코드 그룹을 추가할 때는 **반드시 CODE 하위에 그룹 정의 행을 먼저 넣고**, 이어서 해당 그룹의 상세 코드를 넣는다.

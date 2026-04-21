@@ -1,0 +1,17 @@
+---
+description: 백엔드(Java/Spring) 작성 시 개발·로깅·보안·테스트·DB 표준 참고
+globs: "**/*.java,**/application*.yml,**/application*.yaml"
+alwaysApply: false
+---
+
+# 백엔드 작업 시 참고할 표준
+
+- **개발**: `docs/02-개발-표준.md` — API 응답 포맷(success/data/code), 에러 코드(ERR_*), 페이징(page/size/total/items).
+- **로깅**: `docs/05-로깅-표준.md` — SLF4J/Logback, 레벨(ERROR/WARN/INFO), 비밀·개인정보 로그 금지.
+- **보안**: `docs/06-보안-표준.md` — 세션 검증, 401/403 처리, 입력 검증, SQL 파라미터 바인딩만.
+- **테스트**: `docs/07-테스트-표준.md` — JUnit 5, Mockito, API 테스트(상태·에러코드·응답 포맷 검증).
+- **DB**: `docs/08-DB-표준.md` — 테이블 단수·snake_case, 공통 컬럼(created_at/updated_at), 마이그레이션(Flyway).
+- **트랜잭션**: `docs/11-트랜잭션-표준.md` — Service 계층 `@Transactional`/`readOnly`, 다단계 쓰기와 상태전이 동시성 조건.
+- **코딩**: `docs/04-코딩-스타일.md` — Java 네이밍(PascalCase/camelCase/UPPER_SNAKE), 중괄호 항상, Checkstyle/Spotless.
+
+작성·수정 시 위 문서의 해당 절을 확인하고 준수하세요.

@@ -1,0 +1,24 @@
+---
+description: 백엔드 Service 트랜잭션 적용 기준
+globs: "**/service/*.java"
+alwaysApply: false
+---
+
+# 백엔드 트랜잭션 적용 규칙
+
+`docs/11-트랜잭션-표준.md`를 기준으로 서비스 메서드 트랜잭션을 적용한다.
+
+## 필수
+
+- 여러 테이블에 쓰기가 발생하면 `@Transactional` 적용
+- 조회 → 검증 → 계산 → 쓰기 흐름은 `@Transactional` 적용
+- 상태 전이 UPDATE는 기대 현재 상태 조건(예: `expectedCurrentStatus`)을 포함
+
+## 권장
+
+- 목록/상세/옵션 조회는 `@Transactional(readOnly = true)`
+- 부분 처리 가능 로직은 요청 건수와 실제 반영 건수를 분리해 메시지 제공
+
+## 금지
+
+- Controller/Mapper 계층에 트랜잭션 경계 설정 금지

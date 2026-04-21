@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmProductSetComponentMapper">
+
+    <resultMap id="ProductSetComponentResult" type="com.shopeasy.dto.ProductSetComponent">
+        <result column="component_product_id" property="componentProductId"/>
+        <result column="component_qty" property="componentQty"/>
+    </resultMap>
+
+    <select id="selectByProductId" resultMap="ProductSetComponentResult">
+        SELECT component_product_id, component_qty
+          FROM om_product_set_component
+         WHERE product_id = #{productId}
+         ORDER BY sort_order, component_product_id
+    </select>
+
+    <delete id="deleteByProductId">
+        DELETE FROM om_product_set_component WHERE product_id = #{productId}
+    </delete>
+
+    <insert id="insertAll">
+        INSERT INTO om_product_set_component (product_id, component_product_id, component_qty, sort_order)
+        VALUES
+        <foreach collection="list" item="c" separator=",">
+            (#{productId}, #{c.componentProductId}, #{c.componentQty}, 0)
+        </foreach>
+    </insert>
+
+    <insert id="insertBatch">
+        INSERT INTO om_product_set_component (product_id, component_product_id, component_qty, sort_order)
+        VALUES
+        <foreach collection="list" item="row" separator=",">
+            (#{row.productId}, #{row.componentProductId}, COALESCE(#{row.componentQty}, 1), 0)
+        </foreach>
+    </insert>
+
+    <!-- 세트 구성만 등록 시 기존 행과 중복이면 스킵 (추가 등록용) -->
+    <insert id="insertBatchOrIgnore">
+        INSERT INTO om_product_set_component (product_id, component_product_id, component_qty, sort_order)
+        VALUES
+        <foreach collection="list" item="row" separator=",">
+            (#{row.productId}, #{row.componentProductId}, COALESCE(#{row.componentQty}, 1), 0)
+        </foreach>
+        ON CONFLICT (product_id, component_product_id) DO NOTHING
+    </insert>
+</mapper>

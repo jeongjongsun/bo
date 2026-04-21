@@ -1,0 +1,15 @@
+---
+description: 프론트(React/TypeScript) 작성 시 개발·API·테스트·코딩 표준 참고
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# 프론트엔드 작업 시 참고할 표준
+
+- **개발**: `docs/02-개발-표준.md` — API 호출은 `api/` 또는 `features/xxx/`, 훅은 `useQuery`/`useMutation`, 쿼리키 `['도메인','list'|'detail', params]`, credentials include. 401/403 시 리다이렉트·메시지.
+- **타입·예시**: `docs/03-부록-타입.md` — ApiResponse, PagedData, API·훅·화면 예시(복사 후 이름만 변경).
+- **테스트**: `docs/07-테스트-표준.md` — Vitest/Jest, RTL, utils/hooks 단위, 컴포넌트는 행동·데이터 검증, API 모킹.
+- **코딩**: `docs/04-코딩-스타일.md` — 파일명(PascalCase 컴포넌트, camelCase 훅/utils), 스페이스 2칸, 세미콜론, import 순서, ESLint/Prettier.
+- **보안**: `docs/06-보안-표준.md` — XSS(dangerouslySetInnerHTML 금지), credentials include.
+
+에러 표시는 `error?.response?.data?.message` 또는 표준 에러 필드 사용. 새 화면은 개발 표준 "새 화면 추가 체크리스트" 순서로.

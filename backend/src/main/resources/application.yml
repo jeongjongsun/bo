@@ -1,0 +1,44 @@
+# docs 표준 준수. 동일 도메인·세션·PostgreSQL 전제.
+# 환경별 설정은 application-{profile}.yml 에서 오버라이드.
+spring:
+  application:
+    name: shopeasy-api
+  profiles:
+    active: dev
+  datasource:
+    # 기존 로컬 DB 연결 (주석)
+    # url: jdbc:postgresql://localhost:5432/shopeasy4
+    # username: aini
+    # password: aini12#$
+    # Neon PostgreSQL (세션 타임존 Asia/Seoul: docs/08-DB-표준)
+    url: jdbc:postgresql://ep-long-unit-a1ckjskl-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require&options=-c%20TimeZone%3DAsia/Seoul
+    username: neondb_owner
+    password: npg_87fZtkEOIzlv
+    driver-class-name: org.postgresql.Driver
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.shopeasy.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/json,application/xml,text/html,text/plain
+  servlet:
+    context-path: /
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+
+logging:
+  level:
+    root: INFO
+    com.shopeasy: INFO

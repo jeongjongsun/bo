@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <!-- Vertical Navbar Fragment -->
+  <nav class="navbar navbar-vertical navbar-expand-lg" id="navbarVertical" th:fragment="vertical-navbar">
+    <div class="collapse navbar-collapse" id="navbarVerticalCollapse">
+      <div class="navbar-vertical-content">
+        <ul class="navbar-nav flex-column" id="navbarVerticalNav">
+          <!-- Home 메뉴 -->
+          <li class="nav-item">
+            <a class="nav-link" href="/">
+              <div class="d-flex align-items-center">
+                <span class="nav-link-icon"><span data-feather="pie-chart"></span></span>
+                <span class="nav-link-text">Home</span>
+              </div>
+            </a>
+          </li>
+          
+          <!-- Apps 섹션 -->
+          <li class="nav-item">
+            <p class="navbar-vertical-label">Apps</p>
+            <hr class="navbar-vertical-line" />
+            
+            <!-- 주문 관리 -->
+            <div class="nav-item-wrapper">
+              <a class="nav-link dropdown-indicator label-1" href="#nv-order" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-order">
+                <div class="d-flex align-items-center">
+                  <div class="dropdown-indicator-icon-wrapper">
+                    <span class="fas fa-caret-right dropdown-indicator-icon"></span>
+                  </div>
+                  <span class="nav-link-icon"><span data-feather="shopping-cart"></span></span>
+                  <span class="nav-link-text">주문 관리</span>
+                </div>
+              </a>
+              <div class="parent-wrapper label-1">
+                <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse" id="nv-order">
+                  <li class="collapsed-nav-item-title d-none">주문 관리</li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="list"></span></span>
+                        <span class="nav-link-text">주문(발주) 목록</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/process">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="file-text"></span></span>
+                        <span class="nav-link-text">주문서 처리</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/ship-ready">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="package"></span></span>
+                        <span class="nav-link-text">출고 준비</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/delivery-ready">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="truck"></span></span>
+                        <span class="nav-link-text">발송 준비</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/shipping">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="navigation"></span></span>
+                        <span class="nav-link-text">배송중 주문</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/delivered">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="check-circle"></span></span>
+                        <span class="nav-link-text">배송 완료 주문</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/integrated">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="layers"></span></span>
+                        <span class="nav-link-text">주문 통합 관리</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/unmatched">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="x-circle"></span></span>
+                        <span class="nav-link-text">비매칭 주문</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/hold">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="pause-circle"></span></span>
+                        <span class="nav-link-text">출고 보류 주문</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/order/deleted">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="trash-2"></span></span>
+                        <span class="nav-link-text">삭제 주문</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- 상품 관리 -->
+            <div class="nav-item-wrapper">
+              <a class="nav-link dropdown-indicator label-1" href="#nv-product" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-product">
+                <div class="d-flex align-items-center">
+                  <div class="dropdown-indicator-icon-wrapper">
+                    <span class="fas fa-caret-right dropdown-indicator-icon"></span>
+                  </div>
+                  <span class="nav-link-icon"><span data-feather="package"></span></span>
+                  <span class="nav-link-text">상품 관리</span>
+                </div>
+              </a>
+              <div class="parent-wrapper label-1">
+                <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse" id="nv-product">
+                  <li class="collapsed-nav-item-title d-none">상품 관리</li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/product">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="info"></span></span>
+                        <span class="nav-link-text">상품 정보</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/product/gift">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="gift"></span></span>
+                        <span class="nav-link-text">사은품 지급 설정</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/product/matching">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="link"></span></span>
+                        <span class="nav-link-text">매칭 정보</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- 재고 관리 -->
+            <div class="nav-item-wrapper">
+              <a class="nav-link dropdown-indicator label-1" href="#nv-inventory" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-inventory">
+                <div class="d-flex align-items-center">
+                  <div class="dropdown-indicator-icon-wrapper">
+                    <span class="fas fa-caret-right dropdown-indicator-icon"></span>
+                  </div>
+                  <span class="nav-link-icon"><span data-feather="archive"></span></span>
+                  <span class="nav-link-text">재고 관리</span>
+                </div>
+              </a>
+              <div class="parent-wrapper label-1">
+                <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse" id="nv-inventory">
+                  <li class="collapsed-nav-item-title d-none">재고 관리</li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="bar-chart"></span></span>
+                        <span class="nav-link-text">재고 현황</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="arrow-down"></span></span>
+                        <span class="nav-link-text">입고 관리</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="arrow-up"></span></span>
+                        <span class="nav-link-text">출고 관리</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          
+          <!-- Pages 섹션 -->
+          <li class="nav-item">
+            <p class="navbar-vertical-label">Pages</p>
+            <hr class="navbar-vertical-line" />
+            
+            <!-- 사용자 관리 -->
+            <div class="nav-item-wrapper">
+              <a class="nav-link dropdown-indicator label-1" href="#nv-user" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="nv-user">
+                <div class="d-flex align-items-center">
+                  <div class="dropdown-indicator-icon-wrapper">
+                    <span class="fas fa-caret-right dropdown-indicator-icon"></span>
+                  </div>
+                  <span class="nav-link-icon"><span data-feather="users"></span></span>
+                  <span class="nav-link-text">사용자 관리</span>
+                </div>
+              </a>
+              <div class="parent-wrapper label-1">
+                <ul class="nav collapse parent" data-bs-parent="#navbarVerticalCollapse" id="nv-user">
+                  <li class="collapsed-nav-item-title d-none">사용자 관리</li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="/user" data-cursor-element-id="cursor-el-1">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="list"></span></span>
+                        <span class="nav-link-text">사용자 목록</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="#">
+                      <div class="d-flex align-items-center">
+                        <span class="nav-link-icon"><span data-feather="user-plus"></span></span>
+                        <span class="nav-link-text">사용자 등록</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="navbar-vertical-footer">
+      <button class="btn navbar-vertical-toggle border-0 fw-semibold w-100 white-space-nowrap d-flex align-items-center">
+        <span class="uil uil-left-arrow-to-left fs-8"></span>
+        <span class="uil uil-arrow-from-right fs-8"></span>
+        <span class="navbar-vertical-footer-text ms-2">Collapsed View</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Top Navbar Fragment -->
+  <nav class="navbar navbar-top fixed-top navbar-expand-lg" id="navbarTop" th:fragment="top-navbar">
+    <div class="collapse navbar-collapse justify-content-between">
+      <div class="navbar-logo">
+        <button class="btn navbar-toggler navbar-toggler-humburger-icon hover-bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#navbarVerticalCollapse" aria-controls="navbarVerticalCollapse" aria-expanded="false" aria-label="Toggle Navigation">
+          <span class="navbar-toggle-icon"><span class="toggle-line"></span></span>
+        </button>
+        <a class="navbar-brand me-1 me-sm-3" href="/">
+          <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center">
+              <img src="/img/icons/logo.png" alt="phoenix" width="27" />
+              <h5 class="logo-text ms-2 d-none d-sm-block">ShopEasy OMS</h5>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="collapse navbar-collapse navbar-top-collapse order-1 order-lg-0 justify-content-center" id="navbarTopCollapse">
+        <ul class="navbar-nav navbar-nav-top" data-dropdown-on-hover="data-dropdown-on-hover">
+          <li class="nav-item">
+            <a class="nav-link lh-1" href="/">
+              <span class="uil fs-8 me-2 uil-chart-pie"></span>Home
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+              <span class="uil fs-8 me-2 uil-shopping-cart"></span>주문 관리
+            </a>
+            <ul class="dropdown-menu navbar-dropdown-caret">
+              <li><a class="dropdown-item" href="/order">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="list"></span>주문(발주) 목록
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/process">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="file-text"></span>주문서 처리
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/ship-ready">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="package"></span>출고 준비
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/delivery-ready">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="truck"></span>발송 준비
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/shipping">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="navigation"></span>배송중 주문
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/delivered">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="check-circle"></span>배송 완료 주문
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/integrated">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="layers"></span>주문 통합 관리
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/unmatched">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="x-circle"></span>비매칭 주문
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/hold">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="pause-circle"></span>출고 보류 주문
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/order/deleted">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="trash"></span>삭제 주문
+                </div>
+              </a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+              <span class="uil fs-8 me-2 uil-package"></span>상품 관리
+            </a>
+            <ul class="dropdown-menu navbar-dropdown-caret">
+              <li><a class="dropdown-item" href="/product">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="info"></span>상품 정보
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/product/gift">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="gift"></span>사은품 지급 설정
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="/product/matching">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="link"></span>매칭 정보
+                </div>
+              </a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+              <span class="uil fs-8 me-2 uil-archive"></span>재고 관리
+            </a>
+            <ul class="dropdown-menu navbar-dropdown-caret">
+              <li><a class="dropdown-item" href="#">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="bar-chart"></span>재고 현황
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="#">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="arrow-down"></span>입고 관리
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="#">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="arrow-up"></span>출고 관리
+                </div>
+              </a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle lh-1" href="#!" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+              <span class="uil fs-8 me-2 uil-user"></span>사용자 관리
+            </a>
+            <ul class="dropdown-menu navbar-dropdown-caret">
+              <li><a class="dropdown-item" href="/user" data-cursor-element-id="cursor-el-1">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="list"></span>사용자 목록
+                </div>
+              </a></li>
+              <li><a class="dropdown-item" href="#">
+                <div class="dropdown-item-wrapper">
+                  <span class="me-2 uil" data-feather="user-plus"></span>사용자 등록
+                </div>
+              </a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <ul class="navbar-nav navbar-nav-icons flex-row">
+        <li class="nav-item">
+          <div class="px-2 d-flex align-items-center" style="height:32px;">
+            <select id="corporationSelect" class="form-select form-select-sm" style="min-width: 150px;" onchange="changeCorporation(this.value)">
+              <option value="">법인 선택</option>
+              <option th:each="corp : ${session.corporationList}" 
+                      th:value="${corp.corporation_cd}" 
+                      th:text="${corp.corporation_nm}"
+                      th:selected="${session.selectedCorporation != null and session.selectedCorporation.corporation_cd == corp.corporation_cd}">
+              </option>
+            </select>
+          </div>
+        </li>
+        <li class="nav-item">
+          <div class="theme-control-toggle fa-icon-wait px-2">
+            <label class="mb-0 theme-control-toggle-label" id="layoutToggleBtn" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Toggle Layout" style="height:32px;width:32px;cursor:pointer;">
+              <span class="icon" data-feather="layout" id="layoutToggleIcon"></span>
+            </label>
+          </div>
+        </li>
+        <li class="nav-item dropdown"><a class="nav-link lh-1 pe-0" id="navbarDropdownUser" href="#!" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
+          <div class="avatar avatar-m ">
+            <img class="rounded-circle " src="/img/team/30.webp" alt="" />
+
+          </div>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end navbar-dropdown-caret py-0 dropdown-profile shadow border" aria-labelledby="navbarDropdownUser">
+          <div class="card position-relative border-0">
+            <div class="card-body p-0">
+              <div class="text-center pt-4 pb-3">
+                <div class="avatar avatar-xl ">
+                  <img class="rounded-circle " src="/img/team/30.webp" alt="" />
+
+                </div>
+                <h6 class="mt-2 text-body-emphasis" th:text="${session.user?.name ?: '사용자'}">사용자명</h6>
+                <p class="text-700 mb-0 fs-9" th:text="${session.user?.userId ?: ''}">user@example.com</p>
+              </div>
+            </div>
+            <div class="card-footer p-0 border-top border-translucent">
+              <div class="px-3 my-2"> <a class="btn btn-phoenix-secondary d-flex flex-center w-100" href="/logout"> <span class="me-2" data-feather="log-out"> </span><span th:text="#{main.logout}">로그아웃</span></a></div>
+            </div>
+          </div>
+        </div>
+      </li>
+      </ul>
+    </div>
+  </nav>
+</html>
+

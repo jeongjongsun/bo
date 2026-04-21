@@ -1,0 +1,34 @@
+---
+description: 알림(alert)·확인(confirm) 대화상자는 SweetAlert2 사용. toast/alert() 대신 swal 유틸 사용.
+globs: "**/*.ts,**/*.tsx"
+alwaysApply: false
+---
+
+# 알림·확인 대화상자 (SweetAlert2)
+
+프로젝트에서는 **SweetAlert2**를 사용한다. `alert()`, `confirm()` 대신 사용한다.
+
+- **샘플**: https://sweetalert2.github.io/#examples
+- **아이콘**: https://sweetalert2.github.io/#icons (success, error, warning, info, question)
+- **React 연동**: https://github.com/sweetalert2/sweetalert2-react-content
+- **스타일**: "A title with a text under" — `title` + `text` 조합으로 표시.
+
+## 사용 위치
+
+- **유틸**: `frontend/src/utils/swal.ts`
+- **import**: `import { showSuccess, showError, showWarning, showInfo, confirm } from '@/utils/swal';`
+
+## API (title + text)
+
+- **showSuccess(title, text?)** — 성공 (icon: success)
+- **showError(title, text?)** — 오류 (icon: error)
+- **showWarning(title, text?)** — 경고 (icon: warning)
+- **showInfo(title, text?)** — 정보 (icon: info)
+- **confirm(title, text?, options?)** — 확인/취소. 반환 `Promise<boolean>` (확인 시 true). `options`: confirmButtonText, cancelButtonText, icon
+
+## 규칙
+
+- `alert(...)` 사용 금지 → `showInfo(title, text)` 또는 `showError(title, text)` 등으로 대체.
+- `confirm(...)` 사용 금지 → `confirm(title, text).then(ok => { ... })` 사용.
+- 토스트 형태가 필요해도 이 프로젝트에서는 SweetAlert2 모달로 통일.
+- 버튼 문구는 다국어 시 `t('key')` 로 전달 (예: `showError(t('common.error'), msg)`).

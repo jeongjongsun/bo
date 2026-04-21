@@ -1,0 +1,230 @@
+/* ========== 그리드 공통 (주문·상품·쇼핑몰 통일) ========== */
+.data-grid-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.data-grid-container {
+  position: relative;
+  min-height: 200px;
+  border: 1px solid var(--ag-border-color, #e2e8f0);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* 내부 AG Grid 루트가 자체 테두리를 그리지 않도록 → 컨테이너만 한 덩어리로 보이게 */
+.data-grid-body > div {
+  flex: 1;
+  min-height: 0;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.data-grid-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 커스텀 footer가 있으면 AG Grid 네이티브 페이징 숨김 → 중복 제거 */
+.data-grid-container:has(.data-grid-footer) [class*='paging'] {
+  display: none !important;
+}
+
+/* AG Grid 네이티브 페이징: 배경·테두리만 통일 (레이아웃은 AG Grid 기본 유지 → 깨짐 방지) */
+.data-grid-container [class*='paging'] {
+  background: #f8f9fa !important;
+  border-top: 1px solid #e2e8f0 !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+}
+
+.data-grid-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 10;
+}
+
+.data-grid-loading-text {
+  font-size: 0.875rem;
+  color: var(--phoenix-body-tertiary, #6c757d);
+}
+
+.data-grid-wrapper .ag-header-cell-label {
+  justify-content: center;
+}
+
+/* 헤더를 제외한 데이터 셀은 일반 굵기(볼드 해제) */
+.data-grid-wrapper .ag-cell {
+  font-weight: 500 !important;
+}
+
+/* 전역 span/a/button/input ... font-weight:600 !important 우선 규칙 덮어쓰기 */
+.data-grid-wrapper .ag-row .ag-cell span:not(.uil):not([class*='icon']),
+.data-grid-wrapper .ag-row .ag-cell a:not(.dropdown-item),
+.data-grid-wrapper .ag-row .ag-cell button:not(.dropdown-toggle),
+.data-grid-wrapper .ag-row .ag-cell input,
+.data-grid-wrapper .ag-row .ag-cell textarea,
+.data-grid-wrapper .ag-row .ag-cell select,
+.data-grid-wrapper .ag-row .ag-cell p {
+  font-weight: 500 !important;
+}
+
+/* rowspan 셀(ag-spanned-cell, ag-cell-value)도 동일하게 일반 굵기 강제 */
+.data-grid-wrapper .ag-spanned-cell-wrapper,
+.data-grid-wrapper .ag-spanned-cell-wrapper .ag-cell,
+.data-grid-wrapper .ag-spanned-cell-wrapper .ag-cell-value,
+.data-grid-wrapper .ag-spanned-cell-wrapper span:not(.uil):not([class*='icon']),
+.data-grid-wrapper .ag-cell .ag-cell-value,
+.data-grid-wrapper .ag-cell .ag-cell-wrapper,
+.data-grid-wrapper .ag-cell .ag-cell-value span:not(.uil):not([class*='icon']) {
+  font-weight: 500 !important;
+}
+
+/* 최종 보정: 헤더 제외 AG Grid 본문(.ag-body) 전체를 일반 굵기로 통일 */
+.data-grid-wrapper .ag-body .ag-cell,
+.data-grid-wrapper .ag-body .ag-cell-value,
+.data-grid-wrapper .ag-body .ag-cell-wrapper,
+.data-grid-wrapper .ag-body .ag-spanned-cell-wrapper,
+.data-grid-wrapper .ag-body .ag-spanned-cell-wrapper .ag-cell,
+.data-grid-wrapper .ag-body .ag-spanned-cell-wrapper .ag-cell-value,
+.data-grid-wrapper .ag-body span:not(.uil):not([class*='icon']),
+.data-grid-wrapper .ag-body a:not(.dropdown-item),
+.data-grid-wrapper .ag-body button:not(.dropdown-toggle),
+.data-grid-wrapper .ag-body input,
+.data-grid-wrapper .ag-body textarea,
+.data-grid-wrapper .ag-body select,
+.data-grid-wrapper .ag-body p {
+  font-weight: 500 !important;
+}
+
+/* 체크박스(선택) 열: 행 셀만 가운데 정렬 (헤더 체크박스는 테마 기본 정렬 유지) */
+.data-grid-container--has-selection-column .ag-cell:first-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.data-grid-toolbar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  pointer-events: auto;
+  width: 100%;
+}
+
+.data-grid-toolbar--rows {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+.data-grid-toolbar--rows .data-grid-toolbar__primary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.data-grid-toolbar--rows .data-grid-toolbar__secondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  overflow: visible; /* 오른쪽 끝 드롭다운이 부모에 잘리지 않도록 */
+}
+
+/* 툴바 내 검색/버튼은 theme 클래스 사용. 보조 버튼은 btn-default-visible 적용( layout.css) */
+
+/* 그리드 하단 푸터 (페이징 바). 높이·모양 통일: 주문 커스텀 = 상품·쇼핑몰 AG Grid 네이티브와 동일. */
+.data-grid-footer {
+  flex-shrink: 0;
+  min-height: 40px;
+  height: 40px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-top: 1px solid #e2e8f0;
+  font-size: 13px;
+  color: #334155;
+}
+
+.data-grid-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.data-grid-footer-left,
+.data-grid-footer-center,
+.data-grid-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.data-grid-footer-center {
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.data-grid-footer-right {
+  justify-content: flex-end;
+}
+
+.data-grid-footer-label {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 400;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.data-grid-footer-range {
+  white-space: nowrap;
+}
+
+.data-grid-footer-page-of {
+  margin: 0 4px;
+  white-space: nowrap;
+}
+
+.data-grid-footer-btn {
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 1;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--ag-border-color, #e2e8f0);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.data-grid-footer-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.data-grid-footer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

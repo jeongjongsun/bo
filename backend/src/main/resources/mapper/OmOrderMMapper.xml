@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmOrderMMapper">
+
+    <sql id="orderListWhere">
+        <where>
+            <if test="corporationCd != null and corporationCd != ''">
+                AND o.corporation_cd = #{corporationCd}
+            </if>
+            <if test="storeId != null">
+                AND s.store_id = #{storeId}
+            </if>
+            <if test="salesTypeCd != null and salesTypeCd != ''">
+                AND o.sales_type_cd = #{salesTypeCd}
+            </if>
+            <if test="orderProcessStatus != null and orderProcessStatus != ''">
+                AND o.order_process_status = #{orderProcessStatus}
+            </if>
+            <choose>
+                <when test="dateType == 'REGIST_DT'">
+                    <if test="orderDtFrom != null and orderDtFrom != ''">
+                        AND o.regist_dt &gt;= (#{orderDtFrom}::date)
+                    </if>
+                    <if test="orderDtTo != null and orderDtTo != ''">
+                        AND o.regist_dt &lt;= (#{orderDtTo}::date)
+                    </if>
+                </when>
+                <otherwise>
+                    <if test="orderDtFrom != null and orderDtFrom != ''">
+                        AND o.order_dt &gt;= (#{orderDtFrom}::date)
+                    </if>
+                    <if test="orderDtTo != null and orderDtTo != ''">
+                        AND o.order_dt &lt;= (#{orderDtTo}::date)
+                    </if>
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="showDeletedOnly == true">
+                    AND i.is_deleted = true
+                </when>
+                <otherwise>
+                    AND i.is_deleted = false
+                    AND o.order_process_status != 'DELETED'
+                </otherwise>
+            </choose>
+            <!-- 검색 컬럼 + 검색어: searchKeyword가 비지 않을 때만 적용 -->
+            <if test="searchKeyword != null and searchKeyword != '' and searchColumn != null and searchColumn != ''">
+                <choose>
+                    <when test="searchColumn == 'ORDER_NO_CONTAINS'">
+                        AND o.order_no LIKE '%' || #{searchKeyword} || '%'
+                    </when>
+                    <when test="searchColumn == 'ITEM_ORDER_NO_EXACT'">
+                        AND i.item_order_no = #{searchKeyword}
+                    </when>
+                    <when test="searchColumn == 'COMBINED_SHIP_NO_EXACT'">
+                        AND o.combined_ship_no = #{searchKeyword}
+                    </when>
+                    <when test="searchColumn == 'PRODUCT_CD_EXACT'">
+                        AND i.product_cd = #{searchKeyword}
+                    </when>
+                    <when test="searchColumn == 'PRODUCT_NM_CONTAINS'">
+                        AND i.product_nm LIKE '%' || #{searchKeyword} || '%'
+                    </when>
+                    <when test="searchColumn == 'ORDERER_NM_CONTAINS'">
+                        AND (o.order_info->>'ordererNm') LIKE '%' || #{searchKeyword} || '%'
+                    </when>
+                    <when test="searchColumn == 'RECEIVER_NM_CONTAINS'">
+                        AND (o.order_info->>'receiverNm') LIKE '%' || #{searchKeyword} || '%'
+                    </when>
+                    <when test="searchColumn == 'ORDER_ID_EXACT'">
+                        AND o.order_id = (#{searchKeyword}::bigint)
+                    </when>
+                </choose>
+            </if>
+        </where>
+    </sql>
+
+    <!-- 주문 목록: om_order_m JOIN om_order_item_m (그리드 1행 = 1라인) -->
+    <select id="selectOrderList" resultType="com.shopeasy.dto.OrderListItem">
+        SELECT o.order_id          AS orderId
+             , i.line_no           AS lineNo
+             , o.order_no          AS orderNo
+             , i.item_order_no     AS itemOrderNo
+             , o.combined_ship_no  AS combinedShipNo
+             , o.mall_cd           AS mallCd
+             , m.mall_nm           AS mallNm
+             , o.store_cd          AS storeCd
+             , s.store_nm          AS storeNm
+             , TO_CHAR(o.order_dt, 'YYYY-MM-DD')     AS orderDt
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD')    AS registDt
+             , o.order_process_status AS orderProcessStatus
+             , o.sales_type_cd     AS salesTypeCd
+             , o.order_type_cd     AS orderTypeCd
+             , i.product_cd        AS productCd
+             , i.product_nm        AS productNm
+             , i.line_qty          AS lineQty
+             , i.line_amount       AS lineAmount
+             , i.line_discount_amount AS lineDiscountAmount
+             , i.line_payload::text AS linePayload
+             , (o.order_info->>'receiverNm') AS receiverNm
+             , (o.order_info->>'receiverTel') AS receiverTel
+             , (o.order_info->>'receiverMobile') AS receiverMobile
+             , (o.order_info->>'receiverAddr') AS receiverAddr
+             , (o.order_info->>'receiverAddr2') AS receiverAddr2
+             , (o.order_info->>'receiverZip') AS receiverZip
+             , TO_CHAR(o.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , o.created_by        AS createdBy
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt
+          LEFT JOIN om_mall_m m ON m.mall_cd = o.mall_cd
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+        <include refid="orderListWhere"/>
+         ORDER BY o.combined_ship_no, o.order_no, o.order_id DESC, o.regist_dt DESC, i.line_no ASC
+         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 주문 목록(간편 보기): 최소 컬럼만 SELECT → 응답 용량·로딩 시간 절감 -->
+    <select id="selectOrderListMinimal" resultType="com.shopeasy.dto.OrderListItem">
+        SELECT o.order_id          AS orderId
+             , i.line_no           AS lineNo
+             , o.order_no          AS orderNo
+             , o.combined_ship_no  AS combinedShipNo
+             , o.store_cd          AS storeCd
+             , s.store_nm          AS storeNm
+             , TO_CHAR(o.order_dt, 'YYYY-MM-DD')     AS orderDt
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD')    AS registDt
+             , i.product_cd        AS productCd
+             , i.product_nm        AS productNm
+             , i.line_qty          AS lineQty
+             , i.line_amount       AS lineAmount
+             , (o.order_info->>'receiverNm') AS receiverNm
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+        <include refid="orderListWhere"/>
+         ORDER BY o.combined_ship_no, o.order_no, o.order_id DESC, o.regist_dt DESC, i.line_no ASC
+         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="selectOrderListCursorForExport"
+            resultType="com.shopeasy.dto.OrderListItem"
+            fetchSize="500"
+            resultSetType="FORWARD_ONLY">
+        SELECT o.order_id          AS orderId
+             , i.line_no           AS lineNo
+             , o.order_no          AS orderNo
+             , i.item_order_no     AS itemOrderNo
+             , o.combined_ship_no  AS combinedShipNo
+             , o.mall_cd           AS mallCd
+             , m.mall_nm           AS mallNm
+             , o.store_cd          AS storeCd
+             , s.store_nm          AS storeNm
+             , TO_CHAR(o.order_dt, 'YYYY-MM-DD')     AS orderDt
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD')    AS registDt
+             , o.order_process_status AS orderProcessStatus
+             , o.sales_type_cd     AS salesTypeCd
+             , o.order_type_cd     AS orderTypeCd
+             , i.product_cd        AS productCd
+             , i.product_nm        AS productNm
+             , i.line_qty          AS lineQty
+             , i.line_amount       AS lineAmount
+             , i.line_discount_amount AS lineDiscountAmount
+             , i.line_payload::text AS linePayload
+             , (o.order_info->>'receiverNm') AS receiverNm
+             , (o.order_info->>'receiverTel') AS receiverTel
+             , (o.order_info->>'receiverMobile') AS receiverMobile
+             , (o.order_info->>'receiverAddr') AS receiverAddr
+             , (o.order_info->>'receiverAddr2') AS receiverAddr2
+             , (o.order_info->>'receiverZip') AS receiverZip
+             , TO_CHAR(o.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , o.created_by        AS createdBy
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt
+          LEFT JOIN om_mall_m m ON m.mall_cd = o.mall_cd
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+        <include refid="orderListWhere"/>
+         ORDER BY o.combined_ship_no, o.order_no, o.order_id DESC, o.regist_dt DESC, i.line_no ASC
+    </select>
+
+    <select id="selectOrderListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+        <include refid="orderListWhere"/>
+    </select>
+
+    <!-- 상태별 카운트 (툴바 탭용). orderProcessStatus 조건 없이 조회 -->
+    <sql id="orderCountByStatusWhere">
+        <where>
+            <if test="corporationCd != null and corporationCd != ''">
+                AND o.corporation_cd = #{corporationCd}
+            </if>
+            <if test="storeId != null">
+                AND s.store_id = #{storeId}
+            </if>
+            <if test="salesTypeCd != null and salesTypeCd != ''">
+                AND o.sales_type_cd = #{salesTypeCd}
+            </if>
+            <choose>
+                <when test="dateType == 'REGIST_DT'">
+                    <if test="orderDtFrom != null and orderDtFrom != ''">
+                        AND o.regist_dt &gt;= (#{orderDtFrom}::date)
+                    </if>
+                    <if test="orderDtTo != null and orderDtTo != ''">
+                        AND o.regist_dt &lt;= (#{orderDtTo}::date)
+                    </if>
+                </when>
+                <otherwise>
+                    <if test="orderDtFrom != null and orderDtFrom != ''">
+                        AND o.order_dt &gt;= (#{orderDtFrom}::date)
+                    </if>
+                    <if test="orderDtTo != null and orderDtTo != ''">
+                        AND o.order_dt &lt;= (#{orderDtTo}::date)
+                    </if>
+                </otherwise>
+            </choose>
+            AND i.is_deleted = false
+        </where>
+    </sql>
+    <select id="selectOrderDeletedCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+        <where>
+            <if test="corporationCd != null and corporationCd != ''">
+                AND o.corporation_cd = #{corporationCd}
+            </if>
+            <if test="storeId != null">
+                AND s.store_id = #{storeId}
+            </if>
+            <if test="salesTypeCd != null and salesTypeCd != ''">
+                AND o.sales_type_cd = #{salesTypeCd}
+            </if>
+            <choose>
+                <when test="dateType == 'REGIST_DT'">
+                    <if test="orderDtFrom != null and orderDtFrom != ''">
+                        AND o.regist_dt &gt;= (#{orderDtFrom}::date)
+                    </if>
+                    <if test="orderDtTo != null and orderDtTo != ''">
+                        AND o.regist_dt &lt;= (#{orderDtTo}::date)
+                    </if>
+                </when>
+                <otherwise>
+                    <if test="orderDtFrom != null and orderDtFrom != ''">
+                        AND o.order_dt &gt;= (#{orderDtFrom}::date)
+                    </if>
+                    <if test="orderDtTo != null and orderDtTo != ''">
+                        AND o.order_dt &lt;= (#{orderDtTo}::date)
+                    </if>
+                </otherwise>
+            </choose>
+            AND i.is_deleted = true
+        </where>
+    </select>
+    <select id="selectOrderCountByStatus" resultType="com.shopeasy.dto.OrderCountByStatusRow">
+        SELECT o.order_process_status AS orderProcessStatus
+             , COUNT(*) AS count
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+        <include refid="orderCountByStatusWhere"/>
+         GROUP BY o.order_process_status
+    </select>
+
+    <!-- 주문 마스터 1건 (상세·수정용). 수령인/주문자/메모는 order_info JSONB에서 추출 -->
+    <select id="selectOrderMaster" resultType="com.shopeasy.dto.OrderMasterDetail">
+        SELECT order_id          AS orderId
+             , TO_CHAR(regist_dt, 'YYYY-MM-DD') AS registDt
+             , corporation_cd    AS corporationCd
+             , mall_cd           AS mallCd
+             , store_cd          AS storeCd
+             , TO_CHAR(order_dt, 'YYYY-MM-DD')  AS orderDt
+             , order_no          AS orderNo
+             , combined_ship_no  AS combinedShipNo
+             , sales_type_cd     AS salesTypeCd
+             , order_process_status AS orderProcessStatus
+             , order_type_cd     AS orderTypeCd
+             , (order_info->>'receiverNm')    AS receiverNm
+             , (order_info->>'receiverTel')   AS receiverTel
+             , (order_info->>'receiverMobile') AS receiverMobile
+             , (order_info->>'receiverAddr')  AS receiverAddr
+             , (order_info->>'receiverAddr2') AS receiverAddr2
+             , (order_info->>'receiverZip')   AS receiverZip
+             , (order_info->>'ordererNm')     AS ordererNm
+             , (order_info->>'ordererUserId') AS ordererUserId
+             , (order_info->>'ordererTel')   AS ordererTel
+             , (order_info->>'ordererMobile') AS ordererMobile
+             , (order_info->>'memo')         AS memo
+             , (NULLIF(TRIM(COALESCE(order_info->>'deliveryFee', '')), '')::numeric) AS deliveryFee
+             , (order_info->>'paymentMethodCd')    AS paymentMethodCd
+             , order_info::text  AS orderInfo
+             , TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , created_by        AS createdBy
+             , updated_by        AS updatedBy
+          FROM om_order_m
+         WHERE order_id = #{orderId}
+           AND regist_dt = (#{registDt}::date)
+           AND corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND store_cd = #{storeCd}
+           </if>
+    </select>
+
+    <!-- 발주(접수) 필터 조건에 맞는 주문 키 목록 (일괄 주문서 처리용) -->
+    <select id="selectOrderKeysForProcessByFilter" resultType="com.shopeasy.dto.OrderBulkRequest$OrderKey">
+        SELECT DISTINCT o.order_id AS orderId
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD') AS registDt
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt AND i.is_deleted = false
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+         WHERE o.corporation_cd = #{corporationCd}
+           AND o.order_process_status = 'ORDER_RECEIVED'
+           <if test="storeId != null">
+           AND s.store_id = #{storeId}
+           </if>
+           <if test="salesTypeCd != null and salesTypeCd != ''">
+           AND o.sales_type_cd = #{salesTypeCd}
+           </if>
+           <choose>
+               <when test="dateType == 'REGIST_DT'">
+                   <if test="orderDtFrom != null and orderDtFrom != ''">
+                   AND o.regist_dt &gt;= (#{orderDtFrom}::date)
+                   </if>
+                   <if test="orderDtTo != null and orderDtTo != ''">
+                   AND o.regist_dt &lt;= (#{orderDtTo}::date)
+                   </if>
+               </when>
+               <otherwise>
+                   <if test="orderDtFrom != null and orderDtFrom != ''">
+                   AND o.order_dt &gt;= (#{orderDtFrom}::date)
+                   </if>
+                   <if test="orderDtTo != null and orderDtTo != ''">
+                   AND o.order_dt &lt;= (#{orderDtTo}::date)
+                   </if>
+               </otherwise>
+           </choose>
+           <!-- 검색 컬럼 + 검색어 (목록과 동일 조건) -->
+           <if test="searchKeyword != null and searchKeyword != '' and searchColumn != null and searchColumn != ''">
+               <choose>
+                   <when test="searchColumn == 'ORDER_NO_CONTAINS'">
+                   AND o.order_no LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'ITEM_ORDER_NO_EXACT'">
+                   AND i.item_order_no = #{searchKeyword}
+                   </when>
+                   <when test="searchColumn == 'COMBINED_SHIP_NO_EXACT'">
+                   AND o.combined_ship_no = #{searchKeyword}
+                   </when>
+                   <when test="searchColumn == 'PRODUCT_CD_EXACT'">
+                   AND i.product_cd = #{searchKeyword}
+                   </when>
+                   <when test="searchColumn == 'PRODUCT_NM_CONTAINS'">
+                   AND i.product_nm LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'ORDERER_NM_CONTAINS'">
+                   AND (o.order_info->>'ordererNm') LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'RECEIVER_NM_CONTAINS'">
+                   AND (o.order_info->>'receiverNm') LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'ORDER_ID_EXACT'">
+                   AND o.order_id = (#{searchKeyword}::bigint)
+                   </when>
+               </choose>
+           </if>
+         ORDER BY o.order_id, TO_CHAR(o.regist_dt, 'YYYY-MM-DD')
+    </select>
+
+    <!-- 합포장 처리(PROCESSING) 필터 조건에 맞는 주문 키 목록 (이전단계 일괄 처리용) -->
+    <select id="selectOrderKeysForRollbackByFilter" resultType="com.shopeasy.dto.OrderBulkRequest$OrderKey">
+        SELECT DISTINCT o.order_id AS orderId
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD') AS registDt
+          FROM om_order_m o
+          JOIN om_order_item_m i ON i.order_id = o.order_id AND i.regist_dt = o.regist_dt AND i.is_deleted = false
+          LEFT JOIN om_mall_store_m s ON s.mall_cd = o.mall_cd AND s.corporation_cd = o.corporation_cd AND s.store_cd = o.store_cd
+         WHERE o.corporation_cd = #{corporationCd}
+           AND o.order_process_status = 'PROCESSING'
+           <if test="storeId != null">
+           AND s.store_id = #{storeId}
+           </if>
+           <if test="salesTypeCd != null and salesTypeCd != ''">
+           AND o.sales_type_cd = #{salesTypeCd}
+           </if>
+           <choose>
+               <when test="dateType == 'REGIST_DT'">
+                   <if test="orderDtFrom != null and orderDtFrom != ''">
+                   AND o.regist_dt &gt;= (#{orderDtFrom}::date)
+                   </if>
+                   <if test="orderDtTo != null and orderDtTo != ''">
+                   AND o.regist_dt &lt;= (#{orderDtTo}::date)
+                   </if>
+               </when>
+               <otherwise>
+                   <if test="orderDtFrom != null and orderDtFrom != ''">
+                   AND o.order_dt &gt;= (#{orderDtFrom}::date)
+                   </if>
+                   <if test="orderDtTo != null and orderDtTo != ''">
+                   AND o.order_dt &lt;= (#{orderDtTo}::date)
+                   </if>
+               </otherwise>
+           </choose>
+           <if test="searchKeyword != null and searchKeyword != '' and searchColumn != null and searchColumn != ''">
+               <choose>
+                   <when test="searchColumn == 'ORDER_NO_CONTAINS'">
+                   AND o.order_no LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'ITEM_ORDER_NO_EXACT'">
+                   AND i.item_order_no = #{searchKeyword}
+                   </when>
+                   <when test="searchColumn == 'COMBINED_SHIP_NO_EXACT'">
+                   AND o.combined_ship_no = #{searchKeyword}
+                   </when>
+                   <when test="searchColumn == 'PRODUCT_CD_EXACT'">
+                   AND i.product_cd = #{searchKeyword}
+                   </when>
+                   <when test="searchColumn == 'PRODUCT_NM_CONTAINS'">
+                   AND i.product_nm LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'ORDERER_NM_CONTAINS'">
+                   AND (o.order_info->>'ordererNm') LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'RECEIVER_NM_CONTAINS'">
+                   AND (o.order_info->>'receiverNm') LIKE '%' || #{searchKeyword} || '%'
+                   </when>
+                   <when test="searchColumn == 'ORDER_ID_EXACT'">
+                   AND o.order_id = (#{searchKeyword}::bigint)
+                   </when>
+               </choose>
+           </if>
+         ORDER BY o.order_id, TO_CHAR(o.regist_dt, 'YYYY-MM-DD')
+    </select>
+
+    <!-- 주문서 처리 일괄: (orderId, registDt) 목록에 해당하는 마스터 조회 (그룹핑용). order_info에서 수령인 정보 추출 -->
+    <select id="selectOrderMastersByKeys" resultType="com.shopeasy.dto.OrderMasterDetail">
+        SELECT o.order_id          AS orderId
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD') AS registDt
+             , o.store_cd          AS storeCd
+             , (o.order_info->>'receiverNm')   AS receiverNm
+             , (o.order_info->>'receiverTel')  AS receiverTel
+             , (o.order_info->>'receiverAddr')  AS receiverAddr
+             , (o.order_info->>'receiverAddr2') AS receiverAddr2
+             , (o.order_info->>'receiverZip')   AS receiverZip
+          FROM om_order_m o
+          INNER JOIN (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date)
+        </foreach>
+          ) AS t(order_id, regist_dt) ON o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+         WHERE o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+    </select>
+
+    <!-- (orderId, registDt) 목록에 해당하는 주문의 처리상태·처리자 조회 (동시 처리 제외 건 표시용) -->
+    <select id="selectOrderProcessStatusByKeys" resultType="com.shopeasy.dto.OrderProcessStatusRow">
+        SELECT o.order_id                AS orderId
+             , TO_CHAR(o.regist_dt, 'YYYY-MM-DD') AS registDt
+             , o.order_process_status    AS orderProcessStatus
+             , o.order_process_status_by AS orderProcessStatusBy
+             , TO_CHAR(o.order_process_status_dt, 'YYYY-MM-DD HH24:MI:SS') AS orderProcessStatusDt
+          FROM om_order_m o
+          INNER JOIN (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date)
+        </foreach>
+          ) AS t(order_id, regist_dt) ON o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+         WHERE o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+    </select>
+
+    <!-- 합포장 번호 채번: seq_combined_ship_no 시퀀스에서 count개 nextval -->
+    <select id="getNextCombinedShipNoValues" resultType="long">
+        SELECT nextval('seq_combined_ship_no') AS val
+          FROM generate_series(1, #{count})
+    </select>
+
+    <!-- 수기 주문 등록: order_id 채번 (seq_order_id) -->
+    <select id="getNextOrderId" resultType="long">
+        SELECT nextval('seq_order_id')
+    </select>
+
+    <!-- 일괄등록: order_id N개 채번. -->
+    <select id="getNextOrderIds" resultType="long">
+        SELECT nextval('seq_order_id') FROM generate_series(1, #{count}) AS s(i)
+    </select>
+
+    <!-- 수기 주문 등록: order_no 채번. 형식 M-YYYYMMDD-NNNN. (regist_dt, corporation_cd, mall_cd, store_cd) 당 일별 순번, advisory lock으로 동시성 보장. -->
+    <select id="getNextManualOrderNo" resultType="string">
+        WITH lock AS (
+            SELECT pg_advisory_xact_lock(hashtext(#{registDt} || '|' || #{corporationCd} || '|' || #{mallCd} || '|' || #{storeCd})::bigint)
+        )
+        SELECT 'M-' || to_char((#{registDt})::date, 'YYYYMMDD') || '-' || lpad(
+            (COALESCE((
+                SELECT MAX((split_part(o.order_no, '-', 3))::int)
+                FROM om_order_m o
+                WHERE o.regist_dt = (#{registDt})::date
+                  AND o.corporation_cd = #{corporationCd}
+                  AND o.mall_cd = #{mallCd}
+                  AND o.store_cd = #{storeCd}
+                  AND o.order_no LIKE 'M-' || to_char((#{registDt})::date, 'YYYYMMDD') || '-%'
+            ), 0) + 1)::text, 4, '0')
+    </select>
+
+    <!-- 수기 주문 등록: 마스터 1건 INSERT. order_info에 registrationType 포함. 대량 일괄등록 시 인덱스 갱신으로 30초 초과 가능. -->
+    <insert id="insertOrderMaster" timeout="300">
+        INSERT INTO om_order_m (
+            order_id, corporation_cd, mall_cd, store_cd, order_dt, regist_dt, order_no,
+            combined_ship_no, sales_type_cd, order_process_status, order_type_cd, order_info,
+            created_at, updated_at, created_by, updated_by
+        ) VALUES (
+            #{orderId}, #{corporationCd}, #{mallCd}, #{storeCd}, (#{orderDt}::date), (#{registDt}::date), #{orderNo},
+            NULL, #{salesTypeCd}, 'ORDER_RECEIVED', COALESCE(NULLIF(TRIM(#{orderTypeCd}), ''), 'NORMAL'),
+            COALESCE(#{orderInfo}::jsonb, '{}'::jsonb),
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, #{createdBy}, #{updatedBy}
+        )
+    </insert>
+
+    <!-- 일괄등록: 마스터 N건 일괄 INSERT. -->
+    <insert id="insertOrderMasterBulk" timeout="300">
+        INSERT INTO om_order_m (
+            order_id, corporation_cd, mall_cd, store_cd, order_dt, regist_dt, order_no,
+            combined_ship_no, sales_type_cd, order_process_status, order_type_cd, order_info,
+            created_at, updated_at, created_by, updated_by
+        ) VALUES
+        <foreach collection="list" item="m" separator=",">
+            (#{m.orderId}, #{m.corporationCd}, #{m.mallCd}, #{m.storeCd}, (#{m.orderDt}::date), (#{m.registDt}::date), #{m.orderNo},
+            NULL, #{m.salesTypeCd}, 'ORDER_RECEIVED', COALESCE(NULLIF(TRIM(#{m.orderTypeCd}), ''), 'NORMAL'),
+            COALESCE(#{m.orderInfo}::jsonb, '{}'::jsonb),
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, #{m.createdBy}, #{m.updatedBy})
+        </foreach>
+    </insert>
+
+    <!-- 수기 주문 등록: 라인 1건 INSERT. 대량 일괄등록 시 statement timeout 완화. -->
+    <insert id="insertOrderItem" timeout="300">
+        INSERT INTO om_order_item_m (
+            order_id, regist_dt, line_no, item_order_no, product_cd, product_nm,
+            line_qty, line_amount, line_discount_amount, line_payload,
+            is_deleted, created_at, updated_at, created_by, updated_by
+        ) VALUES (
+            #{orderId}, (#{registDt}::date), #{lineNo}, #{itemOrderNo}, #{productCd}, #{productNm},
+            #{lineQty}, #{lineAmount}, COALESCE(#{lineDiscountAmount}, 0),
+            COALESCE(#{linePayload}::jsonb, '{}'::jsonb),
+            false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, #{createdBy}, #{updatedBy}
+        )
+    </insert>
+
+    <!-- 일괄등록: 라인 N건 일괄 INSERT. -->
+    <insert id="insertOrderItemBulk" timeout="300">
+        INSERT INTO om_order_item_m (
+            order_id, regist_dt, line_no, item_order_no, product_cd, product_nm,
+            line_qty, line_amount, line_discount_amount, line_payload,
+            is_deleted, created_at, updated_at, created_by, updated_by
+        ) VALUES
+        <foreach collection="list" item="i" separator=",">
+            (#{i.orderId}, (#{i.registDt}::date), #{i.lineNo}, #{i.itemOrderNo}, #{i.productCd}, #{i.productNm},
+            #{i.lineQty}, #{i.lineAmount}, COALESCE(#{i.lineDiscountAmount}, 0),
+            COALESCE(#{i.linePayload}::jsonb, '{}'::jsonb),
+            false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, #{i.createdBy}, #{i.updatedBy})
+        </foreach>
+    </insert>
+
+    <!-- 주문 다건 처리상태 + 합포장번호 일괄 변경 (주문서 처리) -->
+    <update id="updateOrderProcessStatusAndCombinedShipNoBulk">
+        UPDATE om_order_m o
+           SET order_process_status = #{orderProcessStatus}
+             , order_process_status_dt = CURRENT_TIMESTAMP
+             , order_process_status_by = #{orderProcessStatusBy}
+             , combined_ship_no = v.combined_ship_no
+             , updated_at = CURRENT_TIMESTAMP
+         FROM (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date, #{k.combinedShipNo})
+        </foreach>
+         ) AS v(order_id, regist_dt, combined_ship_no)
+         WHERE o.order_id = v.order_id AND o.regist_dt = v.regist_dt
+           AND o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+           <if test="expectedCurrentStatus != null and expectedCurrentStatus != ''">
+           AND o.order_process_status = #{expectedCurrentStatus}
+           </if>
+    </update>
+
+    <!-- 주문 라인 목록 (상세·수정용) -->
+    <select id="selectOrderItems" resultType="com.shopeasy.dto.OrderItemDetail">
+        SELECT order_id          AS orderId
+             , TO_CHAR(regist_dt, 'YYYY-MM-DD') AS registDt
+             , line_no           AS lineNo
+             , item_order_no     AS itemOrderNo
+             , product_cd        AS productCd
+             , product_nm       AS productNm
+             , line_qty         AS lineQty
+             , line_amount      AS lineAmount
+             , line_discount_amount AS lineDiscountAmount
+             , line_payload::text AS linePayload
+             , TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , created_by        AS createdBy
+             , updated_by        AS updatedBy
+          FROM om_order_item_m
+         WHERE order_id = #{orderId}
+           AND regist_dt = (#{registDt}::date)
+           AND is_deleted = false
+           AND EXISTS (
+             SELECT 1 FROM om_order_m o
+              WHERE o.order_id = om_order_item_m.order_id AND o.regist_dt = om_order_item_m.regist_dt
+                AND o.corporation_cd = #{corporationCd}
+                <if test="storeCd != null and storeCd != ''">
+                AND o.store_cd = #{storeCd}
+                </if>
+           )
+         ORDER BY line_no ASC
+    </select>
+
+    <!-- 해당 월 파티션 없으면 생성 (ensure_om_order_m_partition_for). void 함수이므로 update로 실행. -->
+    <update id="ensurePartitionFor">
+        SELECT ensure_om_order_m_partition_for(#{registDt}::date)
+    </update>
+    <!-- 여러 날짜에 대해 파티션 일괄 확인 (1회 호출). ensure_om_order_m_partition_for_dates 적용 필요. -->
+    <update id="ensurePartitionsFor">
+        SELECT ensure_om_order_m_partition_for_dates(ARRAY[
+        <foreach collection="dates" item="d" separator=",">#{d}::date</foreach>
+        ]::date[])
+    </update>
+
+    <!-- 주문 마스터 수정 (editable 컬럼만). 수령인/주문자/메모는 order_info JSONB로 저장 -->
+    <update id="updateOrderMaster">
+        UPDATE om_order_m
+           SET order_no              = #{orderNo}
+             , combined_ship_no      = #{combinedShipNo}
+             , order_dt              = (#{orderDt}::date)
+             , sales_type_cd         = #{salesTypeCd}
+             , order_process_status  = #{orderProcessStatus}
+             , order_type_cd         = #{orderTypeCd}
+             , order_info            = COALESCE(NULLIF(TRIM(COALESCE(#{orderInfo}, '')), '')::jsonb, '{}'::jsonb) || jsonb_build_object(
+                 'receiverNm', (#{receiverNm})::text, 'receiverTel', (#{receiverTel})::text, 'receiverMobile', (#{receiverMobile})::text,
+                 'receiverAddr', (#{receiverAddr})::text, 'receiverAddr2', (#{receiverAddr2})::text, 'receiverZip', (#{receiverZip})::text,
+                 'ordererNm', (#{ordererNm})::text, 'ordererUserId', (#{ordererUserId})::text, 'ordererTel', (#{ordererTel})::text, 'ordererMobile', (#{ordererMobile})::text,
+                 'memo', (#{memo})::text,
+                 'deliveryFee', (#{deliveryFee})::numeric, 'paymentMethodCd', (#{paymentMethodCd})::text
+               )
+             , updated_at            = CURRENT_TIMESTAMP
+         WHERE order_id = #{orderId}
+           AND regist_dt = (#{registDt}::date)
+           AND corporation_cd = #{corporationCd}
+           AND store_cd = #{storeCd}
+    </update>
+
+    <!-- 주문 라인 1건 수정. corporation_cd, store_cd 로 소속 검증. 파라미터: item, corporationCd, storeCd -->
+    <update id="updateOrderItem">
+        UPDATE om_order_item_m
+           SET item_order_no       = #{item.itemOrderNo}
+             , product_cd          = #{item.productCd}
+             , product_nm          = #{item.productNm}
+             , line_qty            = #{item.lineQty}
+             , line_amount         = #{item.lineAmount}
+             , line_discount_amount = #{item.lineDiscountAmount}
+             , line_payload         = COALESCE(#{item.linePayload}::jsonb, '{}'::jsonb)
+             , updated_at          = CURRENT_TIMESTAMP
+         WHERE order_id = #{item.orderId}
+           AND regist_dt = (#{item.registDt}::date)
+           AND line_no   = #{item.lineNo}
+           AND EXISTS (
+             SELECT 1 FROM om_order_m o
+              WHERE o.order_id = om_order_item_m.order_id AND o.regist_dt = om_order_item_m.regist_dt
+                AND o.corporation_cd = #{corporationCd}
+                <if test="storeCd != null and storeCd != ''">
+                AND o.store_cd = #{storeCd}
+                </if>
+           )
+    </update>
+
+    <!-- 주문 1건 처리상태만 변경 (일괄 출고보류 등). corporation_cd, store_cd 로 소속 검증. -->
+    <update id="updateOrderProcessStatus">
+        UPDATE om_order_m
+           SET order_process_status = #{orderProcessStatus}
+             , order_process_status_dt = CURRENT_TIMESTAMP
+             , updated_at = CURRENT_TIMESTAMP
+         WHERE order_id = #{orderId}
+           AND regist_dt = (#{registDt}::date)
+           AND corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND store_cd = #{storeCd}
+           </if>
+    </update>
+
+    <!-- 주문 다건 처리상태 일괄 변경 (1회 UPDATE). corporation_cd, store_cd 로 소속 검증. -->
+    <update id="updateOrderProcessStatusBulk">
+        UPDATE om_order_m o
+           SET order_process_status = #{orderProcessStatus}
+             , order_process_status_dt = CURRENT_TIMESTAMP
+             , updated_at = CURRENT_TIMESTAMP
+         FROM (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date)
+        </foreach>
+         ) AS t(order_id, regist_dt)
+         WHERE o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+           AND o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+           <!-- expectedCurrentStatus: 호출부에서 명시 시 해당 상태인 행만 갱신(낙관적 잠금).
+               null/empty 시 기본값: PROCESSING 또는 SHIP_READY 인 행만 대상(일괄 다음단계 등).
+               OrderService 4개 호출부는 현재 모두 명시적 값 전달. 신규 호출 시 생략하면 이 기본값 적용. -->
+           <choose>
+             <when test="expectedCurrentStatus != null and expectedCurrentStatus != ''">
+               AND o.order_process_status = #{expectedCurrentStatus}
+             </when>
+             <otherwise>
+               AND o.order_process_status IN ('PROCESSING', 'SHIP_READY')
+             </otherwise>
+           </choose>
+    </update>
+
+    <!-- 주문 다건 이전단계 처리: ORDER_RECEIVED + 합포장번호 NULL -->
+    <update id="updateOrderToReceivedAndClearCombinedShipNoBulk">
+        UPDATE om_order_m o
+           SET order_process_status = 'ORDER_RECEIVED'
+             , order_process_status_dt = CURRENT_TIMESTAMP
+             , combined_ship_no = NULL
+             , updated_at = CURRENT_TIMESTAMP
+         FROM (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date)
+        </foreach>
+         ) AS t(order_id, regist_dt)
+         WHERE o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+           AND o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+           <if test="expectedCurrentStatus != null and expectedCurrentStatus != ''">
+           AND o.order_process_status = #{expectedCurrentStatus}
+           </if>
+    </update>
+
+    <!-- 선택된 주문 키에 해당하는 실제 라인 수 조회 (is_deleted=false). -->
+    <select id="countOrderItemLinesByOrderKeys" resultType="long">
+        SELECT COUNT(*)
+          FROM om_order_item_m i
+          JOIN om_order_m o ON o.order_id = i.order_id AND o.regist_dt = i.regist_dt
+          JOIN (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date)
+        </foreach>
+          ) AS t(order_id, regist_dt) ON o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+         WHERE o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+           AND i.is_deleted = false
+    </select>
+
+    <!-- 선택된 주문 키 중 특정 처리상태인 주문의 라인 수 (실제 처리된 건 표시용). -->
+    <select id="countOrderItemLinesByOrderKeysAndStatus" resultType="long">
+        SELECT COUNT(*)
+          FROM om_order_item_m i
+          JOIN om_order_m o ON o.order_id = i.order_id AND o.regist_dt = i.regist_dt
+          JOIN (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date)
+        </foreach>
+          ) AS t(order_id, regist_dt) ON o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+         WHERE o.corporation_cd = #{corporationCd}
+           <if test="storeCd != null and storeCd != ''">
+           AND o.store_cd = #{storeCd}
+           </if>
+           AND o.order_process_status = #{orderProcessStatus}
+           AND i.is_deleted = false
+    </select>
+
+    <!-- 주문 라인 1건 삭제 플래그 변경 (라인 단위). corporation_cd, store_cd 로 소속 검증. -->
+    <update id="updateOrderItemSetDeleted">
+        UPDATE om_order_item_m
+           SET is_deleted = #{isDeleted}
+             , updated_at = CURRENT_TIMESTAMP
+         WHERE order_id = #{orderId}
+           AND regist_dt = (#{registDt}::date)
+           AND line_no = #{lineNo}
+           AND EXISTS (
+             SELECT 1 FROM om_order_m o
+              WHERE o.order_id = om_order_item_m.order_id AND o.regist_dt = om_order_item_m.regist_dt
+                AND o.corporation_cd = #{corporationCd}
+                <if test="storeCd != null and storeCd != ''">
+                AND o.store_cd = #{storeCd}
+                </if>
+           )
+    </update>
+
+    <!-- 주문 라인 다건 삭제 플래그 일괄 변경 (1회 UPDATE). corporation_cd, store_cd 로 소속 검증.
+         PostgreSQL: FROM 절에서는 대상 테이블(i) 참조 불가 → t와 o만 JOIN 후 WHERE에서 i와 매칭. -->
+    <update id="updateOrderItemSetDeletedBulk">
+        UPDATE om_order_item_m i
+           SET is_deleted = #{isDeleted}
+             , updated_at = CURRENT_TIMESTAMP
+         FROM (
+           SELECT t.order_id, t.regist_dt, t.line_no
+             FROM (VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date, #{k.lineNo})
+        </foreach>
+             ) AS t(order_id, regist_dt, line_no)
+             JOIN om_order_m o ON o.order_id = t.order_id AND o.regist_dt = t.regist_dt
+               AND o.corporation_cd = #{corporationCd}
+               <if test="storeCd != null and storeCd != ''">
+               AND o.store_cd = #{storeCd}
+               </if>
+         ) AS allowed
+         WHERE i.order_id = allowed.order_id AND i.regist_dt = allowed.regist_dt AND i.line_no = allowed.line_no
+    </update>
+
+    <!-- 감사: 주문 상태 변경 이력 1건 (om_order_status_log). 일괄등록 경로에서 사용. -->
+    <insert id="insertOrderStatusLog" timeout="120">
+        INSERT INTO om_order_status_log (order_id, regist_dt, status_kind, status_value, status_by)
+        VALUES (#{orderId}, (#{registDt})::date, #{statusKind}, #{statusValue}, #{statusBy})
+    </insert>
+
+    <!-- 감사: 주문 상태 변경 이력 다건 (일괄 처리 시) -->
+    <insert id="insertOrderStatusLogBulk">
+        INSERT INTO om_order_status_log (order_id, regist_dt, status_kind, status_value, status_by)
+        VALUES
+        <foreach collection="items" item="k" separator=",">
+            (#{k.orderId}, (#{k.registDt})::date, #{statusKind}, #{statusValue}, #{statusBy})
+        </foreach>
+    </insert>
+
+    <!-- 주문 상태 변경 이력 조회 (status_dt 내림차순). 처리자 이름은 om_user_m JOIN. -->
+    <select id="selectOrderStatusLog" resultType="com.shopeasy.dto.OrderStatusLogItem">
+        SELECT l.id              AS id
+             , l.order_id        AS orderId
+             , TO_CHAR(l.regist_dt, 'YYYY-MM-DD') AS registDt
+             , l.status_kind     AS statusKind
+             , l.status_value    AS statusValue
+             , TO_CHAR(l.status_dt, 'YYYY-MM-DD HH24:MI:SS') AS statusDt
+             , l.status_by       AS statusBy
+             , u.user_nm         AS statusByNm
+             , TO_CHAR(l.created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+          FROM om_order_status_log l
+          LEFT JOIN om_user_m u ON u.user_id = l.status_by
+         WHERE l.order_id = #{orderId}
+           AND l.regist_dt = (#{registDt})::date
+         ORDER BY l.status_dt ASC
+    </select>
+
+    <!-- 주문 일괄등록: 이미 존재하는 (regist_dt, corporation_cd, sales_type_cd, mall_cd, store_cd, order_no)의 order_no 목록. B2C/B2B 구분. -->
+    <select id="selectExistingOrderNosForBulk" resultType="string">
+        SELECT DISTINCT o.order_no
+        FROM om_order_m o
+        WHERE o.regist_dt = (#{registDt})::date
+          AND o.corporation_cd = #{corporationCd}
+          AND o.sales_type_cd = #{salesTypeCd}
+          AND (o.mall_cd, o.store_cd, o.order_no) IN
+        <foreach collection="list" item="t" open="(" separator=", " close=")">
+            (#{t.mallCd}, #{t.storeCd}, #{t.orderNo})
+        </foreach>
+    </select>
+</mapper>

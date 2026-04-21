@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmStoreConnectionMapper">
+
+    <select id="selectByStoreId" resultType="com.shopeasy.dto.StoreConnectionItem">
+        SELECT connection_id   AS connectionId
+             , store_id        AS storeId
+             , connection_alias AS connectionAlias
+             , api_id          AS apiId
+             , api_password    AS apiPassword
+             , client_id       AS clientId
+             , site_code       AS siteCode
+             , redirect_uri    AS redirectUri
+             , client_secret   AS clientSecret
+             , scope           AS scope
+             , TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , created_by      AS createdBy
+             , updated_by      AS updatedBy
+          FROM om_store_connection_m
+         WHERE store_id = #{storeId}
+         ORDER BY connection_id
+    </select>
+
+    <insert id="insert">
+        INSERT INTO om_store_connection_m
+            (store_id, connection_alias, api_id, api_password, client_id, site_code, redirect_uri, client_secret, scope, created_by)
+        VALUES
+            (#{storeId}, #{connectionAlias}, #{apiId}, #{apiPassword}, #{clientId}, #{siteCode}, #{redirectUri}, #{clientSecret}, #{scope}, #{createdBy})
+    </insert>
+
+    <update id="update">
+        UPDATE om_store_connection_m
+           SET connection_alias = #{connectionAlias}
+             , api_id = #{apiId}
+             , api_password = #{apiPassword}
+             , client_id = #{clientId}
+             , site_code = #{siteCode}
+             , redirect_uri = #{redirectUri}
+             , client_secret = #{clientSecret}
+             , scope = #{scope}
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE connection_id = #{connectionId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM om_store_connection_m WHERE connection_id = #{connectionId}
+    </delete>
+</mapper>
