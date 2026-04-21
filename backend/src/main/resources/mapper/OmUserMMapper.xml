@@ -42,9 +42,11 @@
     <!-- 공통 검색 조건 -->
     <sql id="userListWhere">
         <where>
+            COALESCE(is_deleted, false) = false
             <if test="keyword != null and keyword != ''">
                 AND (user_id ILIKE '%' || #{keyword} || '%'
-                  OR user_nm ILIKE '%' || #{keyword} || '%')
+                  OR user_nm ILIKE '%' || #{keyword} || '%'
+                  OR COALESCE(user_info ->> 'email_id', '') ILIKE '%' || #{keyword} || '%')
             </if>
         </where>
     </sql>
@@ -66,9 +68,10 @@
              , user_info ->> 'access_ip'        AS access_ip
              , (user_info ->> 'password_fail_cnt')::int AS password_fail_cnt
              , user_info ->> 'last_login_dtm'   AS last_login_dtm
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS created_at
           FROM om_user_m
         <include refid="userListWhere"/>
-         ORDER BY user_id
+         ORDER BY created_at DESC
          LIMIT #{size} OFFSET #{offset}
     </select>
 
@@ -96,5 +99,117 @@
          WHERE user_id = #{userId}
            AND COALESCE(is_deleted, false) = false
     </update>
+
+    <update id="updateUserInfoJsonWithAudit">
+        UPDATE om_user_m
+           SET user_info = #{userInfo}::jsonb
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE user_id = #{userId}
+           AND COALESCE(is_deleted, false) = false
+    </update>
+
+    <update id="updateUserNm">
+        UPDATE om_user_m
+           SET user_nm = #{userNm}
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE user_id = #{userId}
+           AND COALESCE(is_deleted, false) = false
+    </update>
+
+    <insert id="insertUser">
+        INSERT INTO om_user_m (
+            user_id
+          , user_nm
+          , user_info
+          , created_by
+          , updated_by
+        ) VALUES (
+            #{userId}
+          , #{userNm}
+          , #{userInfo}::jsonb
+          , #{createdBy}
+          , #{createdBy}
+        )
+    </insert>
+
+    <sql id="manageListWhere">
+        <where>
+            COALESCE(u.is_deleted, false) = false
+            <if test="keyword != null and keyword != ''">
+                AND (u.user_id ILIKE '%' || #{keyword} || '%'
+                  OR u.user_nm ILIKE '%' || #{keyword} || '%'
+                  OR COALESCE(u.user_info ->> 'email_id', '') ILIKE '%' || #{keyword} || '%')
+            </if>
+            <if test="gradeCd != null and gradeCd != ''">
+                AND u.user_info ->> 'grade_cd' = #{gradeCd}
+            </if>
+            <if test="authGroup != null and authGroup != ''">
+                AND u.user_info ->> 'auth_group' = #{authGroup}
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectManageListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_user_m u
+        <include refid="manageListWhere"/>
+    </select>
+
+    <select id="selectManageList" resultType="com.shopeasy.dto.UserManageRow">
+        SELECT u.user_id AS userId
+             , u.user_nm AS userNm
+             , u.user_info ->> 'email_id' AS emailId
+             , u.user_info ->> 'grade_cd' AS gradeCd
+             , u.user_info ->> 'auth_group' AS authGroup
+             , ag.auth_group_nm AS authGroupNm
+             , u.user_info ->> 'user_status' AS userStatus
+             , u.user_info ->> 'last_login_dtm' AS lastLoginDtm
+             , to_char(u.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+          FROM om_user_m u
+          LEFT JOIN om_auth_group_m ag
+            ON ag.auth_group_cd = (u.user_info ->> 'auth_group')
+           AND COALESCE(ag.is_deleted, false) = false
+        <include refid="manageListWhere"/>
+         ORDER BY u.created_at DESC
+         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectManageExportList" resultType="com.shopeasy.dto.UserManageRow">
+        SELECT u.user_id AS userId
+             , u.user_nm AS userNm
+             , u.user_info ->> 'email_id' AS emailId
+             , u.user_info ->> 'grade_cd' AS gradeCd
+             , u.user_info ->> 'auth_group' AS authGroup
+             , ag.auth_group_nm AS authGroupNm
+             , u.user_info ->> 'user_status' AS userStatus
+             , u.user_info ->> 'last_login_dtm' AS lastLoginDtm
+             , to_char(u.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+          FROM om_user_m u
+          LEFT JOIN om_auth_group_m ag
+            ON ag.auth_group_cd = (u.user_info ->> 'auth_group')
+           AND COALESCE(ag.is_deleted, false) = false
+        <include refid="manageListWhere"/>
+         ORDER BY u.created_at DESC
+    </select>
+
+    <select id="selectUserDetailResponse" resultType="com.shopeasy.dto.UserDetailResponse">
+        SELECT u.user_id AS userId
+             , u.user_nm AS userNm
+             , u.user_info ->> 'email_id' AS emailId
+             , u.user_info ->> 'grade_cd' AS gradeCd
+             , u.user_info ->> 'auth_group' AS authGroup
+             , u.user_info ->> 'user_status' AS userStatus
+             , u.user_info ->> 'mobile_no' AS mobileNo
+             , u.user_info ->> 'corporation_cd' AS corporationCd
+             , to_char(u.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , to_char(u.updated_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , u.created_by AS createdBy
+             , u.updated_by AS updatedBy
+          FROM om_user_m u
+         WHERE u.user_id = #{userId}
+           AND COALESCE(u.is_deleted, false) = false
+    </select>
 
 </mapper>

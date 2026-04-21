@@ -82,7 +82,7 @@ export function CorporationEditModal({ corporationCd, onClose, onSuccess }: Corp
 
   return (
     <div className="product-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="corp-edit-title">
-      <div className="product-modal" style={{ maxWidth: '640px' }} onClick={(ev) => ev.stopPropagation()}>
+      <div className="product-modal" style={{ maxWidth: '640px', minHeight: 'auto' }} onClick={(ev) => ev.stopPropagation()}>
         <div className="product-modal__header">
           <h3 id="corp-edit-title">{t('shipper.modal.editTitle')}</h3>
           <button type="button" className="product-modal__close" onClick={onClose} aria-label={t('common.cancel')}>

@@ -74,5 +74,24 @@ public final class MessageKeys {
     /** corporations.create_retry_exhausted (PK 중복 재시도 상한 초과) */
     public static final String CORPORATIONS_CREATE_RETRY_EXHAUSTED = "corporations.create_retry_exhausted";
 
+    /** users.invalid_field */
+    public static final String USERS_INVALID_FIELD = "users.invalid_field";
+    /** users.user_id_required */
+    public static final String USERS_USER_ID_REQUIRED = "users.user_id_required";
+    /** users.user_nm_required */
+    public static final String USERS_USER_NM_REQUIRED = "users.user_nm_required";
+    /** users.email_required */
+    public static final String USERS_EMAIL_REQUIRED = "users.email_required";
+    /** users.grade_not_found */
+    public static final String USERS_GRADE_NOT_FOUND = "users.grade_not_found";
+    /** users.auth_group_not_found */
+    public static final String USERS_AUTH_GROUP_NOT_FOUND = "users.auth_group_not_found";
+    /** users.user_status_invalid */
+    public static final String USERS_USER_STATUS_INVALID = "users.user_status_invalid";
+    /** users.duplicate_user_id */
+    public static final String USERS_DUPLICATE_USER_ID = "users.duplicate_user_id";
+    /** users.excel_export_failed */
+    public static final String USERS_EXCEL_EXPORT_FAILED = "users.excel_export_failed";
+
     private MessageKeys() {}
 }

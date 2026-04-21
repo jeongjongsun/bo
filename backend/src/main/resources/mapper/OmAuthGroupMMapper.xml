@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmAuthGroupMMapper">
+
+    <select id="selectActiveOptions" resultType="com.shopeasy.dto.AuthGroupOptionDto">
+        SELECT auth_group_cd   AS authGroupCd
+             , auth_group_nm   AS authGroupNm
+          FROM om_auth_group_m
+         WHERE COALESCE(is_deleted, false) = false
+           AND COALESCE(is_active, true) = true
+         ORDER BY sort_seq ASC, auth_group_cd ASC
+    </select>
+
+    <select id="countByCd" resultType="int">
+        SELECT COUNT(*)
+          FROM om_auth_group_m
+         WHERE auth_group_cd = #{authGroupCd}
+           AND COALESCE(is_deleted, false) = false
+    </select>
+
+</mapper>

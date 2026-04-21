@@ -673,6 +673,64 @@
       "remark": "備考"
     }
   },
+  "users": {
+    "title": "ユーザー情報",
+    "searchPlaceholder": "ID・氏名・メールで検索",
+    "toolbar": {
+      "register": "ユーザー登録",
+      "excelDownload": "Excelダウンロード",
+      "showAll": "全件"
+    },
+    "filter": {
+      "grade": "等級フィルター",
+      "authGroup": "権限フィルター",
+      "allGrades": "等級すべて",
+      "allAuthGroups": "権限すべて"
+    },
+    "col": {
+      "rowNum": "番号",
+      "userId": "ID",
+      "userNm": "氏名",
+      "emailId": "メール",
+      "grade": "等級",
+      "authGroup": "権限グループ",
+      "userStatus": "状態",
+      "lastLoginDtm": "最終ログイン",
+      "createdAt": "登録日時"
+    },
+    "statusLabels": {
+      "ACTIVE": "有効",
+      "INACTIVE": "無効",
+      "LOCKED": "ロック"
+    },
+    "modal": {
+      "registerTitle": "ユーザー登録",
+      "editTitle": "ユーザー情報の修正",
+      "editSuccess": "ユーザー情報を保存しました。",
+      "registerSuccess": "ユーザーを登録しました。",
+      "password": "パスワード",
+      "newPasswordHint": "新パスワード（変更時のみ）",
+      "mobileNo": "携帯電話",
+      "corporationCd": "法人コード",
+      "gradeOptional": "等級（任意）",
+      "selectAuthGroup": "権限グループを選択",
+      "requiredUserId": "IDを入力してください。",
+      "requiredNm": "氏名を入力してください。",
+      "requiredPassword": "パスワードを入力してください。",
+      "requiredEmail": "メールを入力してください。",
+      "requiredAuthGroup": "権限グループを選択してください。",
+      "saveAndContinue": "保存して続ける"
+    },
+    "invalid_field": "この項目は編集できません。",
+    "user_id_required": "IDが必要です。",
+    "user_nm_required": "氏名を入力してください。",
+    "email_required": "メールを入力してください。",
+    "grade_not_found": "等級コードが無効です。",
+    "auth_group_not_found": "権限グループが無効です。",
+    "user_status_invalid": "状態が無効です。",
+    "duplicate_user_id": "このIDは既に使用されています。",
+    "excel_export_failed": "Excelの出力に失敗しました。"
+  },
   "corporations": {
     "corporation_cd_required": "法人コードを入力してください。",
     "corporation_nm_required": "法人名を入力してください。",

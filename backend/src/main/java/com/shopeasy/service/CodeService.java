@@ -2,14 +2,14 @@ package com.shopeasy.service;
 
 import com.shopeasy.config.CacheConfig;
 import com.shopeasy.dto.CodeItem;
-import com.shopeasy.mapper.CmCodeMMapper;
+import com.shopeasy.mapper.OmCodeMMapper;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * 공통코드(CM_CODE_M) 조회. main_cd별, use_yn='Y', disp_seq 정렬, 언어별 code_nm.
+ * 공통코드 조회 (OM_CODE_M).
  * <p>결과는 메모리 캐시(codeList)에 1시간 보관되어 DB 비용을 줄인다.</p>
  */
 @Service
@@ -17,10 +17,10 @@ public class CodeService {
 
     private static final String DEFAULT_LANG = "ko";
 
-    private final CmCodeMMapper codeMapper;
+    private final OmCodeMMapper omCodeMapper;
 
-    public CodeService(CmCodeMMapper codeMapper) {
-        this.codeMapper = codeMapper;
+    public CodeService(OmCodeMMapper omCodeMapper) {
+        this.omCodeMapper = omCodeMapper;
     }
 
     /**
@@ -33,6 +33,6 @@ public class CodeService {
     @Cacheable(cacheNames = CacheConfig.CACHE_CODE_LIST, key = "#mainCd + '_' + #lang")
     public List<CodeItem> getCodeList(String mainCd, String lang) {
         String l = (lang != null && !lang.isBlank()) ? lang.trim() : DEFAULT_LANG;
-        return codeMapper.selectByMainCd(mainCd, l);
+        return omCodeMapper.selectByMainCd(mainCd, l);
     }
 }

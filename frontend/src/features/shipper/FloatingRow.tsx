@@ -22,12 +22,7 @@ export function FloatingRow({
       {childWithId}
       <label htmlFor={id}>
         {label}
-{required && (
-  <>
-    <span className="text-primary ms-1" aria-hidden="true">*</span>
-    <span className="visually-hidden">{requiredLabel}</span>
-  </>
-)}
+        {required && (
           <>
             <span className="text-primary ms-1" aria-hidden="true">
               *

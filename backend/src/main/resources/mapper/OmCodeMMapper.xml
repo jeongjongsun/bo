@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmCodeMMapper">
+
+    <select id="selectByMainCd" resultType="com.shopeasy.dto.CodeItem">
+        SELECT sub_cd   AS subCd,
+               COALESCE(code_nm ->> #{lang}, code_nm ->> 'ko', sub_cd) AS codeNm
+          FROM om_code_m
+         WHERE main_cd = #{mainCd}
+           AND (code_info ->> 'use_yn') = 'Y'
+         ORDER BY (code_info ->> 'disp_seq')::int ASC NULLS LAST,
+                  sub_cd
+    </select>
+</mapper>

@@ -25,5 +25,7 @@ public class UserListItem {
     private String accessIp;
     private Integer passwordFailCnt;
     private String lastLoginDtm;
+    /** 등록일시 (표시용 문자열). */
+    private String createdAt;
 
 }

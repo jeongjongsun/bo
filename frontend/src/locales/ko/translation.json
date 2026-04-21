@@ -673,6 +673,64 @@
       "remark": "비고"
     }
   },
+  "users": {
+    "title": "사용자 정보",
+    "searchPlaceholder": "아이디·이름·이메일 검색",
+    "toolbar": {
+      "register": "사용자등록",
+      "excelDownload": "엑셀다운로드",
+      "showAll": "전체"
+    },
+    "filter": {
+      "grade": "등급 필터",
+      "authGroup": "권한 필터",
+      "allGrades": "등급 전체",
+      "allAuthGroups": "권한 전체"
+    },
+    "col": {
+      "rowNum": "번호",
+      "userId": "아이디",
+      "userNm": "이름",
+      "emailId": "이메일",
+      "grade": "등급",
+      "authGroup": "권한그룹",
+      "userStatus": "상태",
+      "lastLoginDtm": "최종 로그인 일시",
+      "createdAt": "등록일시"
+    },
+    "statusLabels": {
+      "ACTIVE": "활성",
+      "INACTIVE": "비활성",
+      "LOCKED": "잠금"
+    },
+    "modal": {
+      "registerTitle": "사용자 등록",
+      "editTitle": "사용자 정보 수정",
+      "editSuccess": "사용자 정보가 저장되었습니다.",
+      "registerSuccess": "사용자가 등록되었습니다.",
+      "password": "비밀번호",
+      "newPasswordHint": "새 비밀번호 (변경 시만 입력)",
+      "mobileNo": "휴대전화",
+      "corporationCd": "법인 코드",
+      "gradeOptional": "등급 선택(선택)",
+      "selectAuthGroup": "권한그룹 선택",
+      "requiredUserId": "아이디를 입력해 주세요.",
+      "requiredNm": "이름을 입력해 주세요.",
+      "requiredPassword": "비밀번호를 입력해 주세요.",
+      "requiredEmail": "이메일을 입력해 주세요.",
+      "requiredAuthGroup": "권한그룹을 선택해 주세요.",
+      "saveAndContinue": "저장 후 계속"
+    },
+    "invalid_field": "수정할 수 없는 항목입니다.",
+    "user_id_required": "아이디가 필요합니다.",
+    "user_nm_required": "이름을 입력해 주세요.",
+    "email_required": "이메일을 입력해 주세요.",
+    "grade_not_found": "유효하지 않은 등급 코드입니다.",
+    "auth_group_not_found": "유효하지 않은 권한그룹입니다.",
+    "user_status_invalid": "유효하지 않은 상태입니다.",
+    "duplicate_user_id": "이미 사용 중인 아이디입니다.",
+    "excel_export_failed": "엑셀보내기에 실패했습니다."
+  },
   "corporations": {
     "corporation_cd_required": "화주코드를 입력해 주세요.",
     "corporation_nm_required": "화주명을 입력해 주세요.",

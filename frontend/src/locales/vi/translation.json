@@ -673,6 +673,64 @@
       "remark": "Ghi chú"
     }
   },
+  "users": {
+    "title": "Thông tin người dùng",
+    "searchPlaceholder": "Tìm theo ID, tên, email…",
+    "toolbar": {
+      "register": "Đăng ký người dùng",
+      "excelDownload": "Tải Excel",
+      "showAll": "Tất cả"
+    },
+    "filter": {
+      "grade": "Lọc cấp",
+      "authGroup": "Lọc quyền",
+      "allGrades": "Mọi cấp",
+      "allAuthGroups": "Mọi nhóm quyền"
+    },
+    "col": {
+      "rowNum": "STT",
+      "userId": "ID",
+      "userNm": "Tên",
+      "emailId": "Email",
+      "grade": "Cấp",
+      "authGroup": "Nhóm quyền",
+      "userStatus": "Trạng thái",
+      "lastLoginDtm": "Đăng nhập cuối",
+      "createdAt": "Ngày tạo"
+    },
+    "statusLabels": {
+      "ACTIVE": "Hoạt động",
+      "INACTIVE": "Ngưng",
+      "LOCKED": "Khóa"
+    },
+    "modal": {
+      "registerTitle": "Đăng ký người dùng",
+      "editTitle": "Sửa thông tin người dùng",
+      "editSuccess": "Đã lưu thông tin người dùng.",
+      "registerSuccess": "Đã đăng ký người dùng.",
+      "password": "Mật khẩu",
+      "newPasswordHint": "Mật khẩu mới (chỉ khi đổi)",
+      "mobileNo": "Di động",
+      "corporationCd": "Mã pháp nhân",
+      "gradeOptional": "Cấp (tuỳ chọn)",
+      "selectAuthGroup": "Chọn nhóm quyền",
+      "requiredUserId": "Vui lòng nhập ID.",
+      "requiredNm": "Vui lòng nhập tên.",
+      "requiredPassword": "Vui lòng nhập mật khẩu.",
+      "requiredEmail": "Vui lòng nhập email.",
+      "requiredAuthGroup": "Vui lòng chọn nhóm quyền.",
+      "saveAndContinue": "Lưu và tiếp tục"
+    },
+    "invalid_field": "Trường này không thể chỉnh sửa.",
+    "user_id_required": "Cần có ID người dùng.",
+    "user_nm_required": "Vui lòng nhập tên.",
+    "email_required": "Vui lòng nhập email.",
+    "grade_not_found": "Mã cấp không hợp lệ.",
+    "auth_group_not_found": "Nhóm quyền không hợp lệ.",
+    "user_status_invalid": "Trạng thái không hợp lệ.",
+    "duplicate_user_id": "ID này đã được sử dụng.",
+    "excel_export_failed": "Xuất Excel thất bại."
+  },
   "corporations": {
     "corporation_cd_required": "Vui lòng nhập mã chủ hàng.",
     "corporation_nm_required": "Vui lòng nhập tên chủ hàng.",

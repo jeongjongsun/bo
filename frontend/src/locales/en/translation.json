@@ -673,6 +673,64 @@
       "remark": "Remark"
     }
   },
+  "users": {
+    "title": "Users",
+    "searchPlaceholder": "Search by ID, name, email…",
+    "toolbar": {
+      "register": "Register user",
+      "excelDownload": "Download Excel",
+      "showAll": "All"
+    },
+    "filter": {
+      "grade": "Grade filter",
+      "authGroup": "Role filter",
+      "allGrades": "All grades",
+      "allAuthGroups": "All roles"
+    },
+    "col": {
+      "rowNum": "No.",
+      "userId": "User ID",
+      "userNm": "Name",
+      "emailId": "Email",
+      "grade": "Grade",
+      "authGroup": "Role group",
+      "userStatus": "Status",
+      "lastLoginDtm": "Last login",
+      "createdAt": "Created at"
+    },
+    "statusLabels": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "LOCKED": "Locked"
+    },
+    "modal": {
+      "registerTitle": "Register user",
+      "editTitle": "Edit user",
+      "editSuccess": "User has been saved.",
+      "registerSuccess": "User has been registered.",
+      "password": "Password",
+      "newPasswordHint": "New password (only if changing)",
+      "mobileNo": "Mobile",
+      "corporationCd": "Corporation code",
+      "gradeOptional": "Grade (optional)",
+      "selectAuthGroup": "Select role group",
+      "requiredUserId": "Please enter user ID.",
+      "requiredNm": "Please enter name.",
+      "requiredPassword": "Please enter password.",
+      "requiredEmail": "Please enter email.",
+      "requiredAuthGroup": "Please select a role group.",
+      "saveAndContinue": "Save and continue"
+    },
+    "invalid_field": "This field cannot be edited.",
+    "user_id_required": "User ID is required.",
+    "user_nm_required": "Name is required.",
+    "email_required": "Email is required.",
+    "grade_not_found": "Invalid grade code.",
+    "auth_group_not_found": "Invalid role group.",
+    "user_status_invalid": "Invalid status.",
+    "duplicate_user_id": "This user ID is already in use.",
+    "excel_export_failed": "Excel export failed."
+  },
   "corporations": {
     "corporation_cd_required": "Shipper code is required.",
     "corporation_nm_required": "Shipper name is required.",
