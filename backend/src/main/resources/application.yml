@@ -25,7 +25,7 @@ mybatis:
     default-statement-timeout: 30
 
 server:
-  port: 8080
+  port: 18081
   compression:
     enabled: true
     min-response-size: 1024

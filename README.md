@@ -33,11 +33,12 @@ mvn spring-boot:run
 
 (Maven Wrapper가 있으면 `./mvnw spring-boot:run` 사용)
 
-- 기본 포트: **8080**
+- 기본 포트: **18081**
 - 프로파일: **dev** (H2 메모리 DB, 상세 로그)
+- 로그인 정책: `user_info.grade_cd` 가 **ADMIN** 또는 **MANAGER** 이고 `user_status=ACTIVE`, `is_deleted=false` 인 계정만 허용. 비밀번호 실패 상한은 DB **`om_config_m.max_password_fail_count`** (DDL: `docs/ddl/om_config_m.sql`, 미적용 시 기본 5회). Neon 등 PostgreSQL에 DDL·시드 반영 후 사용.
 - API 예시:
-  - `GET http://localhost:8080/api/v1/health`
-  - `GET http://localhost:8080/api/v1/auth/me`
+  - `GET http://localhost:18081/api/v1/health`
+  - `GET http://localhost:18081/api/v1/auth/me`
 
 ### 2. 프론트엔드
 
@@ -47,23 +48,23 @@ npm install
 npm run dev
 ```
 
-- 주소: **http://localhost:5713** (vite.config.ts `port: 5713`, `strictPort: true`)
-- `/api` 요청은 Vite 프록시로 **http://localhost:8080** 으로 전달됩니다 (동일 도메인처럼 사용).
+- 주소: **http://localhost:8081** (vite.config.ts `port: 8081`, `strictPort: true`)
+- `/api` 요청은 Vite 프록시로 **http://localhost:18081** 으로 전달됩니다 (동일 도메인처럼 사용).
 
-**5713 포트 사용 프로세스 종료 후 프론트 재시작 (한 번에)**
+**8081 포트 사용 프로세스 종료 후 프론트 재시작 (한 번에)**
 
 ```bash
-cd frontend && (lsof -ti:5713 | xargs kill -9 2>/dev/null; true) && npm run dev
+cd frontend && (lsof -ti:8081 | xargs kill -9 2>/dev/null; true) && npm run dev
 ```
 
-- `lsof -ti:5713`: 5713 포트를 쓰는 PID 목록
+- `lsof -ti:8081`: 8081 포트를 쓰는 PID 목록
 - `xargs kill -9`: 해당 프로세스 강제 종료
 - `2>/dev/null; true`: 해당 포트를 쓰는 프로세스가 없으면 에러를 무시하고 다음 명령 실행
-- 그 다음 `npm run dev`로 5713에서만 서버 기동 (`strictPort: true` 이므로 5713이 점유 중이면 다른 포트로 넘어가지 않고 실패함)
+- 그 다음 `npm run dev`로 8081에서만 서버 기동 (`strictPort: true` 이므로 8081이 점유 중이면 다른 포트로 넘어가지 않고 실패함)
 
 ### 3. 동시 실행
 
-터미널 2개에서 위 순서대로 백엔드 → 프론트 실행 후, 브라우저에서 http://localhost:5713 접속.
+터미널 2개에서 위 순서대로 백엔드 → 프론트 실행 후, 브라우저에서 http://localhost:8081 접속.
 
 ## PostgreSQL 사용 시
 

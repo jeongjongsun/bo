@@ -2,6 +2,12 @@
   "login": {
     "title": "Sign In",
     "subtitle": "Access your account",
+    "userId": "User ID",
+    "userId.placeholder": "User ID",
+    "validation": {
+      "userIdRequired": "Please enter your user ID.",
+      "passwordRequired": "Please enter your password."
+    },
     "email": "Email",
     "email.placeholder": "name@example.com",
     "password": "Password",
@@ -44,7 +50,12 @@
   },
   "error": {
     "session_expired": "Session expired. Please sign in again.",
-    "login_failed": "Invalid user ID or password.",
+    "login_failed": "No matching account information was found.",
+    "account_not_active": "This account cannot be used. Please contact an administrator.",
+    "login_grade_not_allowed": "Your role is not allowed to sign in.",
+    "access_ip_not_allowed": "Your IP address is not allowed to connect.",
+    "account_locked": "This account has been locked after too many failed password attempts. Please contact an administrator.",
+    "internal": "A temporary error occurred. Please try again later.",
     "bad_request": "Invalid request.",
     "not_found": "The requested resource was not found.",
     "constraint_violation": "Data constraint violation.",
@@ -54,7 +65,12 @@
     "ERR_BAD_REQUEST": "Invalid request.",
     "ERR_NOT_FOUND": "The requested resource was not found.",
     "ERR_CONFLICT": "A conflict occurred.",
-    "ERR_FORBIDDEN": "Access denied."
+    "ERR_FORBIDDEN": "Access denied.",
+    "ERR_ACCESS_IP_NOT_ALLOWED": "Your IP address is not allowed to connect.",
+    "ERR_ACCOUNT_NOT_ACTIVE": "This account cannot be used. Please contact an administrator.",
+    "ERR_LOGIN_GRADE_NOT_ALLOWED": "Your role is not allowed to sign in.",
+    "ERR_ACCOUNT_LOCKED": "This account has been locked after too many failed password attempts. Please contact an administrator.",
+    "ERR_INTERNAL": "A temporary error occurred. Please try again later."
   },
   "dashboard": {
     "title": "Dashboard",

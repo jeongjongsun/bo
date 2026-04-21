@@ -30,4 +30,10 @@ public interface OmUserMMapper {
                       @Param("userNm") String userNm,
                       @Param("userInfo") String userInfo,
                       @Param("updatedBy") String updatedBy);
+
+    /** 로그인 등 user_info JSONB만 갱신 (비밀번호 실패·잠금·성공 시 초기화). */
+    int updateUserInfoJson(@Param("userId") String userId, @Param("userInfo") String userInfo);
+
+    /** 로그인 경로: 행 잠금 후 user_info 갱신에 사용. */
+    OmUserM selectByUserIdForUpdate(@Param("userId") String userId);
 }

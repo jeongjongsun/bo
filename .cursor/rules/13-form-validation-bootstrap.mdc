@@ -1,0 +1,54 @@
+---
+description: Bootstrap 5 needs-validation / was-validated 폼 검증 패턴 (React)
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# 폼 검증 (Bootstrap 5)
+
+프로젝트의 **일반 폼**(로그인 포함)은 HTML 예제와 동일한 Bootstrap 방식을 따른다.
+
+## 마크업 규칙
+
+- **`<form>`**: `noValidate` (React: `noValidate`) — 브라우저 기본 풍선 검증을 끄고 Bootstrap 스타일만 사용.
+- **`<form>` 클래스**: 기본 `needs-validation`. **제출 시도 후** 검증 실패를 보이려면 `was-validated` 를 함께 붙인다 (`needs-validation was-validated`).
+- **필드**: `required` 등 HTML5 제약은 유지 가능. **이메일 형식을 쓰지 않을 때는 `type="email"` 을 쓰지 않는다** (`type="text"` 등).
+- **피드백**: 필드 옆에 `.invalid-feedback` / (선택) `.valid-feedback`. `input-group` 은 래퍼에 `.has-validation` 사용.
+
+## React에서의 동작
+
+1. `useState(false)` 로 **한 번이라도 제출을 시도했는지**(또는 `was-validated` 표시 여부)를 둔다.
+2. `onSubmit` 에서 `e.preventDefault()`, `const form = e.currentTarget`.
+3. `form.checkValidity()` 가 `false` 이면 `setWasValidated(true)` 후 **return** (API 호출 등 실제 제출은 하지 않음).
+4. `true` 이면 실제 로직(예: mutation) 실행. 필요 시 성공 후 `setWasValidated(false)` 로 초기화.
+
+```tsx
+const [wasValidated, setWasValidated] = useState(false);
+
+const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const form = e.currentTarget;
+  if (!form.checkValidity()) {
+    e.stopPropagation();
+    setWasValidated(true);
+    return;
+  }
+  setWasValidated(true);
+  // … API 호출 등
+};
+
+<form
+  noValidate
+  className={wasValidated ? 'needs-validation was-validated' : 'needs-validation'}
+  onSubmit={handleSubmit}
+>
+```
+
+## SweetAlert와의 관계
+
+- **필수/형식 등 클라이언트 검증 실패**: Bootstrap `.invalid-feedback` 로 처리 (제출 시 `was-validated`).
+- **서버 오류**(로그인 실패 등): 프로젝트 정책에 따라 SweetAlert 등 별도 처리. 클라이언트 통과 후에만 호출.
+
+## 참고
+
+- [Bootstrap 5 Forms — Validation](https://getbootstrap.com/docs/5.3/forms/validation/)

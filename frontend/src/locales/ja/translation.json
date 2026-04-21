@@ -2,6 +2,12 @@
   "login": {
     "title": "サインイン",
     "subtitle": "アカウントにアクセス",
+    "userId": "ユーザーID",
+    "userId.placeholder": "ユーザーID",
+    "validation": {
+      "userIdRequired": "ユーザーIDを入力してください。",
+      "passwordRequired": "パスワードを入力してください。"
+    },
     "email": "メール",
     "email.placeholder": "name@example.com",
     "password": "パスワード",
@@ -44,7 +50,12 @@
   },
   "error": {
     "session_expired": "セッションの有効期限が切れました。再度サインインしてください。",
-    "login_failed": "ユーザーIDまたはパスワードが正しくありません。",
+    "login_failed": "一致するユーザー情報が見つかりません。",
+    "account_not_active": "このアカウントは利用できません。管理者にお問い合わせください。",
+    "login_grade_not_allowed": "サインインが許可されていない等級です。",
+    "access_ip_not_allowed": "接続が許可されたIPではありません。",
+    "account_locked": "パスワード失敗回数の上限に達し、アカウントがロックされました。管理者にお問い合わせください。",
+    "internal": "一時的なエラーが発生しました。しばらくしてから再度お試しください。",
     "bad_request": "不正なリクエストです。",
     "not_found": "指定されたリソースが見つかりません。",
     "constraint_violation": "データの制約違反です。",
@@ -54,7 +65,12 @@
     "ERR_BAD_REQUEST": "不正なリクエストです。",
     "ERR_NOT_FOUND": "指定されたリソースが見つかりません。",
     "ERR_CONFLICT": "競合が発生しました。",
-    "ERR_FORBIDDEN": "アクセスが拒否されました。"
+    "ERR_FORBIDDEN": "アクセスが拒否されました。",
+    "ERR_ACCESS_IP_NOT_ALLOWED": "接続が許可されたIPではありません。",
+    "ERR_ACCOUNT_NOT_ACTIVE": "このアカウントは利用できません。管理者にお問い合わせください。",
+    "ERR_LOGIN_GRADE_NOT_ALLOWED": "サインインが許可されていない等級です。",
+    "ERR_ACCOUNT_LOCKED": "パスワード失敗回数の上限に達し、アカウントがロックされました。管理者にお問い合わせください。",
+    "ERR_INTERNAL": "一時的なエラーが発生しました。しばらくしてから再度お試しください。"
   },
   "dashboard": {
     "title": "ダッシュボード",

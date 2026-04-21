@@ -22,6 +22,14 @@ public final class ErrorCodes {
     public static final String ERR_VALIDATION = "ERR_VALIDATION";
     /** 500 서버 내부 오류 */
     public static final String ERR_INTERNAL = "ERR_INTERNAL";
+    /** 403 허용 IP 아님 (로그인) */
+    public static final String ERR_ACCESS_IP_NOT_ALLOWED = "ERR_ACCESS_IP_NOT_ALLOWED";
+    /** 403 계정 상태 비활성·잠금 등 (ACTIVE 아님, 로그인 직전 차단) */
+    public static final String ERR_ACCOUNT_NOT_ACTIVE = "ERR_ACCOUNT_NOT_ACTIVE";
+    /** 403 로그인 허용 등급 아님 (ADMIN/MANAGER 외) */
+    public static final String ERR_LOGIN_GRADE_NOT_ALLOWED = "ERR_LOGIN_GRADE_NOT_ALLOWED";
+    /** 401 비밀번호 실패 상한으로 계정 잠금 처리됨 */
+    public static final String ERR_ACCOUNT_LOCKED = "ERR_ACCOUNT_LOCKED";
 
     private ErrorCodes() {}
 }

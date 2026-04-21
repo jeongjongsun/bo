@@ -3,7 +3,9 @@ package com.shopeasy.entity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,5 +65,68 @@ public class OmUserM {
 
     public Object getPasswordFailCnt() {
         return getUserInfoMap().get("password_fail_cnt");
+    }
+
+    public String getGradeCd() {
+        Object g = getUserInfoMap().get("grade_cd");
+        return g != null ? g.toString() : null;
+    }
+
+    public String getAccessIpLimit() {
+        Object v = getUserInfoMap().get("access_ip_limit");
+        return v != null ? v.toString() : null;
+    }
+
+    /**
+     * user_info.access_ip — JSON 배열 또는 콤마 구분 문자열을 규칙 목록으로 변환.
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> getAccessIpRules() {
+        Object v = getUserInfoMap().get("access_ip");
+        if (v == null) {
+            return List.of();
+        }
+        if (v instanceof List<?> list) {
+            List<String> out = new ArrayList<>();
+            for (Object o : list) {
+                if (o == null) {
+                    continue;
+                }
+                String s = o.toString().trim();
+                if (!s.isEmpty()) {
+                    out.add(s);
+                }
+            }
+            return out;
+        }
+        String s = v.toString().trim();
+        if (s.isEmpty()) {
+            return List.of();
+        }
+        String[] parts = s.split(",");
+        List<String> out = new ArrayList<>();
+        for (String p : parts) {
+            String t = p.trim();
+            if (!t.isEmpty()) {
+                out.add(t);
+            }
+        }
+        return out;
+    }
+
+    /** 비밀번호 연속 실패 횟수 (없거나 파싱 불가 시 0). */
+    public int getPasswordFailCount() {
+        Object o = getPasswordFailCnt();
+        if (o instanceof Number n) {
+            return n.intValue();
+        }
+        if (o == null) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(o.toString().trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }

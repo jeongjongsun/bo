@@ -1,8 +1,8 @@
 package com.shopeasy.controller.v1;
 
 import com.shopeasy.api.ApiResponse;
-import com.shopeasy.api.ErrorCodes;
 import com.shopeasy.config.SessionAuthInterceptor;
+import com.shopeasy.dto.AuthLoginResult;
 import com.shopeasy.dto.LoginRequest;
 import com.shopeasy.entity.OmUserM;
 import com.shopeasy.service.AuthService;
@@ -50,12 +50,14 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest) {
 
-        OmUserM user = authService.authenticate(request.getUserId(), request.getPassword());
-        if (user == null) {
+        String clientIp = resolveClientIp(httpRequest);
+        AuthLoginResult result = authService.login(request.getUserId(), request.getPassword(), clientIp);
+        if (!result.isOk()) {
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.fail(ErrorCodes.ERR_UNAUTHORIZED, "error.login_failed"));
+                    .status(result.getHttpStatus())
+                    .body(ApiResponse.fail(result.getErrorCode(), result.getMessageKey()));
         }
+        OmUserM user = result.getUser();
 
         HttpSession session = httpRequest.getSession(true);
         session.setAttribute(SESSION_USER_ID, user.getUserId());
@@ -122,5 +124,14 @@ public class AuthController {
     private List<String> buildRoles(OmUserM user) {
         String authGroup = user.getAuthGroup();
         return authGroup != null ? List.of(authGroup) : List.of("USER");
+    }
+
+    /** X-Forwarded-For 우선(첫 hop), 없으면 remoteAddr. */
+    static String resolveClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

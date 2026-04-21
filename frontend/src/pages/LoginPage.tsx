@@ -6,6 +6,7 @@ import { FaRegUser } from 'react-icons/fa';
 import { FiKey, FiEye, FiEyeOff, FiGlobe } from 'react-icons/fi';
 import { login } from '@/api/auth';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { showError } from '@/utils/swal';
 
 const SAVED_USER_KEY = 'savedUserId';
 
@@ -22,6 +23,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(!!getSavedUserId());
+  const [wasValidated, setWasValidated] = useState(false);
 
   const loginMutation = useMutation({
     mutationFn: login,
@@ -34,16 +36,29 @@ export function LoginPage() {
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       navigate('/', { replace: true });
     },
+    onError: (err: unknown) => {
+      const message = getApiErrorMessage(err, t('login.error.fail'), t);
+      void showError(t('common.error'), message);
+    },
   });
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    if (!form.checkValidity()) {
+      e.stopPropagation();
+      setWasValidated(true);
+      return;
+    }
+    setWasValidated(true);
     loginMutation.mutate({ userId, password });
   };
 
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
   };
+
+  const isServerPending = loginMutation.isPending;
 
   return (
     <div className="login-wrapper">
@@ -73,33 +88,32 @@ export function LoginPage() {
         {/* 제목 */}
         <div className="login-header">
           <h3>{t('login.title')}</h3>
-          <p>{t('login.subtitle')}</p>
         </div>
 
-        {/* 에러 메시지 */}
-        {loginMutation.isError && (
-          <div className="login-error">
-            {getApiErrorMessage(loginMutation.error, t('login.error.fail'), t)}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          {/* 이메일 */}
+        <form
+          noValidate
+          className={wasValidated ? 'needs-validation was-validated' : 'needs-validation'}
+          onSubmit={handleSubmit}
+        >
+          {/* 아이디 */}
           <div className="login-field">
-            <label htmlFor="userId">{t('login.email')}</label>
+            <label htmlFor="userId">{t('login.userId')}</label>
             <div className="input-icon-wrapper">
               <span className="input-icon"><FaRegUser size={14} /></span>
               <input
                 id="userId"
-                type="email"
+                name="userId"
+                type="text"
                 value={userId}
                 onChange={(e) => setUserId(e.target.value)}
-                placeholder={t('login.email.placeholder')}
-                autoComplete="email"
+                placeholder={t('login.userId.placeholder')}
+                autoComplete="username"
                 autoFocus
                 required
+                disabled={isServerPending}
               />
             </div>
+            <div className="invalid-feedback">{t('login.validation.userIdRequired')}</div>
           </div>
 
           {/* 비밀번호 */}
@@ -109,12 +123,14 @@ export function LoginPage() {
               <span className="input-icon"><FiKey size={14} /></span>
               <input
                 id="password"
+                name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('login.password.placeholder')}
                 autoComplete="current-password"
                 required
+                disabled={isServerPending}
               />
               <button
                 type="button"
@@ -125,35 +141,31 @@ export function LoginPage() {
                 {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
               </button>
             </div>
+            <div className="invalid-feedback">{t('login.validation.passwordRequired')}</div>
           </div>
 
-          {/* 아이디 저장 + 비밀번호 찾기 */}
+          {/* 아이디 저장 */}
           <div className="login-options">
             <label className="remember-me">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isServerPending}
               />
               <span>{t('login.rememberMe')}</span>
             </label>
-            <a href="#" className="forgot-password">{t('login.forgotPassword')}</a>
           </div>
 
           {/* 로그인 버튼 */}
           <button
             type="submit"
             className="login-btn"
-            disabled={loginMutation.isPending}
+            disabled={isServerPending}
           >
-            {loginMutation.isPending ? t('login.button.loading') : t('login.button')}
+            {isServerPending ? t('login.button.loading') : t('login.button')}
           </button>
         </form>
-
-        {/* 계정 만들기 */}
-        <div className="login-footer">
-          <a href="#">{t('login.createAccount')}</a>
-        </div>
       </div>
     </div>
   );

@@ -48,16 +48,10 @@ body {
 }
 
 .login-header h3 {
-  margin: 0 0 0.25rem;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
   color: #222;
-}
-
-.login-header p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #8a8a8a;
 }
 
 .login-error {
@@ -114,6 +108,24 @@ body {
   box-shadow: 0 0 0 3px rgba(56, 116, 203, 0.12);
 }
 
+/* 로그인 폼: Bootstrap needs-validation / was-validated — 피드백은 입력란 아래(세로 스택) */
+.login-wrapper form.needs-validation .login-field .invalid-feedback {
+  display: none;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  color: #d32f2f;
+}
+
+.login-wrapper form.was-validated .login-field:has(input:invalid) .input-icon-wrapper input {
+  border-color: #d32f2f;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.12);
+}
+
+.login-wrapper form.was-validated .login-field:has(input:invalid) .invalid-feedback {
+  display: block;
+}
+
 .password-toggle {
   position: absolute;
   right: 0.5rem;
@@ -133,7 +145,7 @@ body {
 .login-options {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-bottom: 1.5rem;
   font-size: 0.8125rem;
 }
@@ -151,16 +163,6 @@ body {
   height: 14px;
   accent-color: #3874cb;
   cursor: pointer;
-}
-
-.forgot-password {
-  color: #3874cb;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.forgot-password:hover {
-  text-decoration: underline;
 }
 
 .login-btn {
@@ -184,22 +186,6 @@ body {
 .login-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 1rem;
-}
-
-.login-footer a {
-  color: #3874cb;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.login-footer a:hover {
-  text-decoration: underline;
 }
 
 /* ── Language Selector ── */

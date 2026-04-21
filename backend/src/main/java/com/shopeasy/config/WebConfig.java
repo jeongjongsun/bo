@@ -31,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                         "http://localhost:5173", "http://127.0.0.1:5173",
-                        "http://localhost:5713", "http://127.0.0.1:5713") // Vite 기본 / 프로젝트 포트(README)
+                        "http://localhost:8081", "http://127.0.0.1:8081") // Vite 기본 / 프로젝트 포트(README)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowCredentials(true)
                 .maxAge(3600);

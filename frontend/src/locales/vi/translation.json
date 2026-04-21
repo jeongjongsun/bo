@@ -2,6 +2,12 @@
   "login": {
     "title": "Đăng nhập",
     "subtitle": "Truy cập tài khoản",
+    "userId": "Tên đăng nhập",
+    "userId.placeholder": "Tên đăng nhập",
+    "validation": {
+      "userIdRequired": "Vui lòng nhập tên đăng nhập.",
+      "passwordRequired": "Vui lòng nhập mật khẩu."
+    },
     "email": "Email",
     "email.placeholder": "name@example.com",
     "password": "Mật khẩu",
@@ -44,7 +50,12 @@
   },
   "error": {
     "session_expired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
-    "login_failed": "ID người dùng hoặc mật khẩu không đúng.",
+    "login_failed": "Không tìm thấy thông tin người dùng trùng khớp.",
+    "account_not_active": "Tài khoản không thể sử dụng. Vui lòng liên hệ quản trị viên.",
+    "login_grade_not_allowed": "Cấp của bạn không được phép đăng nhập.",
+    "access_ip_not_allowed": "IP của bạn không nằm trong danh sách được phép.",
+    "account_locked": "Tài khoản đã bị khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng liên hệ quản trị viên.",
+    "internal": "Đã xảy ra lỗi tạm thời. Vui lòng thử lại sau.",
     "bad_request": "Yêu cầu không hợp lệ.",
     "not_found": "Không tìm thấy tài nguyên yêu cầu.",
     "constraint_violation": "Vi phạm ràng buộc dữ liệu.",
@@ -54,7 +65,12 @@
     "ERR_BAD_REQUEST": "Yêu cầu không hợp lệ.",
     "ERR_NOT_FOUND": "Không tìm thấy tài nguyên yêu cầu.",
     "ERR_CONFLICT": "Đã xảy ra xung đột.",
-    "ERR_FORBIDDEN": "Truy cập bị từ chối."
+    "ERR_FORBIDDEN": "Truy cập bị từ chối.",
+    "ERR_ACCESS_IP_NOT_ALLOWED": "IP của bạn không nằm trong danh sách được phép.",
+    "ERR_ACCOUNT_NOT_ACTIVE": "Tài khoản không thể sử dụng. Vui lòng liên hệ quản trị viên.",
+    "ERR_LOGIN_GRADE_NOT_ALLOWED": "Cấp của bạn không được phép đăng nhập.",
+    "ERR_ACCOUNT_LOCKED": "Tài khoản đã bị khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng liên hệ quản trị viên.",
+    "ERR_INTERNAL": "Đã xảy ra lỗi tạm thời. Vui lòng thử lại sau."
   },
   "dashboard": {
     "title": "Bảng điều khiển",
