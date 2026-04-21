@@ -35,5 +35,6 @@ alwaysApply: true
 - **다국어**: UI 문구는 메시지 키만 사용(`t('key')`). 키 규칙·번역 파일 구조는 `docs/09-다국어-표준.md` 준수.
 - **CSS**: `frontend/public/css/`(theme.css 등) 기존 스타일을 최대한 사용. 커스텀은 필요 시 `layout.css`에만 추가. **기본(보조) 버튼**은 콘텐츠 배경과 구분되도록 `btn-default-visible` 클래스 적용. `docs/10-CSS-표준.md`, `.cursor/rules/05-css.mdc` 참고.
 - **메뉴 문서**: 새 메뉴(화면)를 추가할 때마다 `docs/menu/메뉴명.md` 파일을 생성한다. 규칙: `.cursor/rules/07-menu-docs.mdc`, 참고 예시: `docs/menu/상품관리.md`.
+- **CodeRabbit·코드리뷰 코멘트**: PR/봇 리뷰(CodeRabbit 등)를 다룰 때는 타당성 검토 후 **한글로 사용자에게 보고**한다. 절차: `.cursor/rules/10-code-review-report.mdc`.
 
 새 기능·수정 시 해당 영역의 docs를 열어 전체 규칙을 확인한 뒤 작업하세요.

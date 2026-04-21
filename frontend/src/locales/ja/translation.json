@@ -641,6 +641,46 @@
       "list": "閉じる"
     }
   },
+  "shipper": {
+    "title": "荷主（法人）情報",
+    "searchPlaceholder": "コード・名称・連絡先で検索",
+    "toolbar": {
+      "register": "荷主登録",
+      "excelDownload": "Excelダウンロード",
+      "showAll": "全件"
+    },
+    "col": {
+      "rowNum": "番号",
+      "corporationCd": "法人コード",
+      "corporationNm": "法人名",
+      "businessNo": "事業者登録番号",
+      "telNo": "代表電話",
+      "email": "代表メール",
+      "createdAt": "登録日時"
+    },
+    "modal": {
+      "registerTitle": "荷主登録",
+      "editTitle": "荷主情報の修正",
+      "editSuccess": "荷主情報を保存しました。",
+      "autoCdHint": "保存時に法人コードは CORP-＋4桁連番で自動付与されます。",
+      "saveAndContinue": "保存して続ける",
+      "registerContinueSuccess": "{{cd}} を登録しました。続けて入力できます。",
+      "requiredNm": "法人名を入力してください。",
+      "ceoNm": "代表者名",
+      "address": "住所",
+      "faxNo": "FAX",
+      "homepageUrl": "ホームページURL",
+      "remark": "備考"
+    }
+  },
+  "corporations": {
+    "corporation_cd_required": "法人コードを入力してください。",
+    "corporation_nm_required": "法人名を入力してください。",
+    "invalid_field": "この項目は編集できません。",
+    "duplicate_cd": "この法人コードは既に登録されています。",
+    "serial_exhausted": "自動採番の上限（CORP-9999）に達しました。管理者に連絡してください。",
+    "create_retry_exhausted": "コードの重複が続き、登録を完了できませんでした。しばらくしてから再度お試しください。"
+  },
   "gridDemo": {
     "title": "グリッドデモ",
     "description": "サンプル行 {{count}}件。セルをダブルクリックで編集。",

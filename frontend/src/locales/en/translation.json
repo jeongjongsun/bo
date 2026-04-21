@@ -641,6 +641,46 @@
       "list": "Close"
     }
   },
+  "shipper": {
+    "title": "Shipper (Corporation)",
+    "searchPlaceholder": "Code, name, contact…",
+    "toolbar": {
+      "register": "Register shipper",
+      "excelDownload": "Download Excel",
+      "showAll": "All"
+    },
+    "col": {
+      "rowNum": "No.",
+      "corporationCd": "Shipper code",
+      "corporationNm": "Shipper name",
+      "businessNo": "Business registration no.",
+      "telNo": "Main phone",
+      "email": "Main email",
+      "createdAt": "Created at"
+    },
+    "modal": {
+      "registerTitle": "Register shipper",
+      "editTitle": "Edit shipper",
+      "editSuccess": "Shipper information has been saved.",
+      "autoCdHint": "Shipper code is assigned automatically as CORP- plus a 4-digit serial when you save.",
+      "saveAndContinue": "Save and continue",
+      "registerContinueSuccess": "Registered as {{cd}}. You can enter the next shipper.",
+      "requiredNm": "Please enter shipper name.",
+      "ceoNm": "CEO name",
+      "address": "Address",
+      "faxNo": "Fax",
+      "homepageUrl": "Homepage URL",
+      "remark": "Remark"
+    }
+  },
+  "corporations": {
+    "corporation_cd_required": "Shipper code is required.",
+    "corporation_nm_required": "Shipper name is required.",
+    "invalid_field": "This field cannot be edited.",
+    "duplicate_cd": "This shipper code is already registered.",
+    "serial_exhausted": "Auto-numbering limit (CORP-9999) exceeded. Contact an administrator.",
+    "create_retry_exhausted": "Could not complete registration due to repeated code conflicts. Please try again shortly."
+  },
   "gridDemo": {
     "title": "Grid Demo",
     "description": "{{count}} sample rows. Double-click a cell to edit.",

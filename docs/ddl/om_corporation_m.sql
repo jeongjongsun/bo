@@ -15,6 +15,7 @@
 --
 -- ※ 법인별 커스텀 키를 자유롭게 추가 가능
 
+-- corporation_cd 는 PRIMARY KEY 로 유일성 보장. 동시 등록 시 충돌은 애플리케이션에서 재채번·재INSERT 로 처리.
 -- 테이블 생성
 CREATE TABLE OM_CORPORATION_M (
     corporation_cd   VARCHAR(20)    PRIMARY KEY,

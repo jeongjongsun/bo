@@ -13,4 +13,134 @@
          ORDER BY corporation_cd
     </select>
 
+    <sql id="manageListWhere">
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (corporation_cd ILIKE '%' || #{keyword} || '%'
+                  OR corporation_nm ILIKE '%' || #{keyword} || '%'
+                  OR COALESCE(corporation_info ->> 'business_no', '') ILIKE '%' || #{keyword} || '%'
+                  OR COALESCE(corporation_info ->> 'tel_no', '') ILIKE '%' || #{keyword} || '%'
+                  OR COALESCE(corporation_info ->> 'email', '') ILIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectManageListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_corporation_m
+        <include refid="manageListWhere"/>
+    </select>
+
+    <select id="selectManageList" resultType="com.shopeasy.dto.CorporationManageRow">
+        SELECT corporation_cd
+             , corporation_nm
+             , corporation_info ->> 'business_no' AS business_no
+             , corporation_info ->> 'tel_no'       AS tel_no
+             , corporation_info ->> 'email'        AS email
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS created_at
+          FROM om_corporation_m
+        <include refid="manageListWhere"/>
+         ORDER BY created_at DESC
+         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectManageExportList" resultType="com.shopeasy.dto.CorporationManageRow">
+        SELECT corporation_cd
+             , corporation_nm
+             , corporation_info ->> 'business_no' AS business_no
+             , corporation_info ->> 'tel_no'       AS tel_no
+             , corporation_info ->> 'email'        AS email
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS created_at
+          FROM om_corporation_m
+        <include refid="manageListWhere"/>
+         ORDER BY created_at DESC
+    </select>
+
+    <select id="selectManageRow" resultType="com.shopeasy.dto.CorporationManageRow">
+        SELECT corporation_cd
+             , corporation_nm
+             , corporation_info ->> 'business_no' AS business_no
+             , corporation_info ->> 'tel_no'       AS tel_no
+             , corporation_info ->> 'email'        AS email
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS created_at
+          FROM om_corporation_m
+         WHERE corporation_cd = #{corporationCd}
+    </select>
+
+    <select id="selectCorporationDetail" resultType="com.shopeasy.dto.CorporationDetailResponse">
+        SELECT corporation_cd          AS corporationCd
+             , corporation_nm          AS corporationNm
+             , corporation_info ->> 'business_no'   AS businessNo
+             , corporation_info ->> 'tel_no'         AS telNo
+             , corporation_info ->> 'email'          AS email
+             , corporation_info ->> 'ceo_nm'         AS ceoNm
+             , corporation_info ->> 'address'        AS address
+             , corporation_info ->> 'fax_no'         AS faxNo
+             , corporation_info ->> 'homepage_url'   AS homepageUrl
+             , corporation_info ->> 'remark'        AS remark
+             , is_active               AS isActive
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , to_char(updated_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , created_by              AS createdBy
+             , updated_by              AS updatedBy
+          FROM om_corporation_m
+         WHERE corporation_cd = #{corporationCd}
+    </select>
+
+    <update id="updateCorporationNm">
+        UPDATE om_corporation_m
+           SET corporation_nm = #{corporationNm}
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE corporation_cd = #{corporationCd}
+    </update>
+
+    <update id="updateCorporationInfoJson">
+        UPDATE om_corporation_m
+           SET corporation_info = #{corporationInfoJson}::jsonb
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE corporation_cd = #{corporationCd}
+    </update>
+
+    <update id="updateCorporationRow">
+        UPDATE om_corporation_m
+           SET corporation_nm = #{corporationNm}
+             , corporation_info = #{corporationInfoJson}::jsonb
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE corporation_cd = #{corporationCd}
+    </update>
+
+    <select id="selectMaxCorpSerial" resultType="int">
+        SELECT COALESCE(MAX(CAST(SUBSTRING(corporation_cd FROM 6) AS INTEGER)), 0)
+          FROM om_corporation_m
+         WHERE corporation_cd ~ '^CORP-[0-9]{4}$'
+           AND LENGTH(corporation_cd) = 9
+    </select>
+
+    <select id="selectCorporationInfoJson" resultType="string">
+        SELECT corporation_info::text
+          FROM om_corporation_m
+         WHERE corporation_cd = #{corporationCd}
+    </select>
+
+    <insert id="insertCorporation">
+        INSERT INTO om_corporation_m (
+            corporation_cd
+          , corporation_nm
+          , corporation_info
+          , is_active
+          , created_by
+          , updated_by
+        ) VALUES (
+            #{corporationCd}
+          , #{corporationNm}
+          , #{corporationInfoJson}::jsonb
+          , true
+          , #{userId}
+          , #{userId}
+        )
+    </insert>
+
 </mapper>

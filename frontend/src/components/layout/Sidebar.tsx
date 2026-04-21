@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import {
   FiPieChart, FiShoppingCart, FiPackage, FiXCircle, FiRefreshCw,
   FiHome, FiGlobe, FiBriefcase, FiMap, FiGrid, FiList,
-  FiInfo, FiGift, FiLink, FiKey, FiLayers,
+  FiGift, FiLink, FiKey, FiLayers,
   FiChevronRight,
   FiShoppingBag, FiSettings,
+  FiDatabase, FiUsers, FiSliders, FiHash, FiMenu, FiShield,
+  FiFileText, FiClipboard, FiAlertCircle,
 } from 'react-icons/fi';
 import { useTabStore, DASHBOARD_TAB_ID } from '@/store/useTabStore';
 
@@ -27,6 +29,38 @@ interface MenuGroup {
 }
 
 const menuData: MenuGroup[] = [
+  {
+    id: 'basic',
+    section: '기초정보',
+    label: '기초정보',
+    icon: <FiDatabase size={16} />,
+    children: [
+      { id: 'basic-shipper', label: '화주(법인) 정보', path: '/basic/shipper', icon: <FiBriefcase size={14} /> },
+      { id: 'basic-users', label: '사용자 정보', path: '/basic/users', icon: <FiUsers size={14} /> },
+    ],
+  },
+  {
+    id: 'system',
+    section: '운영환경 설정',
+    label: '운영환경 설정',
+    icon: <FiSliders size={16} />,
+    children: [
+      { id: 'system-common-code', label: '공통코드', path: '/system/common-code', icon: <FiHash size={14} /> },
+      { id: 'system-menus', label: '메뉴관리', path: '/system/menus', icon: <FiMenu size={14} /> },
+      { id: 'system-authorities', label: '권한관리', path: '/system/authorities', icon: <FiShield size={14} /> },
+      { id: 'settings', label: '환경설정', path: '/settings', icon: <FiSettings size={14} /> },
+    ],
+  },
+  {
+    id: 'logs',
+    section: '로그정보',
+    label: '로그정보',
+    icon: <FiFileText size={16} />,
+    children: [
+      { id: 'log-audit', label: '감사이력', path: '/log/audit', icon: <FiClipboard size={14} /> },
+      { id: 'log-error', label: '에러이력', path: '/log/error', icon: <FiAlertCircle size={14} /> },
+    ],
+  },
   {
     id: 'order', section: 'Apps', label: '주문 관리', icon: <FiShoppingCart size={16} />,
     children: [
@@ -58,11 +92,6 @@ const menuData: MenuGroup[] = [
       { id: 'product-matching', label: '매칭 정보', path: '/product/matching', icon: <FiLink size={14} /> },
     ],
   },
-  {
-    id: 'settings', section: 'Pages', label: '환경설정', icon: <FiSettings size={16} />,
-    path: '/settings',
-    children: [],
-  },
 ];
 
 interface SidebarProps {
@@ -93,8 +122,8 @@ export function Sidebar({ collapsed }: SidebarProps) {
           onClick={() => openTab({ id: DASHBOARD_TAB_ID, title: dashboardTitle, path: '/' })}
           aria-label={dashboardTitle}
         >
-          <img src="/img/icons/logo.png" alt="ShopEasy" width={27} />
-          {!collapsed && <h5>ShopEasy OMS</h5>}
+          <img src="/img/icons/logo.png" alt="OMS BackOffice" width={27} />
+          {!collapsed && <h5>OMS BackOffice</h5>}
         </button>
       </div>
 

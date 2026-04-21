@@ -641,6 +641,46 @@
       "list": "닫기"
     }
   },
+  "shipper": {
+    "title": "화주(법인) 정보",
+    "searchPlaceholder": "코드·명·연락처 검색",
+    "toolbar": {
+      "register": "화주등록",
+      "excelDownload": "엑셀다운로드",
+      "showAll": "전체"
+    },
+    "col": {
+      "rowNum": "번호",
+      "corporationCd": "화주코드",
+      "corporationNm": "화주명",
+      "businessNo": "사업자등록번호",
+      "telNo": "대표전화",
+      "email": "대표이메일",
+      "createdAt": "등록일시"
+    },
+    "modal": {
+      "registerTitle": "화주 등록",
+      "editTitle": "화주 정보 수정",
+      "editSuccess": "화주 정보가 저장되었습니다.",
+      "autoCdHint": "화주코드는 저장 시 CORP-일련번호(4자리) 형식으로 자동 부여됩니다.",
+      "saveAndContinue": "저장 후 계속",
+      "registerContinueSuccess": "{{cd}} 로 등록되었습니다. 이어서 입력할 수 있습니다.",
+      "requiredNm": "화주명을 입력해 주세요.",
+      "ceoNm": "대표자명",
+      "address": "주소",
+      "faxNo": "팩스번호",
+      "homepageUrl": "홈페이지 URL",
+      "remark": "비고"
+    }
+  },
+  "corporations": {
+    "corporation_cd_required": "화주코드를 입력해 주세요.",
+    "corporation_nm_required": "화주명을 입력해 주세요.",
+    "invalid_field": "수정할 수 없는 항목입니다.",
+    "duplicate_cd": "이미 등록된 화주코드입니다.",
+    "serial_exhausted": "자동 채번 한도(CORP-9999)를 초과했습니다. 관리자에게 문의하세요.",
+    "create_retry_exhausted": "화주 코드 자동 부여가 반복 충돌하여 등록을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요."
+  },
   "gridDemo": {
     "title": "그리드 데모",
     "description": "{{count}}건의 샘플 데이터입니다. 셀을 더블클릭하면 편집할 수 있습니다.",

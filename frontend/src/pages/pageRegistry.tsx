@@ -7,6 +7,7 @@ import { ProductEditPage } from '@/features/products/ProductEditPage';
 import { UserSettingsPage } from '@/features/settings/UserSettingsPage';
 import { MallList } from '@/features/malls/MallList';
 import { OrderList } from '@/features/orders/OrderList';
+import { ShipperList } from '@/features/shipper/ShipperList';
 
 /**
  * 메뉴 path → 페이지 컴포넌트 매핑.
@@ -31,6 +32,15 @@ function placeholder(name: string) {
     );
   };
 }
+
+// BO — 기초정보 / 운영환경 설정 / 로그정보 (플레이스홀더)
+registry['/basic/shipper'] = ShipperList;
+registry['/basic/users'] = placeholder('사용자 정보');
+registry['/system/common-code'] = placeholder('공통코드');
+registry['/system/menus'] = placeholder('메뉴관리');
+registry['/system/authorities'] = placeholder('권한관리');
+registry['/log/audit'] = placeholder('감사이력');
+registry['/log/error'] = placeholder('에러이력');
 
 // 주문 관리 (국내 B2C / 해외 B2C / 국내 B2B / 해외 B2B / 기타주문 = 동일 OrderList, sales_type_cd 로 그리드만 구분)
 registry['/order'] = OrderList;

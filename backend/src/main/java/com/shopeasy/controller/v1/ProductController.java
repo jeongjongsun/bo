@@ -125,7 +125,8 @@ public class ProductController {
                     request.getProductId(), request.getField(), request.getValue(), userId);
             return ResponseEntity.ok(ApiResponse.ok(null));
         } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.ok(ApiResponse.fail(ErrorCodes.ERR_CONFLICT, resolveConstraintViolationMessage(e)));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.fail(ErrorCodes.ERR_CONFLICT, resolveConstraintViolationMessage(e)));
         } catch (IllegalArgumentException e) {
             String msgKey = e.getMessage() != null && !e.getMessage().isBlank() ? e.getMessage() : "error.bad_request";
             return ResponseEntity
@@ -151,7 +152,8 @@ public class ProductController {
             ProductDetail result = productService.createProduct(request, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(result));
         } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.ok(ApiResponse.fail(ErrorCodes.ERR_CONFLICT, resolveConstraintViolationMessage(e)));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.fail(ErrorCodes.ERR_CONFLICT, resolveConstraintViolationMessage(e)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity
                     .badRequest()
@@ -198,7 +200,8 @@ public class ProductController {
             productService.updateProduct(productId, request, userId);
             return ResponseEntity.ok(ApiResponse.ok(null));
         } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.ok(ApiResponse.fail(ErrorCodes.ERR_CONFLICT, resolveConstraintViolationMessage(e)));
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResponse.fail(ErrorCodes.ERR_CONFLICT, resolveConstraintViolationMessage(e)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)

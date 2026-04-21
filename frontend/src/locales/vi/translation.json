@@ -641,6 +641,46 @@
       "list": "Đóng"
     }
   },
+  "shipper": {
+    "title": "Thông tin chủ hàng (pháp nhân)",
+    "searchPlaceholder": "Mã, tên, liên hệ…",
+    "toolbar": {
+      "register": "Đăng ký chủ hàng",
+      "excelDownload": "Tải Excel",
+      "showAll": "Tất cả"
+    },
+    "col": {
+      "rowNum": "STT",
+      "corporationCd": "Mã chủ hàng",
+      "corporationNm": "Tên chủ hàng",
+      "businessNo": "Mã số thuế",
+      "telNo": "Điện thoại",
+      "email": "Email",
+      "createdAt": "Ngày tạo"
+    },
+    "modal": {
+      "registerTitle": "Đăng ký chủ hàng",
+      "editTitle": "Sửa thông tin chủ hàng",
+      "editSuccess": "Đã lưu thông tin chủ hàng.",
+      "autoCdHint": "Mã chủ hàng được gán tự động dạng CORP- và 4 chữ số khi lưu.",
+      "saveAndContinue": "Lưu và tiếp tục",
+      "registerContinueSuccess": "Đã đăng ký {{cd}}. Bạn có thể nhập chủ hàng tiếp theo.",
+      "requiredNm": "Vui lòng nhập tên chủ hàng.",
+      "ceoNm": "Tên CEO",
+      "address": "Địa chỉ",
+      "faxNo": "Fax",
+      "homepageUrl": "URL trang chủ",
+      "remark": "Ghi chú"
+    }
+  },
+  "corporations": {
+    "corporation_cd_required": "Vui lòng nhập mã chủ hàng.",
+    "corporation_nm_required": "Vui lòng nhập tên chủ hàng.",
+    "invalid_field": "Trường này không thể chỉnh sửa.",
+    "duplicate_cd": "Mã chủ hàng đã tồn tại.",
+    "serial_exhausted": "Đã vượt giới hạn đánh số tự động (CORP-9999). Liên hệ quản trị.",
+    "create_retry_exhausted": "Mã tự động bị trùng lặp liên tục nên không thể hoàn tất đăng ký. Vui lòng thử lại sau."
+  },
   "gridDemo": {
     "title": "Demo lưới",
     "description": "{{count}} dòng mẫu. Double-click ô để sửa.",

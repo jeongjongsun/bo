@@ -6,6 +6,11 @@ import { FiRefreshCw } from 'react-icons/fi';
 export interface PageLayoutProps {
   /** 페이지 제목. 공통 스타일: h2.mb-4.mt-2.lh-sm */
   title: ReactNode;
+  /**
+   * false면 제목 줄 오른쪽의 공통 새로고침 버튼을 숨김 (기본 true).
+   * 새로고침은 전역 쿼리 invalidate이며, 화면 전용 초기화(예: 검색 전체)와는 별개.
+   */
+  showHeaderRefresh?: boolean;
   /** 제목 오른쪽 액션(버튼 등). 있으면 제목과 한 줄에 표시 */
   actions?: ReactNode;
   /** 제목 아래 부가 설명. 공통 스타일: text-body-tertiary lead mb-4 */
@@ -18,11 +23,19 @@ export interface PageLayoutProps {
 
 /**
  * 모든 페이지에서 타이틀·리드·본문 영역을 theme(theme.min.css) 기준으로 통일하기 위한 레이아웃.
- * - 제목과 같은 줄 맨 오른쪽에 공통 새로고침 버튼 (전체 쿼리 invalidate 후 refetch)
- * - 제목: h2.mb-4.mt-2.lh-sm (actions 있으면 제목과 한 줄, 새로고침은 항상 맨 오른쪽)
+ * - 제목과 같은 줄 오른쪽: actions(선택) + 새로고침 버튼(기본 표시, `showHeaderRefresh={false}`로 숨김).
+ *   새로고침은 `invalidateQueries()`로 앱 전역 활성 쿼리를 무효화·재조회함.
+ * - 제목: h2.mb-4.mt-2.lh-sm
  * - 부가설명: p.text-body-tertiary.lead.mb-4
  */
-export function PageLayout({ title, actions, lead, children, className = '' }: PageLayoutProps) {
+export function PageLayout({
+  title,
+  showHeaderRefresh = true,
+  actions,
+  lead,
+  children,
+  className = '',
+}: PageLayoutProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -36,16 +49,18 @@ export function PageLayout({ title, actions, lead, children, className = '' }: P
         <h2 className="mb-0 lh-sm">{title}</h2>
         <div className="page-layout__header-right d-flex align-items-center gap-1">
           {actions != null && <div className="page-layout__actions">{actions}</div>}
-          <button
-            type="button"
-            className="btn btn-phoenix-primary btn-sm page-layout__refresh-btn"
-            onClick={handleRefresh}
-            title={t('common.refresh')}
-            aria-label={t('common.refresh')}
-          >
-            <FiRefreshCw size={14} />
-            <span>{t('common.refresh')}</span>
-          </button>
+          {showHeaderRefresh && (
+            <button
+              type="button"
+              className="btn btn-phoenix-primary btn-sm page-layout__refresh-btn"
+              onClick={handleRefresh}
+              title={t('common.refresh')}
+              aria-label={t('common.refresh')}
+            >
+              <FiRefreshCw size={14} />
+              <span>{t('common.refresh')}</span>
+            </button>
+          )}
         </div>
       </div>
       {lead != null && <p className="text-body-tertiary lead mb-4">{lead}</p>}

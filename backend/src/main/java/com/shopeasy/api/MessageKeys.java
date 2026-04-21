@@ -63,5 +63,16 @@ public final class MessageKeys {
     /** error.login_failed */
     public static final String ERROR_LOGIN_FAILED = "error.login_failed";
 
+    /** corporations.corporation_cd_required */
+    public static final String CORPORATIONS_CD_REQUIRED = "corporations.corporation_cd_required";
+    /** corporations.corporation_nm_required */
+    public static final String CORPORATIONS_NM_REQUIRED = "corporations.corporation_nm_required";
+    /** corporations.invalid_field (그리드/수정 불가 필드) */
+    public static final String CORPORATIONS_INVALID_FIELD = "corporations.invalid_field";
+    /** corporations.serial_exhausted (CORP-9999 초과 등) */
+    public static final String CORPORATIONS_SERIAL_EXHAUSTED = "corporations.serial_exhausted";
+    /** corporations.create_retry_exhausted (PK 중복 재시도 상한 초과) */
+    public static final String CORPORATIONS_CREATE_RETRY_EXHAUSTED = "corporations.create_retry_exhausted";
+
     private MessageKeys() {}
 }
