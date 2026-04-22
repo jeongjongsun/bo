@@ -139,6 +139,8 @@ export async function downloadUsersExport(
   const a = document.createElement('a');
   a.href = url;
   a.download = 'users_export.xlsx';
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 300);
 }
