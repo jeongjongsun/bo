@@ -710,6 +710,61 @@
     "duplicate_user_id": "このIDは既に使用されています。",
     "excel_export_failed": "Excelの出力に失敗しました。"
   },
+  "codes": {
+    "sub_cd_required": "コードを入力してください。",
+    "main_cd_required": "大分類コードを入力してください。",
+    "code_nm_ko_required": "コード名（韓国語）を入力してください。",
+    "use_yn_required": "使用可否を選択してください。",
+    "not_found": "コードが見つかりません。",
+    "invalid_field": "値が無効です。",
+    "duplicate_key": "このコードは既に登録されています。",
+    "excel_export_failed": "Excelの出力に失敗しました。"
+  },
+  "commonCode": {
+    "title": "共通コード",
+    "searchPlaceholder": "大分類コード・名称で検索",
+    "registerMain": "大分類コード登録",
+    "exportExcel": "Excelダウンロード",
+    "expand": "展開",
+    "collapse": "折りたたむ",
+    "addChild": "下位コード追加",
+    "saveAndContinue": "保存して続ける",
+    "kind": {
+      "main": "大分類コード",
+      "child": "下位コード"
+    },
+    "col": {
+      "expand": "展開/折りたたみ",
+      "addChild": "追加",
+      "mainCd": "大分類コード",
+      "subCd": "下位コード",
+      "codeKind": "コード区分",
+      "codeNmKo": "コード名(韓国語)",
+      "codeNmEn": "コード名(英語)",
+      "useYn": "使用可否",
+      "dispSeq": "表示順",
+      "etc1": "その他1",
+      "etc2": "その他2",
+      "createdAt": "登録日時"
+    },
+    "modal": {
+      "editTitle": "コード情報の修正",
+      "saveSuccess": "保存しました。"
+    },
+    "register": {
+      "title": "大分類コード登録",
+      "subCdLabel": "大分類コード",
+      "subCdRequired": "大分類コードを入力してください。",
+      "dispSeqInvalid": "表示順は数値で入力してください。",
+      "success": "大分類コードを登録しました。"
+    },
+    "childRegister": {
+      "title": "下位コード登録",
+      "parentLabel": "大分類コード",
+      "subCdRequired": "下位コードを入力してください。",
+      "success": "下位コードを登録しました。"
+    }
+  },
   "corporations": {
     "corporation_cd_required": "法人コードを入力してください。",
     "corporation_nm_required": "法人名を入力してください。",
