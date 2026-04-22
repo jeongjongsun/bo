@@ -84,27 +84,29 @@ export function UserList() {
     setPage(0);
   }, []);
 
+  const validateAndTrimField = useCallback(
+    (field: 'userNm' | 'emailId' | 'gradeCd' | 'authGroup' | 'userStatus', value: unknown) => {
+      if (field !== 'userNm' && field !== 'emailId') {
+        return value;
+      }
+      const trimmed = value == null ? '' : String(value).trim();
+      return trimmed ? trimmed : null;
+    },
+    [],
+  );
+
   const handleCellValueChanged = useCallback(
     (event: CellValueChangedEvent<UserManageRow>) => {
       const { data, colDef, newValue } = event;
       if (!data || !colDef.field) return;
       const field = colDef.field as 'userNm' | 'emailId' | 'gradeCd' | 'authGroup' | 'userStatus';
-      if (field === 'userNm') {
-        const v = newValue == null ? '' : String(newValue).trim();
-        if (!v) {
-          event.api.undoCellEditing();
-          return;
-        }
-      }
-      if (field === 'emailId') {
-        const v = newValue == null ? '' : String(newValue).trim();
-        if (!v) {
-          event.api.undoCellEditing();
-          return;
-        }
+      const validatedValue = validateAndTrimField(field, newValue);
+      if ((field === 'userNm' || field === 'emailId') && validatedValue == null) {
+        event.api.undoCellEditing();
+        return;
       }
       updateField(
-        { userId: data.userId, field, value: newValue },
+        { userId: data.userId, field, value: validatedValue },
         {
           onError: (err) => {
             showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
@@ -113,7 +115,7 @@ export function UserList() {
         },
       );
     },
-    [updateField, t],
+    [validateAndTrimField, updateField, t],
   );
 
   const handleExport = useCallback(async () => {
@@ -348,7 +350,7 @@ export function UserList() {
     <PageLayout title={t('users.title')} showHeaderRefresh={false}>
       {registerOpen && <UserRegisterModal onClose={() => setRegisterOpen(false)} />}
       {editUserId && (
-        <UserEditModal userId={editUserId} onClose={() => setEditUserId(null)} onSuccess={() => setEditUserId(null)} />
+        <UserEditModal userId={editUserId} onClose={() => setEditUserId(null)} />
       )}
       <DataGrid<UserManageRow>
         columnDefs={columnDefs}
