@@ -710,6 +710,61 @@
     "duplicate_user_id": "This user ID is already in use.",
     "excel_export_failed": "Excel export failed."
   },
+  "codes": {
+    "sub_cd_required": "Code is required.",
+    "main_cd_required": "Main category code is required.",
+    "code_nm_ko_required": "Korean code name is required.",
+    "use_yn_required": "Please select use (Y/N).",
+    "not_found": "Code not found.",
+    "invalid_field": "Invalid value.",
+    "duplicate_key": "This code is already registered.",
+    "excel_export_failed": "Excel export failed."
+  },
+  "commonCode": {
+    "title": "Common codes",
+    "searchPlaceholder": "Search by main code or name",
+    "registerMain": "Register main category",
+    "exportExcel": "Download Excel",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "addChild": "Add sub code",
+    "saveAndContinue": "Save and continue",
+    "kind": {
+      "main": "Main category",
+      "child": "Sub code"
+    },
+    "col": {
+      "expand": "Expand / collapse",
+      "addChild": "Add",
+      "mainCd": "Main category code",
+      "subCd": "Sub code",
+      "codeKind": "Code type",
+      "codeNmKo": "Name (Korean)",
+      "codeNmEn": "Name (English)",
+      "useYn": "Active",
+      "dispSeq": "Display order",
+      "etc1": "Extra 1",
+      "etc2": "Extra 2",
+      "createdAt": "Created at"
+    },
+    "modal": {
+      "editTitle": "Edit code",
+      "saveSuccess": "Code has been saved."
+    },
+    "register": {
+      "title": "Register main category code",
+      "subCdLabel": "Main category code",
+      "subCdRequired": "Please enter a main category code.",
+      "dispSeqInvalid": "Display order must be a number.",
+      "success": "Main category has been registered."
+    },
+    "childRegister": {
+      "title": "Register sub code",
+      "parentLabel": "Main category code",
+      "subCdRequired": "Please enter a sub code.",
+      "success": "Sub code has been registered."
+    }
+  },
   "corporations": {
     "corporation_cd_required": "Shipper code is required.",
     "corporation_nm_required": "Shipper name is required.",
