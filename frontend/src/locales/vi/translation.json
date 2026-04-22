@@ -710,6 +710,61 @@
     "duplicate_user_id": "ID này đã được sử dụng.",
     "excel_export_failed": "Xuất Excel thất bại."
   },
+  "codes": {
+    "sub_cd_required": "Vui lòng nhập mã.",
+    "main_cd_required": "Vui lòng nhập mã nhóm chính.",
+    "code_nm_ko_required": "Vui lòng nhập tên mã (tiếng Hàn).",
+    "use_yn_required": "Vui lòng chọn sử dụng (Y/N).",
+    "not_found": "Không tìm thấy mã.",
+    "invalid_field": "Giá trị không hợp lệ.",
+    "duplicate_key": "Mã này đã được đăng ký.",
+    "excel_export_failed": "Xuất Excel thất bại."
+  },
+  "commonCode": {
+    "title": "Mã chung",
+    "searchPlaceholder": "Tìm theo mã nhóm hoặc tên",
+    "registerMain": "Đăng ký mã nhóm",
+    "exportExcel": "Tải Excel",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "addChild": "Thêm mã chi tiết",
+    "saveAndContinue": "Lưu và tiếp tục",
+    "kind": {
+      "main": "Mã nhóm",
+      "child": "Mã chi tiết"
+    },
+    "col": {
+      "expand": "Mở/Thu",
+      "addChild": "Thêm",
+      "mainCd": "Mã nhóm",
+      "subCd": "Mã chi tiết",
+      "codeKind": "Loại mã",
+      "codeNmKo": "Tên (tiếng Hàn)",
+      "codeNmEn": "Tên (tiếng Anh)",
+      "useYn": "Sử dụng",
+      "dispSeq": "Thứ tự hiển thị",
+      "etc1": "Khác 1",
+      "etc2": "Khác 2",
+      "createdAt": "Ngày tạo"
+    },
+    "modal": {
+      "editTitle": "Sửa mã",
+      "saveSuccess": "Đã lưu."
+    },
+    "register": {
+      "title": "Đăng ký mã nhóm",
+      "subCdLabel": "Mã nhóm",
+      "subCdRequired": "Vui lòng nhập mã nhóm.",
+      "dispSeqInvalid": "Thứ tự hiển thị phải là số.",
+      "success": "Đã đăng ký mã nhóm."
+    },
+    "childRegister": {
+      "title": "Đăng ký mã chi tiết",
+      "parentLabel": "Mã nhóm",
+      "subCdRequired": "Vui lòng nhập mã chi tiết.",
+      "success": "Đã đăng ký mã chi tiết."
+    }
+  },
   "corporations": {
     "corporation_cd_required": "Vui lòng nhập mã chủ hàng.",
     "corporation_nm_required": "Vui lòng nhập tên chủ hàng.",
