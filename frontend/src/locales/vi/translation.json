@@ -147,27 +147,6 @@
       "last": "Cuối"
     }
   },
-  "users": {
-    "title": "Danh sách người dùng",
-    "searchPlaceholder": "Tìm theo ID hoặc tên",
-    "col": {
-      "userId": "ID người dùng",
-      "userNm": "Tên",
-      "corporationCd": "Mã công ty",
-      "gradeCd": "Cấp",
-      "userType": "Loại người dùng",
-      "userStatus": "Trạng thái",
-      "authGroup": "Nhóm quyền",
-      "mobileNo": "Di động",
-      "emailId": "Email",
-      "privacyAccess": "Riêng tư",
-      "secondAuthYn": "2FA",
-      "accessIpLimit": "Giới hạn IP",
-      "accessIp": "IP truy cập",
-      "passwordFailCnt": "Lỗi MK",
-      "lastLoginDtm": "Đăng nhập cuối"
-    }
-  },
   "orders": {
     "title": "Danh sách đơn hàng",
     "titleDomesticB2c": "Đơn B2C nội địa",
