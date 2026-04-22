@@ -16,10 +16,11 @@ import com.shopeasy.mapper.OmAuthGroupMMapper;
 import com.shopeasy.mapper.OmUserMMapper;
 import com.shopeasy.util.PasswordPolicy;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.ByteArrayOutputStream;
 import java.util.LinkedHashMap;
@@ -40,6 +41,8 @@ public class UserService {
             Set.of("userNm", "emailId", "gradeCd", "authGroup", "userStatus");
 
     private static final Set<String> ALLOWED_USER_STATUS = Set.of("ACTIVE", "INACTIVE", "LOCKED");
+    private static final int EXPORT_PAGE_SIZE = 1000;
+    private static final int EXPORT_ROW_WINDOW = 100;
 
     private static final String[] EXPORT_HEADERS_KO = {
             "아이디", "이름", "이메일", "등급코드", "등급명", "권한코드", "권한그룹명", "상태", "최종 로그인", "등록일시"
@@ -70,12 +73,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public PagedData<UserListItem> getUserList(String keyword, int page, int size) {
-        int offset = page * size;
+        int validatedSize = size > 0 ? size : 0;
+        int offset = validatedSize > 0 ? page * validatedSize : 0;
         long total = userMapper.selectUserListCount(keyword);
-        List<UserListItem> items = userMapper.selectUserList(keyword, size, offset);
-        int totalPages = (int) Math.ceil((double) total / size);
-        return new PagedData<>(items, page, size, total, totalPages,
-                page == 0, page >= totalPages - 1, null);
+        List<UserListItem> items = userMapper.selectUserList(keyword, validatedSize, offset);
+        int totalPages = validatedSize > 0 ? (int) Math.ceil((double) total / validatedSize) : 0;
+        return new PagedData<>(items, page, validatedSize, total, totalPages,
+                page == 0, page >= Math.max(0, totalPages - 1), null);
     }
 
     @Transactional(readOnly = true)
@@ -99,29 +103,43 @@ public class UserService {
         String g = normalizeKeyword(gradeCd);
         String ag = normalizeKeyword(authGroup);
         String l = lang != null && lang.toLowerCase().startsWith("ko") ? "ko" : "en";
-        List<UserManageRow> rows = userMapper.selectManageExportList(kw, g, ag);
-        fillGradeNames(rows, l);
         boolean ko = "ko".equals(l);
         String[] headers = ko ? EXPORT_HEADERS_KO : EXPORT_HEADERS_EN;
-        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = wb.createSheet("Users");
+        try (SXSSFWorkbook wb = new SXSSFWorkbook(EXPORT_ROW_WINDOW);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            wb.setCompressTempFiles(true);
+            SXSSFSheet sheet = wb.createSheet("Users");
             Row headerRow = sheet.createRow(0);
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
             }
             int rowIdx = 1;
-            for (UserManageRow r : rows) {
-                Row row = sheet.createRow(rowIdx++);
-                setCell(row, 0, r.getUserId());
-                setCell(row, 1, r.getUserNm());
-                setCell(row, 2, r.getEmailId());
-                setCell(row, 3, r.getGradeCd());
-                setCell(row, 4, r.getGradeNm());
-                setCell(row, 5, r.getAuthGroup());
-                setCell(row, 6, r.getAuthGroupNm());
-                setCell(row, 7, r.getUserStatus());
-                setCell(row, 8, r.getLastLoginDtm());
-                setCell(row, 9, r.getCreatedAt());
+            int page = 0;
+            while (true) {
+                int offset = page * EXPORT_PAGE_SIZE;
+                List<UserManageRow> rows = userMapper.selectManageList(kw, g, ag, EXPORT_PAGE_SIZE, offset);
+                if (rows.isEmpty()) {
+                    break;
+                }
+                fillGradeNames(rows, l);
+                for (UserManageRow r : rows) {
+                    Row row = sheet.createRow(rowIdx++);
+                    setCell(row, 0, r.getUserId());
+                    setCell(row, 1, r.getUserNm());
+                    setCell(row, 2, r.getEmailId());
+                    setCell(row, 3, r.getGradeCd());
+                    setCell(row, 4, r.getGradeNm());
+                    setCell(row, 5, r.getAuthGroup());
+                    setCell(row, 6, r.getAuthGroupNm());
+                    setCell(row, 7, r.getUserStatus());
+                    setCell(row, 8, r.getLastLoginDtm());
+                    setCell(row, 9, r.getCreatedAt());
+                }
+                sheet.flushRows(EXPORT_ROW_WINDOW);
+                if (rows.size() < EXPORT_PAGE_SIZE) {
+                    break;
+                }
+                page++;
             }
             wb.write(out);
             return out.toByteArray();
@@ -258,7 +276,10 @@ public class UserService {
             }
         }
 
-        Map<String, Object> m = new LinkedHashMap<>(row.getUserInfoMap());
+        Map<String, Object> userInfoMap = row.getUserInfoMap();
+        Map<String, Object> m = userInfoMap == null
+                ? new LinkedHashMap<>()
+                : new LinkedHashMap<>(userInfoMap);
         m.put("email_id", email);
         m.put("auth_group", request.getAuthGroup().trim());
         m.put("user_status", request.getUserStatus().trim());
@@ -305,7 +326,7 @@ public class UserService {
             throw new IllegalArgumentException(MessageKeys.USERS_USER_NM_REQUIRED);
         }
         if (request.getPassword() == null || request.getPassword().isBlank()) {
-            throw new IllegalArgumentException("settings.profile.password_required");
+            throw new IllegalArgumentException(MessageKeys.SETTINGS_PROFILE_PASSWORD_REQUIRED);
         }
         String policyErr = PasswordPolicy.validate(request.getPassword());
         if (policyErr != null) {
@@ -365,7 +386,10 @@ public class UserService {
 
     private void mergeUserInfoKey(OmUserM row, String userId, String jsonKey, String value, String updatedBy) {
         try {
-            Map<String, Object> m = new LinkedHashMap<>(row.getUserInfoMap());
+            Map<String, Object> userInfoMap = row.getUserInfoMap();
+            Map<String, Object> m = userInfoMap == null
+                    ? new LinkedHashMap<>()
+                    : new LinkedHashMap<>(userInfoMap);
             m.put(jsonKey, value);
             userMapper.updateUserInfoJsonWithAudit(userId, objectMapper.writeValueAsString(m), updatedBy);
         } catch (JsonProcessingException e) {
@@ -380,7 +404,9 @@ public class UserService {
     }
 
     private void assertGradeExists(String gradeCd) {
-        List<CodeItem> codes = codeService.getCodeList(MAIN_CD_USER_GRADE, "ko");
+        List<CodeItem> codes = codeService.getCodeList(
+                MAIN_CD_USER_GRADE,
+                LocaleContextHolder.getLocale().getLanguage());
         boolean ok = codes.stream().anyMatch(c -> gradeCd.equals(c.getSubCd()));
         if (!ok) {
             throw new IllegalArgumentException(MessageKeys.USERS_GRADE_NOT_FOUND);
