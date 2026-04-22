@@ -92,6 +92,8 @@ public final class MessageKeys {
     public static final String USERS_DUPLICATE_USER_ID = "users.duplicate_user_id";
     /** users.excel_export_failed */
     public static final String USERS_EXCEL_EXPORT_FAILED = "users.excel_export_failed";
+    /** settings.profile.password_required */
+    public static final String SETTINGS_PROFILE_PASSWORD_REQUIRED = "settings.profile.password_required";
 
     private MessageKeys() {}
 }
