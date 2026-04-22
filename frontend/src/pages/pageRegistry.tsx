@@ -9,6 +9,7 @@ import { MallList } from '@/features/malls/MallList';
 import { OrderList } from '@/features/orders/OrderList';
 import { ShipperList } from '@/features/shipper/ShipperList';
 import { UserList } from '@/features/users/UserList';
+import { CommonCodeList } from '@/features/commonCode/CommonCodeList';
 
 /**
  * 메뉴 path → 페이지 컴포넌트 매핑.
@@ -37,7 +38,7 @@ function placeholder(name: string) {
 // BO — 기초정보 / 운영환경 설정 / 로그정보 (플레이스홀더)
 registry['/basic/shipper'] = ShipperList;
 registry['/basic/users'] = UserList;
-registry['/system/common-code'] = placeholder('공통코드');
+registry['/system/common-code'] = CommonCodeList;
 registry['/system/menus'] = placeholder('메뉴관리');
 registry['/system/authorities'] = placeholder('권한관리');
 registry['/log/audit'] = placeholder('감사이력');
