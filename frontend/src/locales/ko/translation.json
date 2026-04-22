@@ -147,27 +147,6 @@
       "last": "마지막"
     }
   },
-  "users": {
-    "title": "사용자 목록",
-    "searchPlaceholder": "아이디 또는 이름 검색",
-    "col": {
-      "userId": "아이디",
-      "userNm": "이름",
-      "corporationCd": "법인코드",
-      "gradeCd": "등급",
-      "userType": "사용자유형",
-      "userStatus": "상태",
-      "authGroup": "권한그룹",
-      "mobileNo": "휴대폰",
-      "emailId": "이메일",
-      "privacyAccess": "개인정보접근",
-      "secondAuthYn": "2차인증",
-      "accessIpLimit": "IP제한",
-      "accessIp": "접속IP",
-      "passwordFailCnt": "비밀번호실패",
-      "lastLoginDtm": "최종로그인"
-    }
-  },
   "orders": {
     "title": "주문(발주) 목록",
     "titleDomesticB2c": "국내 B2C 주문",
