@@ -147,27 +147,6 @@
       "last": "Last"
     }
   },
-  "users": {
-    "title": "User List",
-    "searchPlaceholder": "Search by ID or name",
-    "col": {
-      "userId": "User ID",
-      "userNm": "Name",
-      "corporationCd": "Corp. Code",
-      "gradeCd": "Grade",
-      "userType": "User Type",
-      "userStatus": "Status",
-      "authGroup": "Auth Group",
-      "mobileNo": "Mobile",
-      "emailId": "Email",
-      "privacyAccess": "Privacy",
-      "secondAuthYn": "2FA",
-      "accessIpLimit": "IP Limit",
-      "accessIp": "Access IP",
-      "passwordFailCnt": "PW Fail",
-      "lastLoginDtm": "Last Login"
-    }
-  },
   "orders": {
     "title": "Order List",
     "titleDomesticB2c": "Domestic B2C Orders",
