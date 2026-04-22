@@ -13,4 +13,87 @@
          ORDER BY (code_info ->> 'disp_seq')::int ASC NULLS LAST,
                   sub_cd
     </select>
+
+    <sql id="manageGroupWhere">
+        <where>
+            c.main_cd = 'CODE'
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    c.sub_cd ILIKE '%' || #{keyword} || '%'
+                    OR COALESCE(c.code_nm ->> 'ko', '') ILIKE '%' || #{keyword} || '%'
+                    OR COALESCE(c.code_nm ->> 'en', '') ILIKE '%' || #{keyword} || '%'
+                )
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectManageGroups" resultType="com.shopeasy.dto.CodeManageRow">
+        SELECT 'MAIN' AS rowType
+             , c.main_cd AS mainCd
+             , c.sub_cd AS subCd
+             , COALESCE(c.code_nm ->> 'ko', '') AS codeNmKo
+             , COALESCE(c.code_nm ->> 'en', '') AS codeNmEn
+             , COALESCE(c.code_info ->> 'use_yn', 'Y') AS useYn
+             , (CASE
+                    WHEN trim(COALESCE(c.code_info ->> 'disp_seq', '')) ~ '^[0-9]+$'
+                    THEN (c.code_info ->> 'disp_seq')::int
+                END) AS dispSeq
+             , COALESCE(c.code_info ->> 'etc1', '') AS etc1
+             , COALESCE(c.code_info ->> 'etc2', '') AS etc2
+             , to_char(c.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+          FROM om_code_m c
+        <include refid="manageGroupWhere"/>
+         ORDER BY c.created_at DESC
+             , c.sub_cd
+    </select>
+
+    <select id="selectManageDetails" resultType="com.shopeasy.dto.CodeManageRow">
+        SELECT 'DETAIL' AS rowType
+             , c.main_cd AS mainCd
+             , c.sub_cd AS subCd
+             , COALESCE(c.code_nm ->> 'ko', '') AS codeNmKo
+             , COALESCE(c.code_nm ->> 'en', '') AS codeNmEn
+             , COALESCE(c.code_info ->> 'use_yn', 'Y') AS useYn
+             , (CASE
+                    WHEN trim(COALESCE(c.code_info ->> 'disp_seq', '')) ~ '^[0-9]+$'
+                    THEN (c.code_info ->> 'disp_seq')::int
+                END) AS dispSeq
+             , COALESCE(c.code_info ->> 'etc1', '') AS etc1
+             , COALESCE(c.code_info ->> 'etc2', '') AS etc2
+             , to_char(c.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+          FROM om_code_m c
+         WHERE c.main_cd = #{mainCd}
+         ORDER BY (CASE
+                    WHEN trim(COALESCE(c.code_info ->> 'disp_seq', '')) ~ '^[0-9]+$'
+                    THEN (c.code_info ->> 'disp_seq')::int
+                END) ASC NULLS LAST
+             , c.sub_cd
+    </select>
+
+    <select id="selectRaw" resultType="com.shopeasy.dto.CodeRowRaw">
+        SELECT main_cd AS mainCd
+             , sub_cd AS subCd
+             , COALESCE(code_nm::text, '{}') AS codeNm
+             , COALESCE(code_info::text, '{}') AS codeInfo
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+          FROM om_code_m
+         WHERE main_cd = #{mainCd}
+           AND sub_cd = #{subCd}
+         LIMIT 1
+    </select>
+
+    <update id="updateCodeJson">
+        UPDATE om_code_m
+           SET code_nm = #{codeNm}::jsonb
+             , code_info = #{codeInfo}::jsonb
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{updatedBy}
+         WHERE main_cd = #{mainCd}
+           AND sub_cd = #{subCd}
+    </update>
+
+    <insert id="insertCode">
+        INSERT INTO om_code_m (main_cd, sub_cd, code_nm, code_info, created_by, updated_by)
+        VALUES (#{mainCd}, #{subCd}, #{codeNm}::jsonb, #{codeInfo}::jsonb, #{createdBy}, #{createdBy})
+    </insert>
 </mapper>
