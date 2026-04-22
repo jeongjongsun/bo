@@ -147,27 +147,6 @@
       "last": "最後"
     }
   },
-  "users": {
-    "title": "ユーザー一覧",
-    "searchPlaceholder": "IDまたは名前で検索",
-    "col": {
-      "userId": "ユーザーID",
-      "userNm": "名前",
-      "corporationCd": "法人コード",
-      "gradeCd": "グレード",
-      "userType": "ユーザー種別",
-      "userStatus": "状態",
-      "authGroup": "権限グループ",
-      "mobileNo": "携帯",
-      "emailId": "メール",
-      "privacyAccess": "個人情報",
-      "secondAuthYn": "2FA",
-      "accessIpLimit": "IP制限",
-      "accessIp": "アクセスIP",
-      "passwordFailCnt": "PW失敗",
-      "lastLoginDtm": "最終ログイン"
-    }
-  },
   "orders": {
     "title": "注文一覧",
     "titleDomesticB2c": "国内B2C注文",
