@@ -710,6 +710,61 @@
     "duplicate_user_id": "이미 사용 중인 아이디입니다.",
     "excel_export_failed": "엑셀보내기에 실패했습니다."
   },
+  "codes": {
+    "sub_cd_required": "코드를 입력해 주세요.",
+    "main_cd_required": "대분류 코드를 입력해 주세요.",
+    "code_nm_ko_required": "코드명(한글)을 입력해 주세요.",
+    "use_yn_required": "사용여부를 선택해 주세요.",
+    "not_found": "코드를 찾을 수 없습니다.",
+    "invalid_field": "유효하지 않은 값입니다.",
+    "duplicate_key": "이미 등록된 코드입니다.",
+    "excel_export_failed": "엑셀보내기에 실패했습니다."
+  },
+  "commonCode": {
+    "title": "공통코드",
+    "searchPlaceholder": "대분류 코드·코드명 검색",
+    "registerMain": "대분류코드 등록",
+    "exportExcel": "엑셀다운로드",
+    "expand": "펼치기",
+    "collapse": "접기",
+    "addChild": "하위코드 추가",
+    "saveAndContinue": "저장 후 계속",
+    "kind": {
+      "main": "대분류코드",
+      "child": "하위코드"
+    },
+    "col": {
+      "expand": "펼침/접기",
+      "addChild": "추가",
+      "mainCd": "대분류 코드",
+      "subCd": "하위 코드",
+      "codeKind": "코드 구분",
+      "codeNmKo": "코드명(한글)",
+      "codeNmEn": "코드명(영문)",
+      "useYn": "사용여부",
+      "dispSeq": "표시순서",
+      "etc1": "기타1",
+      "etc2": "기타2",
+      "createdAt": "등록일시"
+    },
+    "modal": {
+      "editTitle": "코드 정보 수정",
+      "saveSuccess": "저장되었습니다."
+    },
+    "register": {
+      "title": "대분류코드 등록",
+      "subCdLabel": "대분류 코드",
+      "subCdRequired": "대분류 코드를 입력해 주세요.",
+      "dispSeqInvalid": "표시순서는 숫자로 입력해 주세요.",
+      "success": "대분류 코드가 등록되었습니다."
+    },
+    "childRegister": {
+      "title": "하위코드 등록",
+      "parentLabel": "대분류 코드",
+      "subCdRequired": "하위 코드를 입력해 주세요.",
+      "success": "하위 코드가 등록되었습니다."
+    }
+  },
   "corporations": {
     "corporation_cd_required": "화주코드를 입력해 주세요.",
     "corporation_nm_required": "화주명을 입력해 주세요.",
