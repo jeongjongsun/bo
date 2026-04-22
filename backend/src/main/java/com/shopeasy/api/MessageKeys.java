@@ -95,5 +95,22 @@ public final class MessageKeys {
     /** settings.profile.password_required */
     public static final String SETTINGS_PROFILE_PASSWORD_REQUIRED = "settings.profile.password_required";
 
+    /** codes.sub_cd_required */
+    public static final String CODES_SUB_CD_REQUIRED = "codes.sub_cd_required";
+    /** codes.main_cd_required */
+    public static final String CODES_MAIN_CD_REQUIRED = "codes.main_cd_required";
+    /** codes.code_nm_ko_required */
+    public static final String CODES_CODE_NM_KO_REQUIRED = "codes.code_nm_ko_required";
+    /** codes.use_yn_required */
+    public static final String CODES_USE_YN_REQUIRED = "codes.use_yn_required";
+    /** codes.not_found */
+    public static final String CODES_NOT_FOUND = "codes.not_found";
+    /** codes.invalid_field */
+    public static final String CODES_INVALID_FIELD = "codes.invalid_field";
+    /** codes.duplicate_key */
+    public static final String CODES_DUPLICATE_KEY = "codes.duplicate_key";
+    /** codes.excel_export_failed */
+    public static final String CODES_EXCEL_EXPORT_FAILED = "codes.excel_export_failed";
+
     private MessageKeys() {}
 }
