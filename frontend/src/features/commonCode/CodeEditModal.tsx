@@ -5,6 +5,7 @@ import { showError, showSuccess } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import { fetchCodeRow, updateCodeDetail } from '@/api/codeManage';
 import { FloatingRow } from '@/features/shipper/FloatingRow';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 
 const USE_YN = ['Y', 'N'] as const;
 const MAIN_GROUP_MAIN_CD = 'CODE';
@@ -18,6 +19,7 @@ interface CodeEditModalProps {
 export function CodeEditModal({ mainCd, subCd, onClose }: CodeEditModalProps) {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const canUpdate = useHasMenuActionPermissionByPath('/system/common-code', 'update');
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['codeManage', 'row', mainCd, subCd],
     queryFn: () => fetchCodeRow(mainCd, subCd),
@@ -51,6 +53,9 @@ export function CodeEditModal({ mainCd, subCd, onClose }: CodeEditModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canUpdate) {
+      return;
+    }
     if (!data) return;
     const ko = codeNmKo.trim();
     if (!ko) {
@@ -91,6 +96,7 @@ export function CodeEditModal({ mainCd, subCd, onClose }: CodeEditModalProps) {
         etc2: etc2.trim(),
       });
       await qc.invalidateQueries({ queryKey: ['codeManage'] });
+      void qc.invalidateQueries({ queryKey: ['codes'] });
       showSuccess(t('commonCode.modal.saveSuccess'));
       onClose();
     } catch (err) {
@@ -244,10 +250,15 @@ export function CodeEditModal({ mainCd, subCd, onClose }: CodeEditModalProps) {
               </div>
             </div>
             <div className="product-modal__footer">
-              <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={onClose}>
+              <button type="button" className="btn btn-phoenix-secondary btn-sm btn-default-visible" onClick={onClose}>
                 {t('common.cancel')}
               </button>
-              <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={pending}>
+              <button
+                type="submit"
+                className="btn btn-phoenix-primary btn-sm"
+                disabled={pending || !canUpdate}
+                title={!canUpdate ? t('auth.forbidden') : undefined}
+              >
                 {pending ? t('common.loading') : t('common.save')}
               </button>
             </div>
