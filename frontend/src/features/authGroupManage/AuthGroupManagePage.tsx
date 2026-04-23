@@ -7,7 +7,8 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { FloatingRow } from '@/features/shipper/FloatingRow';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import { confirm, showError, showSuccess } from '@/utils/swal';
-import type { AuthGroupManageRow, AuthGroupMenuAuditRow } from '@/api/authGroupManage';
+import type { AuthGroupManageRow, AuthGroupMenuAuditRow, AuthGroupMenuPermission } from '@/api/authGroupManage';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 import {
   useAuthGroupManageList,
   useAuthGroupMenuAudits,
@@ -17,6 +18,16 @@ import {
   useSaveAuthGroupMenus,
   useUpdateAuthGroup,
 } from './hooks';
+
+type MenuActionKey = 'canCreate' | 'canUpdate' | 'canDelete' | 'canExcelDownload' | 'canApprove';
+
+const MENU_ACTIONS: Array<{ key: MenuActionKey; short: string; label: string }> = [
+  { key: 'canCreate', short: 'C', label: '등록' },
+  { key: 'canUpdate', short: 'U', label: '수정' },
+  { key: 'canDelete', short: 'D', label: '삭제' },
+  { key: 'canExcelDownload', short: 'X', label: '엑셀 다운로드' },
+  { key: 'canApprove', short: 'A', label: '승인' },
+];
 
 function parseMenuIds(raw: string): string[] {
   try {
@@ -29,6 +40,9 @@ function parseMenuIds(raw: string): string[] {
 
 export function AuthGroupManagePage() {
   const { t } = useTranslation();
+  const canCreate = useHasMenuActionPermissionByPath('/system/authorities', 'create');
+  const canUpdate = useHasMenuActionPermissionByPath('/system/authorities', 'update');
+  const canDelete = useHasMenuActionPermissionByPath('/system/authorities', 'delete');
   const { data: rows = [], isLoading, isError, error } = useAuthGroupManageList();
   const { mutateAsync: deleteMut, isPending: deleting } = useDeleteAuthGroup();
   const { mutateAsync: saveMut, isPending: saving } = useSaveAuthGroupMenus();
@@ -54,7 +68,7 @@ export function AuthGroupManagePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<AuthGroupManageRow | null>(null);
   const [systemSubCd, setSystemSubCd] = useState<'OM' | 'BO'>('BO');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedPermissions, setSelectedPermissions] = useState<Map<string, AuthGroupMenuPermission>>(new Map());
   const [permissionWasValidated, setPermissionWasValidated] = useState(false);
   const [changeReason, setChangeReason] = useState('');
 
@@ -70,12 +84,16 @@ export function AuthGroupManagePage() {
     logModalOpen,
   );
   useEffect(() => {
-    if (menuConfig?.selectedMenuIds) {
-      setSelectedIds(new Set(menuConfig.selectedMenuIds));
+    if (menuConfig?.selectedMenuPermissions) {
+      const next = new Map<string, AuthGroupMenuPermission>();
+      menuConfig.selectedMenuPermissions.forEach((item) => {
+        next.set(item.menuId, { ...item });
+      });
+      setSelectedPermissions(next);
     } else {
-      setSelectedIds(new Set());
+      setSelectedPermissions(new Map());
     }
-  }, [menuConfig?.selectedMenuIds, menuConfig?.authGroupCd, menuConfig?.systemSubCd]);
+  }, [menuConfig?.selectedMenuPermissions, menuConfig?.authGroupCd, menuConfig?.systemSubCd]);
 
   useEffect(() => {
     if (isError && error) {
@@ -129,6 +147,7 @@ export function AuthGroupManagePage() {
       }
       setRegisterWasValidated(true);
       try {
+        if (!canCreate) return;
         await createMut({
           authGroupNm: regNm.trim(),
           remark: regRemark.trim() || null,
@@ -142,7 +161,7 @@ export function AuthGroupManagePage() {
         void showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
       }
     },
-    [createMut, regNm, regRemark, t],
+    [canCreate, createMut, regNm, regRemark, t],
   );
 
   const handleEditFormSubmit = useCallback(
@@ -157,6 +176,7 @@ export function AuthGroupManagePage() {
       setEditWasValidated(true);
       if (!editGroup) return;
       try {
+        if (!canUpdate) return;
         await updateMut({
           authGroupCd: editGroup.authGroupCd,
           body: {
@@ -171,7 +191,7 @@ export function AuthGroupManagePage() {
         void showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
       }
     },
-    [editGroup, editNm, editRemark, t, updateMut],
+    [canUpdate, editGroup, editNm, editRemark, t, updateMut],
   );
 
   const handleDelete = useCallback(
@@ -184,6 +204,7 @@ export function AuthGroupManagePage() {
       );
       if (!ok) return;
       try {
+        if (!canDelete) return;
         await deleteMut(row.authGroupCd);
         if (selectedGroup?.authGroupCd === row.authGroupCd) {
           setModalOpen(false);
@@ -193,7 +214,7 @@ export function AuthGroupManagePage() {
         showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
       }
     },
-    [deleteMut, selectedGroup?.authGroupCd, t],
+    [canDelete, deleteMut, selectedGroup?.authGroupCd, t],
   );
 
   const orderedMenus = useMemo(() => {
@@ -267,31 +288,119 @@ export function AuthGroupManagePage() {
   }, [orderedMenus]);
 
   const handleToggleMenu = useCallback((menuId: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
+    setSelectedPermissions((prev) => {
+      const next = new Map(prev);
       const ids = descendantMenuIdsMap.get(menuId) ?? [menuId];
-      const isChecked = next.has(menuId);
+      const current = next.get(menuId);
+      const isChecked = Boolean(current?.canView);
       if (isChecked) {
-        ids.forEach((id) => next.delete(id));
+        ids.forEach((id) => {
+          next.set(id, {
+            menuId: id,
+            canView: false,
+            canCreate: false,
+            canUpdate: false,
+            canDelete: false,
+            canExcelDownload: false,
+            canApprove: false,
+          });
+        });
       } else {
-        ids.forEach((id) => next.add(id));
+        ids.forEach((id) => {
+          const prevItem = next.get(id);
+          next.set(id, {
+            menuId: id,
+            canView: true,
+            canCreate: prevItem?.canCreate ?? false,
+            canUpdate: prevItem?.canUpdate ?? false,
+            canDelete: prevItem?.canDelete ?? false,
+            canExcelDownload: prevItem?.canExcelDownload ?? false,
+            canApprove: prevItem?.canApprove ?? false,
+          });
+        });
       }
       return next;
     });
   }, [descendantMenuIdsMap]);
 
+  const handleToggleAction = useCallback(
+    (menuId: string, action: MenuActionKey) => {
+      setSelectedPermissions((prev) => {
+        const next = new Map(prev);
+        const targetIds = descendantMenuIdsMap.get(menuId) ?? [menuId];
+        const base = next.get(menuId) ?? {
+          menuId,
+          canView: false,
+          canCreate: false,
+          canUpdate: false,
+          canDelete: false,
+          canExcelDownload: false,
+          canApprove: false,
+        };
+        if (!base.canView) {
+          return next;
+        }
+        const nextValue = !base[action];
+        targetIds.forEach((targetId) => {
+          const targetBase = next.get(targetId) ?? {
+            menuId: targetId,
+            canView: false,
+            canCreate: false,
+            canUpdate: false,
+            canDelete: false,
+            canExcelDownload: false,
+            canApprove: false,
+          };
+          next.set(targetId, {
+            ...targetBase,
+            canView: true,
+            [action]: nextValue,
+          });
+        });
+        return next;
+      });
+    },
+    [descendantMenuIdsMap],
+  );
+
   const allMenuIds = useMemo(
     () => orderedMenus.map(({ menu }) => menu.menuId),
     [orderedMenus],
   );
-  const isAllChecked = allMenuIds.length > 0 && allMenuIds.every((id) => selectedIds.has(id));
+  const isAllChecked = allMenuIds.length > 0 && allMenuIds.every((id) => selectedPermissions.get(id)?.canView);
 
   const handleToggleAll = useCallback(() => {
-    setSelectedIds((prev) => {
+    setSelectedPermissions((prev) => {
       if (allMenuIds.length === 0) return prev;
-      const allChecked = allMenuIds.every((id) => prev.has(id));
-      if (allChecked) return new Set();
-      return new Set(allMenuIds);
+      const allChecked = allMenuIds.every((id) => prev.get(id)?.canView);
+      const next = new Map(prev);
+      if (allChecked) {
+        allMenuIds.forEach((id) => {
+          next.set(id, {
+            menuId: id,
+            canView: false,
+            canCreate: false,
+            canUpdate: false,
+            canDelete: false,
+            canExcelDownload: false,
+            canApprove: false,
+          });
+        });
+        return next;
+      }
+      allMenuIds.forEach((id) => {
+        const item = next.get(id);
+        next.set(id, {
+          menuId: id,
+          canView: true,
+          canCreate: item?.canCreate ?? false,
+          canUpdate: item?.canUpdate ?? false,
+          canDelete: item?.canDelete ?? false,
+          canExcelDownload: item?.canExcelDownload ?? false,
+          canApprove: item?.canApprove ?? false,
+        });
+      });
+      return next;
     });
   }, [allMenuIds]);
 
@@ -307,12 +416,13 @@ export function AuthGroupManagePage() {
       setPermissionWasValidated(true);
       if (!selectedGroup) return;
       try {
+        if (!canUpdate) return;
         await saveMut({
           authGroupCd: selectedGroup.authGroupCd,
           body: {
             systemMainCd: 'SYSTEM',
             systemSubCd,
-            menuIds: Array.from(selectedIds),
+            menuPermissions: Array.from(selectedPermissions.values()).filter((item) => item.canView),
             changeReason: changeReason.trim(),
           },
         });
@@ -325,7 +435,7 @@ export function AuthGroupManagePage() {
         showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
       }
     },
-    [changeReason, saveMut, selectedGroup, selectedIds, systemSubCd, t],
+    [canUpdate, changeReason, saveMut, selectedGroup, selectedPermissions, systemSubCd, t],
   );
 
   const columnDefs = useMemo<ColDef<AuthGroupManageRow>[]>(
@@ -351,6 +461,7 @@ export function AuthGroupManagePage() {
               type="button"
               className="btn btn-link btn-sm p-0 text-primary text-decoration-underline"
               onClick={() => handleOpenEditModal(row)}
+              disabled={!canUpdate}
             >
               {value}
             </button>
@@ -372,6 +483,7 @@ export function AuthGroupManagePage() {
                 type="button"
                 className="p-0 border-0 bg-transparent d-inline-flex align-items-center"
                 onClick={() => handleOpenPermissionModal(row)}
+                disabled={!canUpdate}
               >
                 <span className="badge badge-phoenix badge-phoenix-info d-inline-flex align-items-center">{t('authGroupManage.badge.permissionMenu')}</span>
               </button>
@@ -422,6 +534,7 @@ export function AuthGroupManagePage() {
                 type="button"
                 className="p-0 border-0 bg-transparent d-inline-flex align-items-center"
                 onClick={() => { void handleDelete(row); }}
+                disabled={!canDelete}
               >
                 <span className="badge badge-phoenix badge-phoenix-danger d-inline-flex align-items-center">{t('common.delete')}</span>
               </button>
@@ -434,23 +547,25 @@ export function AuthGroupManagePage() {
       { field: 'updatedAt', headerName: t('authGroupManage.col.updatedAt'), width: 170, cellStyle: { textAlign: 'center' } },
       { field: 'updatedBy', headerName: t('authGroupManage.col.updatedBy'), width: 110, cellStyle: { textAlign: 'center' } },
     ],
-    [handleDelete, handleOpenEditModal, handleOpenLogModal, handleOpenPermissionModal, t],
+    [handleDelete, handleOpenEditModal, handleOpenLogModal, handleOpenPermissionModal, t, canDelete, canUpdate],
   );
 
   const authGroupToolbar = useMemo(
     () => (
       <div className="d-flex justify-content-end w-100">
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={handleOpenRegister}
-        >
-          <FiPlus size={14} className="me-1" aria-hidden />
-          {t('authGroupManage.register.button')}
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={handleOpenRegister}
+          >
+            <FiPlus size={14} className="me-1" aria-hidden />
+            {t('authGroupManage.register.button')}
+          </button>
+        )}
       </div>
     ),
-    [handleOpenRegister, t],
+    [handleOpenRegister, t, canCreate],
   );
 
   return (
@@ -464,7 +579,7 @@ export function AuthGroupManagePage() {
         defaultColDef={{ sortable: false, resizable: true }}
       />
 
-      {registerOpen && (
+      {registerOpen && canCreate && (
         <div
           className="product-modal-overlay"
           role="dialog"
@@ -543,7 +658,7 @@ export function AuthGroupManagePage() {
                 >
                   {t('common.cancel')}
                 </button>
-                <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={creating}>
+                <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={creating || !canCreate}>
                   {creating ? t('common.loading') : t('commonCode.saveAndContinue')}
                 </button>
               </div>
@@ -552,7 +667,7 @@ export function AuthGroupManagePage() {
         </div>
       )}
 
-      {editOpen && editGroup && (
+      {editOpen && editGroup && canUpdate && (
         <div
           className="product-modal-overlay"
           role="dialog"
@@ -645,7 +760,7 @@ export function AuthGroupManagePage() {
                 >
                   {t('common.cancel')}
                 </button>
-                <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={updating}>
+                <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={updating || !canUpdate}>
                   {updating ? t('common.loading') : t('common.save')}
                 </button>
               </div>
@@ -768,7 +883,7 @@ export function AuthGroupManagePage() {
         </div>
       )}
 
-      {modalOpen && selectedGroup && (
+      {modalOpen && selectedGroup && canUpdate && (
         <div className="product-modal-overlay" role="dialog" aria-modal="true" aria-label={t('authGroupManage.modal.title')}>
           <div className="product-modal auth-group-manage-modal">
             <div className="product-modal__header">
@@ -809,30 +924,71 @@ export function AuthGroupManagePage() {
                       {isAllChecked ? t('authGroupManage.unselectAll') : t('authGroupManage.selectAll')}
                     </button>
                     <span className="small text-body-secondary">
-                      {t('authGroupManage.selectedCount', { count: selectedIds.size })}
+                      {t('authGroupManage.selectedCount', {
+                        count: Array.from(selectedPermissions.values()).filter((item) => item.canView).length,
+                      })}
                     </span>
                   </div>
                 </div>
 
                 <div className="auth-group-manage-modal__menu-list border rounded p-2 mb-3">
+                  <div className="alert alert-info py-2 px-3 mb-2 small" role="alert">
+                    {t('authGroupManage.shortcuts')}
+                  </div>
                   {menuLoading ? (
                     <p className="text-body-tertiary mb-0">{t('common.loading')}</p>
                   ) : (
                     <div className="list-group list-group-flush">
                       {orderedMenus.map(({ menu, depth }) => (
-                        <label key={menu.menuId} className="list-group-item d-flex align-items-center gap-2 py-2">
+                        <div
+                          key={menu.menuId}
+                          className="list-group-item d-flex align-items-center gap-2 py-2"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleToggleMenu(menu.menuId)}
+                          onKeyDown={(ev) => {
+                            if (ev.key === 'Enter' || ev.key === ' ') {
+                              ev.preventDefault();
+                              handleToggleMenu(menu.menuId);
+                            }
+                          }}
+                        >
+                          {(() => {
+                            const item = selectedPermissions.get(menu.menuId);
+                            const canView = item?.canView ?? false;
+                            return (
+                              <>
                           <input
                             type="checkbox"
                             className="form-check-input mt-0"
-                            checked={selectedIds.has(menu.menuId)}
+                            checked={canView}
                             onChange={() => handleToggleMenu(menu.menuId)}
+                            onClick={(ev) => ev.stopPropagation()}
                           />
                           <span className="small fw-semibold" style={{ paddingLeft: `${depth * 16}px` }}>
                             {menu.menuNmKo || menu.menuId}
                           </span>
                           <span className="small text-body-secondary font-monospace">{menu.menuId}</span>
-                          {menu.menuUrl && <span className="small text-body-tertiary ms-auto">{menu.menuUrl}</span>}
-                        </label>
+                          <span className="ms-auto d-inline-flex align-items-center gap-2 small">
+                            {MENU_ACTIONS.map((action) => (
+                              <span key={action.key} className="d-inline-flex align-items-center gap-1">
+                                <input
+                                  type="checkbox"
+                                  title={action.label}
+                                  className="form-check-input mt-0"
+                                  checked={item?.[action.key] ?? false}
+                                  disabled={!canView}
+                                  onChange={() => handleToggleAction(menu.menuId, action.key)}
+                                  onClick={(ev) => ev.stopPropagation()}
+                                />
+                                {action.short}
+                              </span>
+                            ))}
+                          </span>
+                              </>
+                            );
+                          })()}
+                        </div>
                       ))}
                       {(menuConfig?.menus?.length ?? 0) === 0 && (
                         <p className="text-body-tertiary small mb-0">{t('authGroupManage.noMenus')}</p>
@@ -867,7 +1023,7 @@ export function AuthGroupManagePage() {
                 <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={() => setModalOpen(false)}>
                   {t('common.cancel')}
                 </button>
-                <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={saving}>
+                <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={saving || !canUpdate}>
                   {t('common.save')}
                 </button>
               </div>
