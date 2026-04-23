@@ -11,6 +11,12 @@ CREATE TABLE om_auth_group_menu_r (
     menu_id         VARCHAR(48)     NOT NULL,
     system_main_cd  VARCHAR(50)     NOT NULL DEFAULT 'SYSTEM',
     system_sub_cd   VARCHAR(50)     NOT NULL,
+    can_view        BOOLEAN         NOT NULL DEFAULT true,
+    can_create      BOOLEAN         NOT NULL DEFAULT false,
+    can_update      BOOLEAN         NOT NULL DEFAULT false,
+    can_delete      BOOLEAN         NOT NULL DEFAULT false,
+    can_excel_download BOOLEAN      NOT NULL DEFAULT false,
+    can_approve     BOOLEAN         NOT NULL DEFAULT false,
     created_at      TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMPTZ     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by      VARCHAR(48),
@@ -43,6 +49,12 @@ COMMENT ON COLUMN om_auth_group_menu_r.auth_group_cd IS '권한 그룹 코드 (o
 COMMENT ON COLUMN om_auth_group_menu_r.menu_id IS '메뉴 ID (om_menu_m.menu_id)';
 COMMENT ON COLUMN om_auth_group_menu_r.system_main_cd IS '시스템 메인 코드 (기본 SYSTEM)';
 COMMENT ON COLUMN om_auth_group_menu_r.system_sub_cd IS '시스템 서브 코드 (OM/BO)';
+COMMENT ON COLUMN om_auth_group_menu_r.can_view IS '조회 권한(메뉴 표시/접속 기본 권한)';
+COMMENT ON COLUMN om_auth_group_menu_r.can_create IS '등록 권한';
+COMMENT ON COLUMN om_auth_group_menu_r.can_update IS '수정 권한';
+COMMENT ON COLUMN om_auth_group_menu_r.can_delete IS '삭제 권한';
+COMMENT ON COLUMN om_auth_group_menu_r.can_excel_download IS '엑셀 다운로드 권한';
+COMMENT ON COLUMN om_auth_group_menu_r.can_approve IS '승인 권한';
 COMMENT ON COLUMN om_auth_group_menu_r.created_at IS '최초 생성 시각';
 COMMENT ON COLUMN om_auth_group_menu_r.updated_at IS '최종 수정 시각';
 COMMENT ON COLUMN om_auth_group_menu_r.created_by IS '생성자 식별자';

@@ -8,6 +8,7 @@ import { showError } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import type { CorporationManageRow } from '@/api/corporationsManage';
 import { downloadCorporationsExport } from '@/api/corporationsManage';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 import { useCorporationManageList, useUpdateCorporationField } from './hooks';
 import { CorporationRegisterModal } from './CorporationRegisterModal';
 import { CorporationEditModal } from './CorporationEditModal';
@@ -20,6 +21,9 @@ export function ShipperList() {
   const [pageSize, setPageSize] = useState(100);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [editCd, setEditCd] = useState<string | null>(null);
+  const canCreate = useHasMenuActionPermissionByPath('/basic/shipper', 'create');
+  const canUpdate = useHasMenuActionPermissionByPath('/basic/shipper', 'update');
+  const canExcelDownload = useHasMenuActionPermissionByPath('/basic/shipper', 'excel_download');
 
   const { data, isLoading } = useCorporationManageList({
     keyword: appliedKeyword || undefined,
@@ -48,6 +52,10 @@ export function ShipperList() {
 
   const handleCellValueChanged = useCallback(
     (event: CellValueChangedEvent<CorporationManageRow>) => {
+      if (!canUpdate) {
+        event.api.undoCellEditing();
+        return;
+      }
       const { data, colDef, newValue } = event;
       if (!data || !colDef.field) return;
       const field = colDef.field as 'corporationNm' | 'businessNo' | 'telNo' | 'email';
@@ -68,17 +76,18 @@ export function ShipperList() {
         },
       );
     },
-    [updateField, t],
+    [canUpdate, updateField, t],
   );
 
   const handleExport = useCallback(async () => {
+    if (!canExcelDownload) return;
     const lang = i18n.language?.startsWith('ko') ? 'ko' : 'en';
     try {
       await downloadCorporationsExport(appliedKeyword || undefined, lang);
     } catch (err) {
       showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
     }
-  }, [appliedKeyword, i18n.language, t]);
+  }, [appliedKeyword, canExcelDownload, i18n.language, t]);
 
   const columnDefs = useMemo<ColDef<CorporationManageRow>[]>(
     () => [
@@ -108,7 +117,7 @@ export function ShipperList() {
         cellRenderer: (params: ICellRendererParams<CorporationManageRow>) => {
           const cd = params.value ?? '';
           const row = params.data;
-          if (!row || !cd) return cd;
+          if (!row || !cd || !canUpdate) return cd;
           return (
             <button
               type="button"
@@ -125,7 +134,7 @@ export function ShipperList() {
         headerName: t('shipper.col.corporationNm'),
         flex: 1,
         minWidth: 160,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
         cellStyle: { textAlign: 'left' },
       },
@@ -133,7 +142,7 @@ export function ShipperList() {
         field: 'businessNo',
         headerName: t('shipper.col.businessNo'),
         width: 140,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
         cellStyle: { textAlign: 'center' },
       },
@@ -141,7 +150,7 @@ export function ShipperList() {
         field: 'telNo',
         headerName: t('shipper.col.telNo'),
         width: 130,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
         cellStyle: { textAlign: 'center' },
       },
@@ -149,7 +158,7 @@ export function ShipperList() {
         field: 'email',
         headerName: t('shipper.col.email'),
         width: 200,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
         cellStyle: { textAlign: 'left' },
       },
@@ -161,7 +170,7 @@ export function ShipperList() {
         cellStyle: { textAlign: 'center' },
       },
     ],
-    [t, total, page, pageSize],
+    [t, total, page, pageSize, canUpdate],
   );
 
   const toolbar = (
@@ -207,32 +216,36 @@ export function ShipperList() {
         </div>
       </div>
       <div className="d-flex align-items-center gap-1 flex-shrink-0">
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={() => setRegisterOpen(true)}
-          title={t('shipper.toolbar.register')}
-        >
-          <FiPlus size={14} className="me-1" aria-hidden />
-          {t('shipper.toolbar.register')}
-        </button>
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={handleExport}
-          title={t('shipper.toolbar.excelDownload')}
-        >
-          <FiDownload size={14} className="me-1" aria-hidden />
-          {t('shipper.toolbar.excelDownload')}
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={() => setRegisterOpen(true)}
+            title={t('shipper.toolbar.register')}
+          >
+            <FiPlus size={14} className="me-1" aria-hidden />
+            {t('shipper.toolbar.register')}
+          </button>
+        )}
+        {canExcelDownload && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={handleExport}
+            title={t('shipper.toolbar.excelDownload')}
+          >
+            <FiDownload size={14} className="me-1" aria-hidden />
+            {t('shipper.toolbar.excelDownload')}
+          </button>
+        )}
       </div>
     </div>
   );
 
   return (
     <PageLayout title={t('shipper.title')} showHeaderRefresh={false}>
-      {registerOpen && <CorporationRegisterModal onClose={() => setRegisterOpen(false)} />}
-      {editCd && (
+      {registerOpen && canCreate && <CorporationRegisterModal onClose={() => setRegisterOpen(false)} />}
+      {editCd && canUpdate && (
         <CorporationEditModal
           corporationCd={editCd}
           onClose={() => setEditCd(null)}

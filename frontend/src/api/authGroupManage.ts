@@ -30,12 +30,23 @@ export interface AuthGroupMenuConfigResponse {
   systemSubCd: string;
   menus: MenuManageRow[];
   selectedMenuIds: string[];
+  selectedMenuPermissions: AuthGroupMenuPermission[];
+}
+
+export interface AuthGroupMenuPermission {
+  menuId: string;
+  canView: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canExcelDownload: boolean;
+  canApprove: boolean;
 }
 
 export interface AuthGroupMenuSaveBody {
   systemMainCd?: string;
   systemSubCd: string;
-  menuIds: string[];
+  menuPermissions: AuthGroupMenuPermission[];
   changeReason?: string;
 }
 

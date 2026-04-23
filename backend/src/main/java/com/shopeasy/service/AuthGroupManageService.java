@@ -8,6 +8,8 @@ import com.shopeasy.dto.AuthGroupCreateRequest;
 import com.shopeasy.dto.AuthGroupManageRow;
 import com.shopeasy.dto.AuthGroupMenuAuditRow;
 import com.shopeasy.dto.AuthGroupMenuConfigResponse;
+import com.shopeasy.dto.AuthGroupMenuPermissionDto;
+import com.shopeasy.dto.AuthGroupMenuPermissionSaveItem;
 import com.shopeasy.dto.AuthGroupMenuSaveRequest;
 import com.shopeasy.dto.AuthGroupUpdateRequest;
 import com.shopeasy.dto.AuditLogCommand;
@@ -152,7 +154,12 @@ public class AuthGroupManageService {
         String mainCd = normalizeSystemMain(systemMainCd);
         String subCd = requireSystemSub(systemSubCd);
         List<MenuManageRow> menus = menuMMapper.selectFlatBySystem(mainCd, subCd);
-        List<String> selectedMenuIds = authGroupMenuRMapper.selectMenuIdsByGroupAndSystem(groupCd, mainCd, subCd);
+        List<AuthGroupMenuPermissionDto> selectedPermissions =
+                authGroupMenuRMapper.selectMenuPermissionsByGroupAndSystem(groupCd, mainCd, subCd);
+        List<String> selectedMenuIds = selectedPermissions.stream()
+                .filter(AuthGroupMenuPermissionDto::isCanView)
+                .map(AuthGroupMenuPermissionDto::getMenuId)
+                .toList();
 
         AuthGroupMenuConfigResponse response = new AuthGroupMenuConfigResponse();
         response.setAuthGroupCd(groupCd);
@@ -160,6 +167,7 @@ public class AuthGroupManageService {
         response.setSystemSubCd(subCd);
         response.setMenus(menus);
         response.setSelectedMenuIds(selectedMenuIds);
+        response.setSelectedMenuPermissions(selectedPermissions);
         return response;
     }
 
@@ -175,13 +183,17 @@ public class AuthGroupManageService {
         String subCd = requireSystemSub(request.getSystemSubCd());
 
         List<String> before = authGroupMenuRMapper.selectMenuIdsByGroupAndSystem(groupCd, mainCd, subCd);
-        List<String> normalizedMenuIds = normalizeMenuIds(request.getMenuIds());
+        List<AuthGroupMenuPermissionSaveItem> normalizedPermissions =
+                normalizeMenuPermissions(request.getMenuPermissions());
+        List<String> normalizedMenuIds = normalizedPermissions.stream()
+                .map(AuthGroupMenuPermissionSaveItem::getMenuId)
+                .toList();
         validateMenuIds(mainCd, subCd, normalizedMenuIds);
 
         String userId = normalizeActor(actor);
         authGroupMenuRMapper.softDeleteByGroupAndSystem(groupCd, mainCd, subCd, userId);
-        if (!normalizedMenuIds.isEmpty()) {
-            authGroupMenuRMapper.insertBatch(groupCd, mainCd, subCd, normalizedMenuIds, userId);
+        if (!normalizedPermissions.isEmpty()) {
+            authGroupMenuRMapper.insertBatch(groupCd, mainCd, subCd, normalizedPermissions, userId);
         }
 
         List<String> after = authGroupMenuRMapper.selectMenuIdsByGroupAndSystem(groupCd, mainCd, subCd);
@@ -308,18 +320,36 @@ public class AuthGroupManageService {
         return sub;
     }
 
-    private List<String> normalizeMenuIds(List<String> menuIds) {
-        if (menuIds == null || menuIds.isEmpty()) {
+    private List<AuthGroupMenuPermissionSaveItem> normalizeMenuPermissions(
+            List<AuthGroupMenuPermissionSaveItem> menuPermissions) {
+        if (menuPermissions == null || menuPermissions.isEmpty()) {
             return List.of();
         }
         Set<String> unique = new LinkedHashSet<>();
-        for (String menuId : menuIds) {
+        List<AuthGroupMenuPermissionSaveItem> out = new ArrayList<>();
+        for (AuthGroupMenuPermissionSaveItem item : menuPermissions) {
+            if (item == null) {
+                continue;
+            }
+            String menuId = item.getMenuId();
             if (menuId == null || menuId.isBlank()) {
                 continue;
             }
-            unique.add(menuId.trim());
+            String normalizedMenuId = menuId.trim();
+            if (!unique.add(normalizedMenuId)) {
+                continue;
+            }
+            AuthGroupMenuPermissionSaveItem normalized = new AuthGroupMenuPermissionSaveItem();
+            normalized.setMenuId(normalizedMenuId);
+            normalized.setCanView(item.isCanView());
+            normalized.setCanCreate(item.isCanCreate());
+            normalized.setCanUpdate(item.isCanUpdate());
+            normalized.setCanDelete(item.isCanDelete());
+            normalized.setCanExcelDownload(item.isCanExcelDownload());
+            normalized.setCanApprove(item.isCanApprove());
+            out.add(normalized);
         }
-        return new ArrayList<>(unique);
+        return out;
     }
 
     private void validateMenuIds(String systemMainCd, String systemSubCd, List<String> menuIds) {

@@ -14,4 +14,5 @@ public class AuthGroupMenuConfigResponse {
     private String systemSubCd;
     private List<MenuManageRow> menus;
     private List<String> selectedMenuIds;
+    private List<AuthGroupMenuPermissionDto> selectedMenuPermissions;
 }

@@ -1,5 +1,7 @@
 package com.shopeasy.mapper;
 
+import com.shopeasy.dto.AuthGroupMenuPermissionDto;
+import com.shopeasy.dto.AuthGroupMenuPermissionSaveItem;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,6 +24,20 @@ public interface OmAuthGroupMenuRMapper {
             @Param("systemMainCd") String systemMainCd,
             @Param("systemSubCd") String systemSubCd);
 
+    List<AuthGroupMenuPermissionDto> selectMenuPermissionsByGroupAndSystem(
+            @Param("authGroupCd") String authGroupCd,
+            @Param("systemMainCd") String systemMainCd,
+            @Param("systemSubCd") String systemSubCd);
+
+    List<String> selectPermissionCodesByAuthGroupAndSystem(
+            @Param("authGroupCd") String authGroupCd,
+            @Param("systemMainCd") String systemMainCd,
+            @Param("systemSubCd") String systemSubCd);
+
+    List<String> selectPermissionCodesByAuthGroup(
+            @Param("authGroupCd") String authGroupCd,
+            @Param("systemMainCd") String systemMainCd);
+
     int softDeleteByGroupAndSystem(
             @Param("authGroupCd") String authGroupCd,
             @Param("systemMainCd") String systemMainCd,
@@ -36,6 +52,6 @@ public interface OmAuthGroupMenuRMapper {
             @Param("authGroupCd") String authGroupCd,
             @Param("systemMainCd") String systemMainCd,
             @Param("systemSubCd") String systemSubCd,
-            @Param("menuIds") List<String> menuIds,
+            @Param("menuPermissions") List<AuthGroupMenuPermissionSaveItem> menuPermissions,
             @Param("userId") String userId);
 }

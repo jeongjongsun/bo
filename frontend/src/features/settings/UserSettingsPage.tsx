@@ -6,9 +6,11 @@ import { fetchCorporations } from '@/api/corporations';
 import { useUserSettings, useSaveUserSettings, useProfile, useUpdateProfile } from './hooks';
 import { showSuccess, showError } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 
 export function UserSettingsPage() {
   const { t } = useTranslation();
+  const canUpdate = useHasMenuActionPermissionByPath('/settings', 'update');
   const { data: settings, isLoading: settingsLoading } = useUserSettings();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: corporations = [] } = useQuery({
@@ -19,20 +21,14 @@ export function UserSettingsPage() {
   const saveMutation = useSaveUserSettings();
   const updateProfileMutation = useUpdateProfile();
 
-  const [orderSimpleViewYn, setOrderSimpleViewYn] = useState(false);
   const [defaultCorporationCd, setDefaultCorporationCd] = useState('');
-  const [defaultOrderDateType, setDefaultOrderDateType] = useState<string>('ORDER_DT');
-  const [orderBulkSaveUnmatchedYn, setOrderBulkSaveUnmatchedYn] = useState(false);
   const [profileName, setProfileName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
 
   useEffect(() => {
     if (settings) {
-      setOrderSimpleViewYn(settings.orderSimpleViewYn ?? false);
       setDefaultCorporationCd(settings.defaultCorporationCd ?? '');
-      setDefaultOrderDateType(settings.defaultOrderDateType ?? 'ORDER_DT');
-      setOrderBulkSaveUnmatchedYn(settings.orderBulkSaveUnmatchedYn ?? false);
     }
   }, [settings]);
 
@@ -44,6 +40,7 @@ export function UserSettingsPage() {
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canUpdate) return;
     const hasPassword = newPassword.trim() !== '' || newPasswordConfirm.trim() !== '';
     if (hasPassword && newPassword.trim() !== newPasswordConfirm.trim()) {
       showError(t('common.error'), t('settings.profile.password_mismatch'));
@@ -68,18 +65,11 @@ export function UserSettingsPage() {
 
   /** 환경설정 항목 변경 시 즉시 저장 (저장 버튼 없이) */
   const saveSettings = useCallback(
-    (patch: {
-      orderSimpleViewYn?: boolean;
-      defaultCorporationCd?: string | null;
-      defaultOrderDateType?: 'ORDER_DT' | 'REGIST_DT';
-      orderBulkSaveUnmatchedYn?: boolean;
-    }) => {
+    (patch: { defaultCorporationCd?: string | null }) => {
+      if (!canUpdate) return;
       saveMutation.mutate(
         {
-          orderSimpleViewYn: patch.orderSimpleViewYn ?? orderSimpleViewYn,
           defaultCorporationCd: patch.defaultCorporationCd !== undefined ? patch.defaultCorporationCd : (defaultCorporationCd || null),
-          defaultOrderDateType: (patch.defaultOrderDateType ?? defaultOrderDateType) as 'ORDER_DT' | 'REGIST_DT',
-          orderBulkSaveUnmatchedYn: patch.orderBulkSaveUnmatchedYn ?? orderBulkSaveUnmatchedYn,
         },
         {
           onError: (err) =>
@@ -87,7 +77,7 @@ export function UserSettingsPage() {
         },
       );
     },
-    [orderSimpleViewYn, defaultCorporationCd, defaultOrderDateType, orderBulkSaveUnmatchedYn, saveMutation, t],
+    [canUpdate, defaultCorporationCd, saveMutation, t],
   );
 
   if (settingsLoading && !settings) {
@@ -166,7 +156,7 @@ export function UserSettingsPage() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={updateProfileMutation.isPending || profileLoading}
+                disabled={updateProfileMutation.isPending || profileLoading || !canUpdate}
               >
                 {updateProfileMutation.isPending ? t('common.saving') : t('common.save')}
               </button>
@@ -175,62 +165,10 @@ export function UserSettingsPage() {
         </div>
       </div>
 
-      {/* 환경설정 (주문 간편 보기, 기본 법인) — 변경 시 즉시 저장 */}
+      {/* 환경설정 — 변경 시 즉시 저장 */}
       <div className="card shadow-none border settings-preferences-card">
         <div className="card-body">
           <div className="settings-form">
-            <div className="row mb-4">
-              <div className="col-6">
-                <h5 className="card-title mb-3">{t('settings.orderSimpleView.title')}</h5>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="orderSimpleViewYn"
-                    checked={orderSimpleViewYn}
-                    onChange={(e) => {
-                      const v = e.target.checked;
-                      setOrderSimpleViewYn(v);
-                      saveSettings({ orderSimpleViewYn: v });
-                    }}
-                    disabled={saveMutation.isPending}
-                    aria-describedby="orderSimpleViewHelp"
-                  />
-                  <label className="form-check-label" htmlFor="orderSimpleViewYn">
-                    {t('settings.orderSimpleView.label')}
-                  </label>
-                </div>
-                <div id="orderSimpleViewHelp" className="form-text">
-                  {t('settings.orderSimpleView.help')}
-                </div>
-              </div>
-              <div className="col-6">
-                <h5 className="card-title mb-3">{t('settings.orderBulkSaveUnmatched.title')}</h5>
-                <div className="form-check form-switch">
-                  <input
-                    className="form-check-input"
-                    type="checkbox"
-                    id="orderBulkSaveUnmatchedYn"
-                    checked={orderBulkSaveUnmatchedYn}
-                    onChange={(e) => {
-                      const v = e.target.checked;
-                      setOrderBulkSaveUnmatchedYn(v);
-                      saveSettings({ orderBulkSaveUnmatchedYn: v });
-                    }}
-                    disabled={saveMutation.isPending}
-                    aria-describedby="orderBulkSaveUnmatchedHelp"
-                  />
-                  <label className="form-check-label" htmlFor="orderBulkSaveUnmatchedYn">
-                    {t('settings.orderBulkSaveUnmatched.label')}
-                  </label>
-                </div>
-                <div id="orderBulkSaveUnmatchedHelp" className="form-text">
-                  {t('settings.orderBulkSaveUnmatched.help')}
-                </div>
-              </div>
-            </div>
-
-            <hr className="my-4" />
             <div className="row mb-4">
               <div className="col-6">
                 <h5 className="card-title mb-3">{t('settings.defaultCorporation.title')}</h5>
@@ -244,7 +182,7 @@ export function UserSettingsPage() {
                       setDefaultCorporationCd(v);
                       saveSettings({ defaultCorporationCd: v || null });
                     }}
-                    disabled={saveMutation.isPending}
+                    disabled={saveMutation.isPending || !canUpdate}
                     aria-label={t('settings.defaultCorporation.label')}
                   >
                     <option value="">{t('settings.defaultCorporation.none')}</option>
@@ -257,28 +195,6 @@ export function UserSettingsPage() {
                   <label htmlFor="defaultCorporationCd">{t('settings.defaultCorporation.label')}</label>
                 </div>
                 <div className="form-text">{t('settings.defaultCorporation.help')}</div>
-              </div>
-              <div className="col-6">
-                <h5 className="card-title mb-3">{t('settings.defaultOrderDateType.title')}</h5>
-                <div className="form-floating mb-2">
-                  <select
-                    className="form-select w-auto"
-                    id="defaultOrderDateType"
-                    value={defaultOrderDateType}
-                    onChange={(e) => {
-                      const v = e.target.value as 'ORDER_DT' | 'REGIST_DT';
-                      setDefaultOrderDateType(v);
-                      saveSettings({ defaultOrderDateType: v });
-                    }}
-                    disabled={saveMutation.isPending}
-                    aria-label={t('settings.defaultOrderDateType.label')}
-                  >
-                    <option value="ORDER_DT">{t('settings.defaultOrderDateType.orderDt')}</option>
-                    <option value="REGIST_DT">{t('settings.defaultOrderDateType.registDt')}</option>
-                  </select>
-                  <label htmlFor="defaultOrderDateType">{t('settings.defaultOrderDateType.label')}</label>
-                </div>
-                <div className="form-text">{t('settings.defaultOrderDateType.help')}</div>
               </div>
             </div>
           </div>

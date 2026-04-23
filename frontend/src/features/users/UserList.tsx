@@ -8,6 +8,7 @@ import { showError } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import type { UserManageRow } from '@/api/usersManage';
 import { downloadUsersExport } from '@/api/usersManage';
+import { useHasActionPermission } from '@/hooks/useActionPermission';
 import { useAuthGroupOptions, useUpdateUserField, useUserGradeOptions, useUserManageList } from './hooks';
 import { UserRegisterModal } from './UserRegisterModal';
 import { UserEditModal } from './UserEditModal';
@@ -26,6 +27,9 @@ export function UserList() {
   const [pageSize, setPageSize] = useState(100);
   const [registerOpen, setRegisterOpen] = useState(false);
   const [editUserId, setEditUserId] = useState<string | null>(null);
+  const canCreateUser = useHasActionPermission('user:create');
+  const canUpdateUser = useHasActionPermission('user:update');
+  const canDownloadUserExcel = useHasActionPermission('user:excel_download');
 
   const lang = i18n.language?.startsWith('ko') ? 'ko' : 'en';
 
@@ -97,6 +101,10 @@ export function UserList() {
 
   const handleCellValueChanged = useCallback(
     (event: CellValueChangedEvent<UserManageRow>) => {
+      if (!canUpdateUser) {
+        event.api.undoCellEditing();
+        return;
+      }
       const { data, colDef, newValue } = event;
       if (!data || !colDef.field) return;
       const field = colDef.field as 'userNm' | 'emailId' | 'gradeCd' | 'authGroup' | 'userStatus';
@@ -115,10 +123,11 @@ export function UserList() {
         },
       );
     },
-    [validateAndTrimField, updateField, t],
+    [canUpdateUser, validateAndTrimField, updateField, t],
   );
 
   const handleExport = useCallback(async () => {
+    if (!canDownloadUserExcel) return;
     try {
       await downloadUsersExport(
         appliedKeyword || undefined,
@@ -129,7 +138,7 @@ export function UserList() {
     } catch (err) {
       showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
     }
-  }, [appliedKeyword, appliedGradeCd, appliedAuthGroup, lang, t]);
+  }, [appliedKeyword, appliedGradeCd, appliedAuthGroup, canDownloadUserExcel, lang, t]);
 
   const columnDefs = useMemo<ColDef<UserManageRow>[]>(
     () => [
@@ -159,7 +168,7 @@ export function UserList() {
         cellRenderer: (params: ICellRendererParams<UserManageRow>) => {
           const id = params.value ?? '';
           const row = params.data;
-          if (!row || !id) return id;
+          if (!row || !id || !canUpdateUser) return id;
           return (
             <button
               type="button"
@@ -176,7 +185,7 @@ export function UserList() {
         headerName: t('users.col.userNm'),
         flex: 1,
         minWidth: 120,
-        editable: true,
+        editable: canUpdateUser,
         sortable: false,
         cellStyle: { textAlign: 'left' },
       },
@@ -184,7 +193,7 @@ export function UserList() {
         field: 'emailId',
         headerName: t('users.col.emailId'),
         width: 200,
-        editable: true,
+        editable: canUpdateUser,
         sortable: false,
         cellStyle: { textAlign: 'left' },
       },
@@ -192,7 +201,7 @@ export function UserList() {
         field: 'gradeCd',
         headerName: t('users.col.grade'),
         width: 120,
-        editable: true,
+        editable: canUpdateUser,
         sortable: false,
         cellStyle: { textAlign: 'center' },
         cellEditor: 'agSelectCellEditor',
@@ -207,7 +216,7 @@ export function UserList() {
         field: 'authGroup',
         headerName: t('users.col.authGroup'),
         width: 140,
-        editable: authCdList.length > 0,
+        editable: canUpdateUser && authCdList.length > 0,
         sortable: false,
         cellStyle: { textAlign: 'center' },
         cellEditor: authCdList.length > 0 ? 'agSelectCellEditor' : undefined,
@@ -222,7 +231,7 @@ export function UserList() {
         field: 'userStatus',
         headerName: t('users.col.userStatus'),
         width: 110,
-        editable: true,
+        editable: canUpdateUser,
         sortable: false,
         cellStyle: { textAlign: 'center' },
         cellEditor: 'agSelectCellEditor',
@@ -250,7 +259,7 @@ export function UserList() {
         cellStyle: { textAlign: 'center' },
       },
     ],
-    [t, total, page, pageSize, gradeCdList, authCdList, gradeLabelMap, authLabelMap],
+    [t, total, page, pageSize, gradeCdList, authCdList, gradeLabelMap, authLabelMap, canUpdateUser],
   );
 
   const toolbar = (
@@ -324,32 +333,36 @@ export function UserList() {
         </div>
       </div>
       <div className="d-flex align-items-center gap-1 flex-shrink-0">
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={() => setRegisterOpen(true)}
-          title={t('users.toolbar.register')}
-        >
-          <FiPlus size={14} className="me-1" aria-hidden />
-          {t('users.toolbar.register')}
-        </button>
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={handleExport}
-          title={t('users.toolbar.excelDownload')}
-        >
-          <FiDownload size={14} className="me-1" aria-hidden />
-          {t('users.toolbar.excelDownload')}
-        </button>
+        {canCreateUser && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={() => setRegisterOpen(true)}
+            title={t('users.toolbar.register')}
+          >
+            <FiPlus size={14} className="me-1" aria-hidden />
+            {t('users.toolbar.register')}
+          </button>
+        )}
+        {canDownloadUserExcel && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={handleExport}
+            title={t('users.toolbar.excelDownload')}
+          >
+            <FiDownload size={14} className="me-1" aria-hidden />
+            {t('users.toolbar.excelDownload')}
+          </button>
+        )}
       </div>
     </div>
   );
 
   return (
     <PageLayout title={t('users.title')} showHeaderRefresh={false}>
-      {registerOpen && <UserRegisterModal onClose={() => setRegisterOpen(false)} />}
-      {editUserId && (
+      {registerOpen && canCreateUser && <UserRegisterModal onClose={() => setRegisterOpen(false)} />}
+      {editUserId && canUpdateUser && (
         <UserEditModal userId={editUserId} onClose={() => setEditUserId(null)} />
       )}
       <DataGrid<UserManageRow>

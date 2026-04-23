@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { FiRotateCcw, FiSearch } from 'react-icons/fi';
-import { DataGrid, DataGridPaginationFooter } from '@/components/grid';
+import { FiDownload, FiFilter, FiRefreshCw, FiRotateCcw, FiSearch } from 'react-icons/fi';
+import { DataGrid, DataGridPaginationFooter, type DataGridRef } from '@/components/grid';
 import { PageLayout } from '@/components/layout/PageLayout';
 import type { AuditLogListRow } from '@/api/auditLogs';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 import { useAuditLogList } from './hooks';
 
 function formatChangedFields(raw: string): string {
@@ -97,6 +99,9 @@ function renderHighlightedPrettyJson(raw: string | undefined, changedTokens: str
 
 export function AuditLogPage() {
   const { t } = useTranslation();
+  const canExcelDownload = useHasMenuActionPermissionByPath('/log/audit', 'excel_download');
+  const queryClient = useQueryClient();
+  const gridRef = useRef<DataGridRef>(null);
   const [systemSubCd, setSystemSubCd] = useState<'BO' | 'OM' | ''>('BO');
   const [actionCode, setActionCode] = useState<'CREATE' | 'UPDATE' | 'DELETE' | ''>('');
   const [keywordInput, setKeywordInput] = useState('');
@@ -194,6 +199,15 @@ export function AuditLogPage() {
     setPage(0);
   };
 
+  const reloadAuditList = () => {
+    void queryClient.invalidateQueries({ queryKey: ['auditLogs'] });
+  };
+
+  const exportAuditList = () => {
+    if (!canExcelDownload) return;
+    gridRef.current?.exportExcel();
+  };
+
   const compareRows = useMemo(() => {
     if (!compareTarget) return [];
     const beforeObj = safeParse(compareTarget.beforeData);
@@ -223,62 +237,96 @@ export function AuditLogPage() {
 
   const toolbar = (
     <div className="d-flex align-items-center justify-content-between gap-2 flex-grow-1 flex-wrap w-100">
-      <div className="d-flex align-items-center gap-2 flex-wrap">
-        <select
-          className="form-select form-select-sm"
-          style={{ width: 110 }}
-          value={systemSubCd}
-          onChange={(e) => setSystemSubCd((e.target.value as 'BO' | 'OM' | '') || '')}
-        >
-          <option value="BO">BO</option>
-          <option value="OM">OM</option>
-        </select>
-        <select
-          className="form-select form-select-sm"
-          style={{ width: 130 }}
-          value={actionCode}
-          onChange={(e) => setActionCode((e.target.value as 'CREATE' | 'UPDATE' | 'DELETE' | '') || '')}
-        >
-          <option value="">{t('auditLog.filter.allActions')}</option>
-          <option value="CREATE">{t('auditLog.filter.create')}</option>
-          <option value="UPDATE">{t('auditLog.filter.update')}</option>
-          <option value="DELETE">{t('auditLog.filter.delete')}</option>
-        </select>
-        <input
-          type="date"
-          className="form-control form-control-sm"
-          style={{ width: 145 }}
-          value={fromDate}
-          onChange={(e) => setFromDate(e.target.value)}
-        />
-        <span className="text-body-secondary small">~</span>
-        <input
-          type="date"
-          className="form-control form-control-sm"
-          style={{ width: 145 }}
-          value={toDate}
-          onChange={(e) => setToDate(e.target.value)}
-        />
-        <input
-          type="text"
-          className="form-control form-control-sm"
-          style={{ minWidth: 280 }}
-          value={keywordInput}
-          onChange={(e) => setKeywordInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') applySearch();
-          }}
-          placeholder={t('auditLog.filter.keywordPlaceholder')}
-        />
+      <div className="d-flex align-items-center gap-2 flex-shrink-0 flex-wrap orders-filter-row">
+        <div className="input-group input-group-sm orders-search-group flex-grow-1" style={{ minWidth: 220 }}>
+          <span className="input-group-text orders-toolbar-addon">
+            <FiFilter size={16} className="orders-filter-icon" aria-hidden />
+          </span>
+          <input
+            type="text"
+            className="form-control form-control-sm orders-search-keyword"
+            style={{ minWidth: 0 }}
+            value={keywordInput}
+            onChange={(e) => setKeywordInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') applySearch();
+            }}
+            placeholder={t('auditLog.filter.keywordPlaceholder')}
+          />
+          <select
+            className="form-select form-select-sm"
+            style={{ maxWidth: 100 }}
+            value={systemSubCd}
+            onChange={(e) => setSystemSubCd((e.target.value as 'BO' | 'OM' | '') || '')}
+          >
+            <option value="BO">BO</option>
+            <option value="OM">OM</option>
+          </select>
+          <select
+            className="form-select form-select-sm"
+            style={{ maxWidth: 120 }}
+            value={actionCode}
+            onChange={(e) => setActionCode((e.target.value as 'CREATE' | 'UPDATE' | 'DELETE' | '') || '')}
+          >
+            <option value="">{t('auditLog.filter.allActions')}</option>
+            <option value="CREATE">{t('auditLog.filter.create')}</option>
+            <option value="UPDATE">{t('auditLog.filter.update')}</option>
+            <option value="DELETE">{t('auditLog.filter.delete')}</option>
+          </select>
+          <input
+            type="date"
+            className="form-control form-control-sm"
+            style={{ maxWidth: 140 }}
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+          <span className="input-group-text orders-toolbar-addon">~</span>
+          <input
+            type="date"
+            className="form-control form-control-sm"
+            style={{ maxWidth: 140 }}
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center orders-search-btn"
+            onClick={applySearch}
+          >
+            <FiSearch size={16} className="me-1" aria-hidden />
+            {t('common.search')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center orders-search-btn"
+            onClick={resetSearch}
+          >
+            <FiRotateCcw size={16} className="me-1" aria-hidden />
+            {t('common.all')}
+          </button>
+        </div>
       </div>
-      <div className="d-flex align-items-center gap-1">
-        <button type="button" className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center" onClick={applySearch}>
-          <FiSearch size={14} className="me-1" />
-          {t('common.search')}
+      <div className="d-flex align-items-center gap-1 flex-shrink-0">
+        <button
+          type="button"
+          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+          onClick={exportAuditList}
+          title={t('grid.exportExcel')}
+          aria-label={t('grid.exportExcel')}
+          disabled={!canExcelDownload}
+        >
+          <FiDownload size={14} className="me-1" aria-hidden />
+          {t('grid.exportExcel')}
         </button>
-        <button type="button" className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center" onClick={resetSearch}>
-          <FiRotateCcw size={14} className="me-1" />
-          {t('common.refresh')}
+        <button
+          type="button"
+          className="btn btn-phoenix-primary btn-sm d-inline-flex align-items-center"
+          onClick={reloadAuditList}
+          title={t('auditLog.reloadList')}
+          aria-label={t('auditLog.reloadList')}
+        >
+          <FiRefreshCw size={14} className="me-1" aria-hidden />
+          {t('auditLog.reloadList')}
         </button>
       </div>
     </div>
@@ -287,11 +335,12 @@ export function AuditLogPage() {
   return (
     <PageLayout title={t('auditLog.title')} showHeaderRefresh={false}>
       <DataGrid<AuditLogListRow>
+        ref={gridRef}
         columnDefs={columnDefs}
         rowData={items}
         loading={isLoading}
         pagination={false}
-        showExportButton
+        showExportButton={false}
         exportFileName="audit_logs"
         toolbar={toolbar}
         defaultColDef={{ sortable: false, resizable: true }}

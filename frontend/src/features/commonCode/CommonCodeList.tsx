@@ -8,6 +8,7 @@ import { showError } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import type { CodeManageRow } from '@/api/codeManage';
 import { fetchCodeDetails, downloadCodesExport, type CodeGridEditableField } from '@/api/codeManage';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 import { useCodeManageGroups, useUpdateCodeField } from './hooks';
 import { CodeEditModal } from './CodeEditModal';
 import { CodeRegisterModal } from './CodeRegisterModal';
@@ -28,6 +29,9 @@ function subCodeDisplay(row: CodeManageRow): string {
 
 export function CommonCodeList() {
   const { t } = useTranslation();
+  const canCreate = useHasMenuActionPermissionByPath('/system/common-code', 'create');
+  const canUpdate = useHasMenuActionPermissionByPath('/system/common-code', 'update');
+  const canExcelDownload = useHasMenuActionPermissionByPath('/system/common-code', 'excel_download');
   const [keywordInput, setKeywordInput] = useState('');
   const [appliedKeyword, setAppliedKeyword] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -110,6 +114,10 @@ export function CommonCodeList() {
 
   const handleCellValueChanged = useCallback(
     (event: CellValueChangedEvent<CodeManageRow>) => {
+      if (!canUpdate) {
+        event.api.undoCellEditing();
+        return;
+      }
       const { data, colDef, newValue, api } = event;
       if (!data || !colDef.field) return;
       const field = colDef.field as CodeGridEditableField;
@@ -145,7 +153,7 @@ export function CommonCodeList() {
         },
       );
     },
-    [updateField, validateAndTrimTextField, t],
+    [canUpdate, updateField, validateAndTrimTextField, t],
   );
 
   const columnDefs = useMemo<ColDef<CodeManageRow>[]>(
@@ -160,7 +168,7 @@ export function CommonCodeList() {
         cellStyle: { textAlign: 'center' },
         cellRenderer: (params: ICellRendererParams<CodeManageRow>) => {
           const row = params.data;
-          if (!row || row.rowType !== 'MAIN') return '';
+          if (!row || row.rowType !== 'MAIN' || !canCreate) return '';
           return (
             <div className="d-flex justify-content-center align-items-center w-100 h-100 py-1">
               <a
@@ -214,6 +222,7 @@ export function CommonCodeList() {
                 type="button"
                 className="btn btn-link btn-sm p-0 text-primary text-decoration-underline"
                 onClick={() => openEdit(row)}
+                disabled={!canUpdate}
               >
                 {label}
               </button>
@@ -237,6 +246,7 @@ export function CommonCodeList() {
               type="button"
               className="btn btn-link btn-sm p-0 text-primary text-decoration-underline"
               onClick={() => openEdit(row)}
+              disabled={!canUpdate}
             >
               {v}
             </button>
@@ -268,7 +278,7 @@ export function CommonCodeList() {
         headerName: t('commonCode.col.codeNmKo'),
         flex: 1,
         minWidth: 120,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
       },
       {
@@ -276,14 +286,14 @@ export function CommonCodeList() {
         headerName: t('commonCode.col.codeNmEn'),
         flex: 1,
         minWidth: 120,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
       },
       {
         field: 'useYn',
         headerName: t('commonCode.col.useYn'),
         width: 100,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
         cellStyle: { textAlign: 'center' },
         cellEditor: 'agSelectCellEditor',
@@ -293,7 +303,7 @@ export function CommonCodeList() {
         field: 'dispSeq',
         headerName: t('commonCode.col.dispSeq'),
         width: 100,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
         cellDataType: 'number',
         cellStyle: { textAlign: 'center' },
@@ -302,14 +312,14 @@ export function CommonCodeList() {
         field: 'etc1',
         headerName: t('commonCode.col.etc1'),
         width: 100,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
       },
       {
         field: 'etc2',
         headerName: t('commonCode.col.etc2'),
         width: 100,
-        editable: true,
+        editable: canUpdate,
         sortable: false,
       },
       {
@@ -320,7 +330,7 @@ export function CommonCodeList() {
         cellStyle: { textAlign: 'center' },
       },
     ],
-    [t, expanded, openEdit, toggleExpand],
+    [t, expanded, openEdit, toggleExpand, canCreate, canUpdate],
   );
 
   const toolbar = (
@@ -364,30 +374,34 @@ export function CommonCodeList() {
         </div>
       </div>
       <div className="d-flex align-items-center gap-1 flex-shrink-0">
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={() => setRegisterOpen(true)}
-        >
-          <FiPlus size={14} className="me-1" aria-hidden />
-          {t('commonCode.registerMain')}
-        </button>
-        <button
-          type="button"
-          className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
-          onClick={() => void handleExport()}
-        >
-          <FiDownload size={14} className="me-1" aria-hidden />
-          {t('commonCode.exportExcel')}
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={() => setRegisterOpen(true)}
+          >
+            <FiPlus size={14} className="me-1" aria-hidden />
+            {t('commonCode.registerMain')}
+          </button>
+        )}
+        {canExcelDownload && (
+          <button
+            type="button"
+            className="btn btn-phoenix-secondary btn-sm btn-default-visible d-inline-flex align-items-center"
+            onClick={() => void handleExport()}
+          >
+            <FiDownload size={14} className="me-1" aria-hidden />
+            {t('commonCode.exportExcel')}
+          </button>
+        )}
       </div>
     </div>
   );
 
   return (
     <PageLayout title={t('commonCode.title')} showHeaderRefresh={false}>
-      {registerOpen && <CodeRegisterModal onClose={() => setRegisterOpen(false)} />}
-      {childRegisterParent && (
+      {registerOpen && canCreate && <CodeRegisterModal onClose={() => setRegisterOpen(false)} />}
+      {childRegisterParent && canCreate && (
         <CodeChildRegisterModal
           parentMainCd={childRegisterParent}
           onClose={() => setChildRegisterParent(null)}
@@ -408,7 +422,7 @@ export function CommonCodeList() {
           }}
         />
       )}
-      {editTarget && (
+      {editTarget && canUpdate && (
         <CodeEditModal mainCd={editTarget.mainCd} subCd={editTarget.subCd} onClose={() => setEditTarget(null)} />
       )}
       <DataGrid<CodeManageRow>

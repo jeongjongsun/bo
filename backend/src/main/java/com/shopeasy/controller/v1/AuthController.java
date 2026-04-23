@@ -141,12 +141,7 @@ public class AuthController {
                 "path", "/",
                 "icon", "Dashboard",
                 "children", List.of())));
-        List<String> permissions = new ArrayList<>();
-        if (authGroup != null && !authGroup.isBlank()) {
-            permissions.add(authGroup.trim());
-        } else {
-            permissions.add("USER");
-        }
+        List<String> permissions = resolveActionPermissions(authGroup);
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("user", user);
@@ -171,6 +166,15 @@ public class AuthController {
         List<String> ids = authGroupMenuRMapper.selectActiveMenuIdsByAuthGroupAndSystem(
                 authGroupCd.trim(), BO_SYSTEM_MAIN, BO_SYSTEM_SUB);
         return ids != null ? ids : List.of();
+    }
+
+    private List<String> resolveActionPermissions(String authGroupCd) {
+        if (authGroupCd == null || authGroupCd.isBlank()) {
+            return new ArrayList<>();
+        }
+        List<String> permissions = authGroupMenuRMapper.selectPermissionCodesByAuthGroup(
+                authGroupCd.trim(), BO_SYSTEM_MAIN);
+        return permissions != null ? permissions : new ArrayList<>();
     }
 
     /** X-Forwarded-For 우선(첫 hop), 없으면 remoteAddr. */

@@ -19,7 +19,8 @@ export function useUpdateCodeField() {
     mutationFn: (params: { mainCd: string; subCd: string; field: CodeGridEditableField; value: unknown }) =>
       updateCodeField(params),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['codeManage'] });
+      void qc.invalidateQueries({ queryKey: ['codeManage'] });
+      void qc.invalidateQueries({ queryKey: ['codes'] });
     },
   });
 }

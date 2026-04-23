@@ -1,0 +1,31 @@
+---
+description: BO/OM 화면 액션 권한 적용 규칙
+alwaysApply: true
+---
+
+# 액션 권한 적용 규칙
+
+## 1) 권한 코드 표준
+
+- 형식: `{resource}:{action}`
+- action: `view`, `create`, `update`, `delete`, `excel_download`, `approve`
+- resource: 기본적으로 `menu_id`의 `-`를 `_`로 치환
+- 예외 매핑이 생기면 `docs/12-액션-권한-적용-표준.md`에 즉시 기록한다.
+
+## 2) 프론트엔드 필수 적용 지점
+
+- 버튼, 링크, 드롭다운 액션, 그리드 editable, 모달 열기/저장/삭제 액션
+- UI 비노출/disabled 처리 + 이벤트 핸들러 내부 방어를 함께 적용
+- 권한 훅은 `frontend/src/hooks/useActionPermission.ts`의 공통 훅을 사용
+
+## 3) 백엔드 필수 적용 지점
+
+- `/auth/me`의 `permissions`는 액션 권한 코드를 내려준다.
+- CUD, 승인, 엑셀 관련 API는 서버에서 권한 검증을 수행한다.
+- "UI만 막고 API 미검증" 상태를 허용하지 않는다.
+
+## 4) 신규 화면 개발 시
+
+- `boAppRoutes`에 메뉴/경로 매핑을 먼저 정의
+- 화면 구현 시 액션별 권한 적용을 기본 템플릿으로 포함
+- 권한 적용 누락 시 구현 완료로 간주하지 않는다.
