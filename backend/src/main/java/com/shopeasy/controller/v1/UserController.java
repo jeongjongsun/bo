@@ -11,6 +11,7 @@ import com.shopeasy.dto.UserFieldUpdateRequest;
 import com.shopeasy.dto.UserListItem;
 import com.shopeasy.dto.UserManageRow;
 import com.shopeasy.dto.UserRegisterRequest;
+import com.shopeasy.service.ActionPermissionService;
 import com.shopeasy.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,9 +29,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final ActionPermissionService actionPermissionService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ActionPermissionService actionPermissionService) {
         this.userService = userService;
+        this.actionPermissionService = actionPermissionService;
     }
 
     private static String resolveLang(HttpServletRequest request, String langParam) {
@@ -57,7 +60,10 @@ public class UserController {
     public ResponseEntity<ApiResponse<PagedData<UserListItem>>> list(
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest request) {
+        ResponseEntity<ApiResponse<PagedData<UserListItem>>> denied = denyIfNoPermission(request, "user:view");
+        if (denied != null) return denied;
 
         if (size > 5000) {
             size = 5000;
@@ -78,6 +84,8 @@ public class UserController {
             @RequestParam(defaultValue = "100") int size,
             @RequestParam(value = "lang", required = false) String lang,
             HttpServletRequest request) {
+        ResponseEntity<ApiResponse<PagedData<UserManageRow>>> denied = denyIfNoPermission(request, "user:view");
+        if (denied != null) return denied;
         if (size > 5000) {
             size = 5000;
         }
@@ -88,12 +96,14 @@ public class UserController {
     }
 
     @GetMapping("/export")
-    public ResponseEntity<byte[]> exportManage(
+    public ResponseEntity<?> exportManage(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String gradeCd,
             @RequestParam(required = false) String authGroup,
             @RequestParam(value = "lang", required = false) String lang,
             HttpServletRequest request) {
+        ResponseEntity<?> denied = denyFileIfNoPermission(request, "user:excel_download");
+        if (denied != null) return denied;
         String resolvedLang = resolveLang(request, lang);
         byte[] body = userService.exportManageExcel(keyword, gradeCd, authGroup, resolvedLang);
         HttpHeaders headers = new HttpHeaders();
@@ -104,7 +114,11 @@ public class UserController {
     }
 
     @GetMapping("/detail")
-    public ResponseEntity<ApiResponse<UserDetailResponse>> detail(@RequestParam("userId") String userId) {
+    public ResponseEntity<ApiResponse<UserDetailResponse>> detail(
+            @RequestParam("userId") String userId,
+            HttpServletRequest request) {
+        ResponseEntity<ApiResponse<UserDetailResponse>> denied = denyIfNoPermission(request, "user:view");
+        if (denied != null) return denied;
         try {
             UserDetailResponse result = userService.getUserDetail(userId);
             return ResponseEntity.ok(ApiResponse.ok(result));
@@ -123,6 +137,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> updateField(
             @RequestBody UserFieldUpdateRequest request,
             HttpServletRequest httpRequest) {
+        ResponseEntity<ApiResponse<Void>> denied = denyIfNoPermission(httpRequest, "user:update");
+        if (denied != null) return denied;
         String userId = (String) httpRequest.getAttribute(SessionAuthInterceptor.REQUEST_ATTR_USER_ID);
         try {
             userService.updateUserField(request, userId);
@@ -140,6 +156,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> updateDetail(
             @RequestBody UserDetailUpdateRequest request,
             HttpServletRequest httpRequest) {
+        ResponseEntity<ApiResponse<Void>> denied = denyIfNoPermission(httpRequest, "user:update");
+        if (denied != null) return denied;
         String userId = (String) httpRequest.getAttribute(SessionAuthInterceptor.REQUEST_ATTR_USER_ID);
         try {
             userService.updateUserDetail(request, userId);
@@ -157,6 +175,8 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserDetailResponse>> register(
             @RequestBody UserRegisterRequest request,
             HttpServletRequest httpRequest) {
+        ResponseEntity<ApiResponse<UserDetailResponse>> denied = denyIfNoPermission(httpRequest, "user:create");
+        if (denied != null) return denied;
         String userId = (String) httpRequest.getAttribute(SessionAuthInterceptor.REQUEST_ATTR_USER_ID);
         try {
             UserDetailResponse created = userService.registerUser(request, userId);
@@ -171,5 +191,28 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.fail(ErrorCodes.ERR_INTERNAL, "error.internal"));
         }
+    }
+
+    private String currentUserId(HttpServletRequest request) {
+        return (String) request.getAttribute(SessionAuthInterceptor.REQUEST_ATTR_USER_ID);
+    }
+
+    private <T> ResponseEntity<ApiResponse<T>> denyIfNoPermission(HttpServletRequest request, String permissionCode) {
+        String userId = currentUserId(request);
+        if (actionPermissionService.hasPermission(userId, permissionCode)) {
+            return null;
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.fail(ErrorCodes.ERR_FORBIDDEN, "auth.forbidden"));
+    }
+
+    private ResponseEntity<?> denyFileIfNoPermission(HttpServletRequest request, String permissionCode) {
+        String userId = currentUserId(request);
+        if (actionPermissionService.hasPermission(userId, permissionCode)) {
+            return null;
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ApiResponse.fail(ErrorCodes.ERR_FORBIDDEN, "auth.forbidden"));
     }
 }
