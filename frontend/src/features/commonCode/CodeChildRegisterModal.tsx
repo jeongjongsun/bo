@@ -5,6 +5,7 @@ import { showError, showSuccess } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import { registerCodeChild } from '@/api/codeManage';
 import { FloatingRow } from '@/features/shipper/FloatingRow';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 
 const USE_YN = ['Y', 'N'] as const;
 
@@ -18,6 +19,7 @@ interface CodeChildRegisterModalProps {
 export function CodeChildRegisterModal({ parentMainCd, onClose, onRegistered }: CodeChildRegisterModalProps) {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const hasPermission = useHasMenuActionPermissionByPath('/system/common-code', 'create');
   const [subCd, setSubCd] = useState('');
   const [codeNmKo, setCodeNmKo] = useState('');
   const [codeNmEn, setCodeNmEn] = useState('');
@@ -27,6 +29,9 @@ export function CodeChildRegisterModal({ parentMainCd, onClose, onRegistered }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission) {
+      return;
+    }
     const cd = subCd.trim().toUpperCase();
     if (!cd) {
       showError(t('common.error'), t('commonCode.childRegister.subCdRequired'));
@@ -62,6 +67,7 @@ export function CodeChildRegisterModal({ parentMainCd, onClose, onRegistered }: 
         dispSeq: disp,
       });
       await qc.invalidateQueries({ queryKey: ['codeManage'] });
+      void qc.invalidateQueries({ queryKey: ['codes'] });
       onRegistered?.(parentMainCd);
       setSubCd('');
       setCodeNmKo('');
@@ -172,7 +178,11 @@ export function CodeChildRegisterModal({ parentMainCd, onClose, onRegistered }: 
             <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={onClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={pending}>
+            <button
+              type="submit"
+              className={`btn btn-phoenix-primary btn-sm${hasPermission ? ' btn-default-visible' : ''}`}
+              disabled={pending || !hasPermission}
+            >
               {pending ? t('common.loading') : t('commonCode.saveAndContinue')}
             </button>
           </div>
