@@ -5,6 +5,7 @@ import { showError, showSuccess } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import { registerCodeGroup } from '@/api/codeManage';
 import { FloatingRow } from '@/features/shipper/FloatingRow';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 
 const USE_YN = ['Y', 'N'] as const;
 
@@ -15,6 +16,7 @@ interface CodeRegisterModalProps {
 export function CodeRegisterModal({ onClose }: CodeRegisterModalProps) {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const canCreate = useHasMenuActionPermissionByPath('/system/common-code', 'create');
   const [subCd, setSubCd] = useState('');
   const [codeNmKo, setCodeNmKo] = useState('');
   const [codeNmEn, setCodeNmEn] = useState('');
@@ -23,6 +25,9 @@ export function CodeRegisterModal({ onClose }: CodeRegisterModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canCreate) {
+      return;
+    }
     const cd = subCd.trim().toUpperCase();
     if (!cd) {
       showError(t('common.error'), t('commonCode.register.subCdRequired'));
@@ -46,6 +51,7 @@ export function CodeRegisterModal({ onClose }: CodeRegisterModalProps) {
         useYn,
       });
       await qc.invalidateQueries({ queryKey: ['codeManage'] });
+      void qc.invalidateQueries({ queryKey: ['codes'] });
       setSubCd('');
       setCodeNmKo('');
       setCodeNmEn('');
@@ -123,10 +129,10 @@ export function CodeRegisterModal({ onClose }: CodeRegisterModalProps) {
             </div>
           </div>
           <div className="product-modal__footer">
-            <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={onClose}>
+            <button type="button" className="btn btn-phoenix-secondary btn-sm btn-default-visible" onClick={onClose}>
               {t('common.cancel')}
             </button>
-            <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={pending}>
+            <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={pending || !canCreate}>
               {pending ? t('common.loading') : t('commonCode.saveAndContinue')}
             </button>
           </div>
