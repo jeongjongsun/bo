@@ -5,6 +5,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { fetchCodeList } from '@/api/codes';
 import type { MenuManageRow } from '@/api/menuManage';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 import { confirm } from '@/utils/swal';
 import { showError, showSuccess } from '@/utils/swal';
 import { useCreateMenu, useDeleteMenu, useMenuTree, useUpdateMenu } from './hooks';
@@ -206,6 +207,9 @@ const READONLY_FLOATING_CONTROL = 'form-control bg-body-secondary';
 
 export function MenuManagePage() {
   const { t, i18n } = useTranslation();
+  const canCreate = useHasMenuActionPermissionByPath('/system/menus', 'create');
+  const canUpdate = useHasMenuActionPermissionByPath('/system/menus', 'update');
+  const canDelete = useHasMenuActionPermissionByPath('/system/menus', 'delete');
   const formDomId = useId();
   const fieldId = (name: string) => `${formDomId}-${name}`;
   const [systemOptions, setSystemOptions] = useState<{ subCd: string; codeNm: string }[]>([]);
@@ -253,6 +257,7 @@ export function MenuManagePage() {
   );
 
   const handleAddChild = useCallback(() => {
+    if (!canCreate) return;
     if (!selectedId) {
       showError(t('common.error'), t('menuManage.selectHint'));
       return;
@@ -260,14 +265,15 @@ export function MenuManagePage() {
     setIsCreating(true);
     setParentForCreate(selectedId);
     setForm(emptyForm());
-  }, [selectedId, t]);
+  }, [canCreate, selectedId, t]);
 
   const handleAddRoot = useCallback(() => {
+    if (!canCreate) return;
     setIsCreating(true);
     setParentForCreate(null);
     setSelectedId(null);
     setForm(emptyForm());
-  }, []);
+  }, [canCreate]);
 
   const handleCancelCreate = useCallback(() => {
     setIsCreating(false);
@@ -301,6 +307,7 @@ export function MenuManagePage() {
     }
     try {
       if (isCreating) {
+        if (!canCreate) return;
         await createMut({
           systemMainCd: 'SYSTEM',
           systemSubCd,
@@ -312,6 +319,7 @@ export function MenuManagePage() {
         setIsCreating(true);
         /* parentForCreate 유지 — 연속 하위 등록 */
       } else if (selectedId) {
+        if (!canUpdate) return;
         await updateMut({ menuId: selectedId, body: payload, systemSubCd });
         await showSuccess(t('menuManage.saved'));
       }
@@ -320,6 +328,8 @@ export function MenuManagePage() {
     }
   }, [
     buildPayload,
+    canCreate,
+    canUpdate,
     createMut,
     isCreating,
     parentForCreate,
@@ -330,6 +340,7 @@ export function MenuManagePage() {
   ]);
 
   const handleDeleteMenu = useCallback(async () => {
+    if (!canDelete) return;
     if (!selectedId || isCreating) return;
     const ok = await confirm(
       t('common.delete'),
@@ -347,7 +358,7 @@ export function MenuManagePage() {
     } catch (err) {
       showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
     }
-  }, [selectedId, isCreating, t, deleteMut, systemSubCd]);
+  }, [canDelete, selectedId, isCreating, t, deleteMut, systemSubCd]);
 
   const busy = creating || updating || deleting;
 
@@ -410,12 +421,16 @@ export function MenuManagePage() {
             </div>
             <div className="card-body overflow-auto menu-manage-page__detail-body" style={{ minHeight: 0 }}>
               <div className="d-flex flex-wrap gap-2 mb-3">
-                <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={handleAddChild}>
-                  {t('menuManage.addChild')}
-                </button>
-                <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={handleAddRoot}>
-                  {t('menuManage.addRoot')}
-                </button>
+                {canCreate && (
+                  <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={handleAddChild}>
+                    {t('menuManage.addChild')}
+                  </button>
+                )}
+                {canCreate && (
+                  <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={handleAddRoot}>
+                    {t('menuManage.addRoot')}
+                  </button>
+                )}
                 {isCreating && (
                   <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleCancelCreate}>
                     {t('common.cancel')}
@@ -472,6 +487,7 @@ export function MenuManagePage() {
                         placeholder=" "
                         required
                         autoComplete="off"
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('menuNmKo')}>
                         {t('menuManage.menuNmKo')}
@@ -491,6 +507,7 @@ export function MenuManagePage() {
                         onChange={(e) => setForm((f) => ({ ...f, menuNmEn: e.target.value }))}
                         placeholder=" "
                         autoComplete="off"
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('menuNmEn')}>{t('menuManage.menuNmEn')}</label>
                     </div>
@@ -505,6 +522,7 @@ export function MenuManagePage() {
                         onChange={(e) => setForm((f) => ({ ...f, menuNmJa: e.target.value }))}
                         placeholder=" "
                         autoComplete="off"
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('menuNmJa')}>{t('menuManage.menuNmJa')}</label>
                     </div>
@@ -519,6 +537,7 @@ export function MenuManagePage() {
                         onChange={(e) => setForm((f) => ({ ...f, menuNmVi: e.target.value }))}
                         placeholder=" "
                         autoComplete="off"
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('menuNmVi')}>{t('menuManage.menuNmVi')}</label>
                     </div>
@@ -533,6 +552,7 @@ export function MenuManagePage() {
                         onChange={(e) => setForm((f) => ({ ...f, menuUrl: e.target.value }))}
                         placeholder=" "
                         autoComplete="off"
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('menuUrl')}>{t('menuManage.menuUrl')}</label>
                     </div>
@@ -547,6 +567,7 @@ export function MenuManagePage() {
                           setForm((f) => ({ ...f, menuType: e.target.value === 'GROUP' ? 'GROUP' : 'PAGE' }))
                         }
                         aria-label={t('menuManage.menuType')}
+                        disabled={!isCreating && !canUpdate}
                       >
                         <option value="PAGE">{t('menuManage.menuTypePage')}</option>
                         <option value="GROUP">{t('menuManage.menuTypeGroup')}</option>
@@ -566,6 +587,7 @@ export function MenuManagePage() {
                         }
                         placeholder=" "
                         min={0}
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('dispSeq')}>{t('menuManage.dispSeq')}</label>
                     </div>
@@ -580,6 +602,7 @@ export function MenuManagePage() {
                         onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
                         placeholder=" "
                         autoComplete="off"
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label htmlFor={fieldId('icon')}>{t('menuManage.icon')}</label>
                     </div>
@@ -592,6 +615,7 @@ export function MenuManagePage() {
                         id={fieldId('isActive')}
                         checked={form.isActive}
                         onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
+                        disabled={!isCreating && !canUpdate}
                       />
                       <label className="form-check-label" htmlFor={fieldId('isActive')}>
                         {t('menuManage.isActive')}
@@ -604,12 +628,12 @@ export function MenuManagePage() {
                         type="button"
                         className="btn btn-phoenix-danger btn-sm"
                         onClick={() => { void handleDeleteMenu(); }}
-                        disabled={busy}
+                        disabled={busy || !canDelete}
                       >
                         {t('common.delete')}
                       </button>
                     )}
-                    <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={busy}>
+                    <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={busy || (isCreating ? !canCreate : !canUpdate)}>
                       {isCreating ? t('menuManage.saveAndContinue') : t('menuManage.save')}
                     </button>
                   </div>
