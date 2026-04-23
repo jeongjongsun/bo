@@ -38,7 +38,8 @@
     "no": "N",
     "prev": "前へ",
     "next": "次へ",
-    "requiredMark": "必須"
+    "requiredMark": "必須",
+    "close": "閉じる"
   },
   "validation": {
     "phoneInvalid": "電話番号の形式が正しくありません。（例: 010-1234-5678, 02-123-4567）"
@@ -46,7 +47,23 @@
   "auth": {
     "checking": "認証を確認しています...",
     "sessionExpired": "セッションの有効期限が切れました。再度サインインしてください。",
-    "forbidden": "アクセスが拒否されました。"
+    "forbidden": "アクセスが拒否されました。",
+    "route_denied": "この画面にアクセスする権限がありません。ダッシュボードに移動します。",
+    "route_unknown": "登録されていないURLです。ダッシュボードに移動します。"
+  },
+  "sidebar": {
+    "favorites": "お気に入り"
+  },
+  "favorites": {
+    "addTitle": "お気に入りに追加",
+    "removeTitle": "お気に入りから削除",
+    "limit": "お気に入りは最大5件まで登録できます。",
+    "toggleError": "お気に入りを更新できませんでした。",
+    "home_not_allowed": "ダッシュボードはお気に入りに登録できません。",
+    "not_page": "お気に入りに登録できるのはページメニューのみです。",
+    "menu_not_allowed": "このメニューは利用できません。",
+    "already": "すでにお気に入りに登録されています。",
+    "not_found": "お気に入りにありません。"
   },
   "error": {
     "session_expired": "セッションの有効期限が切れました。再度サインインしてください。",
@@ -772,6 +789,155 @@
     "duplicate_cd": "この法人コードは既に登録されています。",
     "serial_exhausted": "自動採番の上限（CORP-9999）に達しました。管理者に連絡してください。",
     "create_retry_exhausted": "コードの重複が続き、登録を完了できませんでした。しばらくしてから再度お試しください。"
+  },
+  "menus": {
+    "system_sub_cd_required": "システム(OM/BO)を選択してください。",
+    "menu_nm_ko_required": "メニュー名(韓国語)を入力してください。",
+    "not_found": "メニューが見つかりません。",
+    "parent_not_found": "親メニューが見つかりません。",
+    "parent_system_mismatch": "親メニューと同じシステム(OM/BO)である必要があります。"
+  },
+  "authGroups": {
+    "code_required": "権限グループコードを確認してください。",
+    "not_found": "権限グループが見つかりません。",
+    "system_sub_cd_required": "システム(OM/BO)を選択してください。",
+    "invalid_menu_ids": "無効なメニューIDが含まれています。",
+    "name_required": "権限グループ名を入力してください。",
+    "duplicate_cd": "この権限グループコードは既に使用されています。",
+    "code_invalid": "コードは英大文字・数字・アンダースコア(_)のみ、48文字以内で入力してください。"
+  },
+  "authGroupManage": {
+    "title": "権限管理",
+    "system": "システム",
+    "saved": "権限を保存しました。",
+    "deleted": "権限グループを削除しました。",
+    "deleteConfirm": "選択した権限グループを削除しますか？",
+    "deleteConfirmWithUsers": "所属ユーザーに付与された権限はすべて削除されます。<br>続行しますか？",
+    "selectAll": "すべて選択",
+    "unselectAll": "すべて解除",
+    "selectedCount": "{{count}}件選択",
+    "changeReason": "変更理由",
+    "changeReasonRequired": "変更理由を入力してください。",
+    "changeReasonPlaceholder": "例: BO運用者メニュー権限の調整",
+    "noMenus": "表示するメニューがありません。",
+    "auditTitle": "権限変更履歴",
+    "noAudits": "履歴がありません。",
+    "badge": {
+      "permissionMenu": "権限設定",
+      "viewChangeLog": "ログ照会"
+    },
+    "edit": {
+      "title": "権限グループ修正",
+      "success": "保存しました。"
+    },
+    "logModal": {
+      "title": "変更ログ"
+    },
+    "col": {
+      "rowNum": "番号",
+      "authGroupCd": "権限グループコード",
+      "authGroupNm": "権限グループ名",
+      "permissionMenu": "権限設定",
+      "userCount": "所属ユーザー数",
+      "remark": "備考",
+      "changeLog": "変更ログ",
+      "delete": "削除",
+      "createdAt": "登録日",
+      "createdBy": "登録者",
+      "updatedAt": "更新日",
+      "updatedBy": "更新者"
+    },
+    "modal": {
+      "title": "権限メニュー設定"
+    },
+    "register": {
+      "button": "権限グループ登録",
+      "title": "権限グループ登録",
+      "authGroupCd": "権限グループコード",
+      "authGroupCdAuto": "権限グループコードは保存時にシステムで自動付与されます。",
+      "authGroupNm": "権限グループ名",
+      "remark": "備考",
+      "success": "権限グループを登録しました。一覧の「権限設定」またはコードをクリックしてメニュー・情報を設定してください。"
+    },
+    "audit": {
+      "actionType": "変更種別",
+      "system": "システム",
+      "beforeAfter": "変更前/後",
+      "changeReason": "変更理由",
+      "actor": "変更者",
+      "at": "変更日時"
+    }
+  },
+  "menuManage": {
+    "title": "メニュー管理",
+    "lead": "システム別メニューツリーの参照・編集、子メニューの登録を行います。",
+    "system": "システム",
+    "treeTitle": "メニュー構成",
+    "expand": "展開",
+    "collapse": "折りたたむ",
+    "detailTitle": "メニュー情報",
+    "selectHint": "ツリーからメニューを選択してください。",
+    "menuId": "メニューコード",
+    "menuIdAuto": "保存時に自動採番",
+    "menuNmKo": "メニュー名(韓国語)",
+    "menuNmEn": "メニュー名(英語)",
+    "menuNmJa": "メニュー名(日本語)",
+    "menuNmVi": "メニュー名(ベトナム語)",
+    "menuUrl": "メニューURL",
+    "isActive": "使用する",
+    "icon": "アイコン",
+    "dispSeq": "表示順",
+    "menuType": "メニュー種別",
+    "menuTypeGroup": "グループ(フォルダ)",
+    "menuTypePage": "画面",
+    "addChild": "下位メニュー追加",
+    "addRoot": "最上位メニュー追加",
+    "save": "保存",
+    "saveAndContinue": "保存して続ける",
+    "saved": "保存しました。",
+    "created": "登録しました。",
+    "deleted": "削除しました。",
+    "deleteConfirm": "選択したメニューと配下メニューをすべて削除します。続行しますか？",
+    "newMenuTitle": "新規メニュー",
+    "parentMenuId": "親メニューID",
+    "parentNone": "なし（最上位）"
+  },
+  "auditLog": {
+    "title": "監査履歴",
+    "filter": {
+      "allActions": "すべてのアクション",
+      "create": "登録",
+      "update": "修正",
+      "delete": "削除",
+      "keywordPlaceholder": "メニュー名/実行者/エンティティID/変更項目で検索"
+    },
+    "col": {
+      "rowNum": "番号",
+      "actedAt": "発生日時",
+      "systemSubCd": "システム",
+      "menuNameKo": "メニュー名",
+      "actionNameKo": "アクション",
+      "actorUserId": "実行者",
+      "entityId": "エンティティ ID",
+      "changedFields": "変更項目",
+      "dataCompare": "データ比較"
+    },
+    "dataView": "データ照会",
+    "compareTitle": "監査データ比較",
+    "changedKeys": "変更キー強調",
+    "diffTable": "差分比較",
+    "fieldPath": "フィールドパス",
+    "beforeData": "Before Data",
+    "afterData": "After Data"
+  },
+  "boPages": {
+    "audit_log": "監査履歴",
+    "error_log": "エラー履歴",
+    "unmatched_orders": "非マッチング注文",
+    "claim_orders": "クレーム注文",
+    "mall_connection": "接続情報管理",
+    "product_gift": "ノベルティ支給設定",
+    "product_matching": "マッチング情報"
   },
   "gridDemo": {
     "title": "グリッドデモ",

@@ -11,6 +11,7 @@ import com.shopeasy.dto.UserFieldUpdateRequest;
 import com.shopeasy.dto.UserListItem;
 import com.shopeasy.dto.UserManageRow;
 import com.shopeasy.dto.UserRegisterRequest;
+import com.shopeasy.dto.AuditLogCommand;
 import com.shopeasy.entity.OmUserM;
 import com.shopeasy.mapper.OmAuthGroupMMapper;
 import com.shopeasy.mapper.OmUserMMapper;
@@ -57,18 +58,21 @@ public class UserService {
     private final CodeService codeService;
     private final AuthService authService;
     private final ObjectMapper objectMapper;
+    private final AuditService auditService;
 
     public UserService(
             OmUserMMapper userMapper,
             OmAuthGroupMMapper authGroupMapper,
             CodeService codeService,
             AuthService authService,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            AuditService auditService) {
         this.userMapper = userMapper;
         this.authGroupMapper = authGroupMapper;
         this.codeService = codeService;
         this.authService = authService;
         this.objectMapper = objectMapper;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -197,6 +201,8 @@ public class UserService {
         if (row == null) {
             throw new IllegalArgumentException(MessageKeys.ERROR_NOT_FOUND);
         }
+        Map<String, Object> beforeMap = buildUserAuditState(row.getUserNm(), row.getUserInfoMap(), false);
+        String afterValue;
         switch (field) {
             case "userNm" -> {
                 String nm = valueToString(request.getValue());
@@ -204,6 +210,7 @@ public class UserService {
                     throw new IllegalArgumentException(MessageKeys.USERS_USER_NM_REQUIRED);
                 }
                 userMapper.updateUserNm(uid, nm.trim(), updatedBy);
+                afterValue = nm.trim();
             }
             case "emailId" -> {
                 String email = valueToString(request.getValue());
@@ -211,6 +218,7 @@ public class UserService {
                     throw new IllegalArgumentException(MessageKeys.USERS_EMAIL_REQUIRED);
                 }
                 mergeUserInfoKey(row, uid, "email_id", email.trim(), updatedBy);
+                afterValue = email.trim();
             }
             case "gradeCd" -> {
                 String grade = valueToString(request.getValue());
@@ -220,6 +228,7 @@ public class UserService {
                 String g = grade.trim();
                 assertGradeExists(g);
                 mergeUserInfoKey(row, uid, "grade_cd", g, updatedBy);
+                afterValue = g;
             }
             case "authGroup" -> {
                 String ag = valueToString(request.getValue());
@@ -229,6 +238,7 @@ public class UserService {
                 String code = ag.trim();
                 assertAuthGroupExists(code);
                 mergeUserInfoKey(row, uid, "auth_group", code, updatedBy);
+                afterValue = code;
             }
             case "userStatus" -> {
                 String st = valueToString(request.getValue());
@@ -236,9 +246,13 @@ public class UserService {
                     throw new IllegalArgumentException(MessageKeys.USERS_USER_STATUS_INVALID);
                 }
                 mergeUserInfoKey(row, uid, "user_status", st.trim(), updatedBy);
+                afterValue = st.trim();
             }
             default -> throw new IllegalArgumentException(MessageKeys.USERS_INVALID_FIELD);
         }
+        Map<String, Object> afterMap = new LinkedHashMap<>(beforeMap);
+        applyUserAuditField(afterMap, field, afterValue);
+        recordAudit("UPDATE", uid, updatedBy, beforeMap, afterMap);
     }
 
     @Transactional
@@ -251,6 +265,7 @@ public class UserService {
         if (row == null) {
             throw new IllegalArgumentException(MessageKeys.ERROR_NOT_FOUND);
         }
+        Map<String, Object> beforeMap = buildUserAuditState(row.getUserNm(), row.getUserInfoMap(), false);
         if (request.getUserNm() == null || request.getUserNm().isBlank()) {
             throw new IllegalArgumentException(MessageKeys.USERS_USER_NM_REQUIRED);
         }
@@ -315,6 +330,8 @@ public class UserService {
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
+        Map<String, Object> afterMap = buildUserAuditState(request.getUserNm().trim(), m, np != null && !np.isBlank());
+        recordAudit("UPDATE", uid, updatedBy, beforeMap, afterMap);
     }
 
     @Transactional
@@ -381,7 +398,64 @@ public class UserService {
         if (created == null) {
             throw new IllegalStateException(MessageKeys.ERROR_NOT_FOUND);
         }
+        recordAudit("CREATE", uid, createdBy, Map.of(), buildUserAuditState(request.getUserNm().trim(), m, true));
         return created;
+    }
+
+    private Map<String, Object> buildUserAuditState(String userNm, Map<String, Object> userInfo, boolean passwordChanged) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("userNm", userNm);
+        out.put("emailId", getAsString(userInfo, "email_id"));
+        out.put("gradeCd", getAsString(userInfo, "grade_cd"));
+        out.put("authGroup", getAsString(userInfo, "auth_group"));
+        out.put("userStatus", getAsString(userInfo, "user_status"));
+        out.put("mobileNo", getAsString(userInfo, "mobile_no"));
+        out.put("corporationCd", getAsString(userInfo, "corporation_cd"));
+        if (passwordChanged) {
+            out.put("passwordChanged", true);
+        }
+        return out;
+    }
+
+    private void applyUserAuditField(Map<String, Object> auditState, String field, String value) {
+        String normalized = value != null ? value : "";
+        switch (field) {
+            case "userNm" -> auditState.put("userNm", normalized);
+            case "emailId" -> auditState.put("emailId", normalized);
+            case "gradeCd" -> auditState.put("gradeCd", normalized);
+            case "authGroup" -> auditState.put("authGroup", normalized);
+            case "userStatus" -> auditState.put("userStatus", normalized);
+            default -> throw new IllegalArgumentException(MessageKeys.USERS_INVALID_FIELD);
+        }
+    }
+
+    private String getAsString(Map<String, Object> map, String key) {
+        if (map == null) {
+            return null;
+        }
+        Object value = map.get(key);
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private void recordAudit(String actionCode, String entityId, String actorUserId, Map<String, Object> before, Map<String, Object> after) {
+        try {
+            AuditLogCommand cmd = new AuditLogCommand();
+            cmd.setDomainType("USER");
+            cmd.setSystemMainCd("SYSTEM");
+            cmd.setSystemSubCd("BO");
+            cmd.setMenuCode("basic-users");
+            cmd.setMenuNameKo("사용자 정보");
+            cmd.setActionCode(actionCode);
+            cmd.setEntityType("om_user_m");
+            cmd.setEntityId(entityId);
+            cmd.setBeforeData(objectMapper.writeValueAsString(before != null ? before : Map.of()));
+            cmd.setAfterData(objectMapper.writeValueAsString(after != null ? after : Map.of()));
+            cmd.setChangedFields("[]");
+            cmd.setActorUserId(actorUserId != null && !actorUserId.isBlank() ? actorUserId : "system");
+            auditService.record(cmd);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private void mergeUserInfoKey(OmUserM row, String userId, String jsonKey, String value, String updatedBy) {

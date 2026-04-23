@@ -38,7 +38,8 @@
     "no": "N",
     "prev": "Prev",
     "next": "Next",
-    "requiredMark": "Required"
+    "requiredMark": "Required",
+    "close": "Close"
   },
   "validation": {
     "phoneInvalid": "Invalid phone number format. (e.g. 010-1234-5678, 02-123-4567)"
@@ -46,7 +47,23 @@
   "auth": {
     "checking": "Checking authentication...",
     "sessionExpired": "Session expired. Please sign in again.",
-    "forbidden": "Access denied."
+    "forbidden": "Access denied.",
+    "route_denied": "You do not have access to this page. Redirecting to the dashboard.",
+    "route_unknown": "This URL is not registered. Redirecting to the dashboard."
+  },
+  "sidebar": {
+    "favorites": "Favorites"
+  },
+  "favorites": {
+    "addTitle": "Add to favorites",
+    "removeTitle": "Remove from favorites",
+    "limit": "You can add up to 5 favorites.",
+    "toggleError": "Could not update favorites.",
+    "home_not_allowed": "The dashboard cannot be added to favorites.",
+    "not_page": "Only page menus can be added to favorites.",
+    "menu_not_allowed": "This menu is not allowed for your account.",
+    "already": "This menu is already in favorites.",
+    "not_found": "This menu is not in favorites."
   },
   "error": {
     "session_expired": "Session expired. Please sign in again.",
@@ -772,6 +789,155 @@
     "duplicate_cd": "This shipper code is already registered.",
     "serial_exhausted": "Auto-numbering limit (CORP-9999) exceeded. Contact an administrator.",
     "create_retry_exhausted": "Could not complete registration due to repeated code conflicts. Please try again shortly."
+  },
+  "menus": {
+    "system_sub_cd_required": "Please select a system (OM/BO).",
+    "menu_nm_ko_required": "Please enter the menu name (Korean).",
+    "not_found": "Menu not found.",
+    "parent_not_found": "Parent menu not found.",
+    "parent_system_mismatch": "Parent menu must belong to the same system (OM/BO)."
+  },
+  "authGroups": {
+    "code_required": "Please check the auth group code.",
+    "not_found": "Auth group not found.",
+    "system_sub_cd_required": "Please select a system (OM/BO).",
+    "invalid_menu_ids": "The request contains invalid menu IDs.",
+    "name_required": "Please enter auth group name.",
+    "duplicate_cd": "This auth group code is already in use.",
+    "code_invalid": "Use uppercase letters, digits, and underscore only, up to 48 characters."
+  },
+  "authGroupManage": {
+    "title": "Authority management",
+    "system": "System",
+    "saved": "Permissions have been saved.",
+    "deleted": "Auth group has been deleted.",
+    "deleteConfirm": "Delete this auth group?",
+    "deleteConfirmWithUsers": "All permissions assigned to users in this group will be removed.<br>Continue?",
+    "selectAll": "Select all",
+    "unselectAll": "Clear all",
+    "selectedCount": "{{count}} selected",
+    "changeReason": "Change reason",
+    "changeReasonRequired": "Please enter a change reason.",
+    "changeReasonPlaceholder": "e.g. Adjust BO operator menu permissions",
+    "noMenus": "No menus to display.",
+    "auditTitle": "Permission change history",
+    "noAudits": "No history found.",
+    "badge": {
+      "permissionMenu": "Set permissions",
+      "viewChangeLog": "View log"
+    },
+    "edit": {
+      "title": "Edit auth group",
+      "success": "Saved."
+    },
+    "logModal": {
+      "title": "Change log"
+    },
+    "col": {
+      "rowNum": "No.",
+      "authGroupCd": "Auth group code",
+      "authGroupNm": "Auth group name",
+      "permissionMenu": "Permissions",
+      "userCount": "Users in group",
+      "remark": "Remark",
+      "changeLog": "Change log",
+      "delete": "Delete",
+      "createdAt": "Created at",
+      "createdBy": "Created by",
+      "updatedAt": "Updated at",
+      "updatedBy": "Updated by"
+    },
+    "modal": {
+      "title": "Auth menu settings"
+    },
+    "register": {
+      "button": "New auth group",
+      "title": "Register auth group",
+      "authGroupCd": "Auth group code",
+      "authGroupCdAuto": "The system assigns the auth group code when you save.",
+      "authGroupNm": "Auth group name",
+      "remark": "Remark",
+      "success": "Auth group created. Use Permissions or click the code in the list to configure menus and details."
+    },
+    "audit": {
+      "actionType": "Action",
+      "system": "System",
+      "beforeAfter": "Before/After",
+      "changeReason": "Reason",
+      "actor": "Actor",
+      "at": "Changed at"
+    }
+  },
+  "menuManage": {
+    "title": "Menu management",
+    "lead": "Browse and edit the menu tree per system, and register child menus.",
+    "system": "System",
+    "treeTitle": "Menu structure",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "detailTitle": "Menu details",
+    "selectHint": "Select a menu in the tree.",
+    "menuId": "Menu code",
+    "menuIdAuto": "Assigned automatically on save",
+    "menuNmKo": "Name (Korean)",
+    "menuNmEn": "Name (English)",
+    "menuNmJa": "Name (Japanese)",
+    "menuNmVi": "Name (Vietnamese)",
+    "menuUrl": "Menu URL",
+    "isActive": "Active",
+    "icon": "Icon",
+    "dispSeq": "Display order",
+    "menuType": "Menu type",
+    "menuTypeGroup": "Group (folder)",
+    "menuTypePage": "Page",
+    "addChild": "Add child menu",
+    "addRoot": "Add top-level menu",
+    "save": "Save",
+    "saveAndContinue": "Save and continue",
+    "saved": "Saved.",
+    "created": "Created.",
+    "deleted": "Deleted.",
+    "deleteConfirm": "Delete the selected menu and all of its child menus. Continue?",
+    "newMenuTitle": "New menu",
+    "parentMenuId": "Parent menu ID",
+    "parentNone": "None (top level)"
+  },
+  "auditLog": {
+    "title": "Audit log",
+    "filter": {
+      "allActions": "All actions",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "keywordPlaceholder": "Search menu/actor/entity ID/changed fields"
+    },
+    "col": {
+      "rowNum": "No.",
+      "actedAt": "Occurred at",
+      "systemSubCd": "System",
+      "menuNameKo": "Menu",
+      "actionNameKo": "Action",
+      "actorUserId": "Actor",
+      "entityId": "Entity ID",
+      "changedFields": "Changed fields",
+      "dataCompare": "Data compare"
+    },
+    "dataView": "View data",
+    "compareTitle": "Audit data comparison",
+    "changedKeys": "Changed key highlights",
+    "diffTable": "Diff comparison",
+    "fieldPath": "Field path",
+    "beforeData": "Before Data",
+    "afterData": "After Data"
+  },
+  "boPages": {
+    "audit_log": "Audit log",
+    "error_log": "Error log",
+    "unmatched_orders": "Unmatched orders",
+    "claim_orders": "Claim orders",
+    "mall_connection": "Connection settings",
+    "product_gift": "Gift settings",
+    "product_matching": "Matching"
   },
   "gridDemo": {
     "title": "Grid Demo",

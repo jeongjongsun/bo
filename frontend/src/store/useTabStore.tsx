@@ -39,8 +39,21 @@ export function TabProvider({ children }: { children: ReactNode }) {
   const openTab = useCallback((tab: TabItem) => {
     setState((prev) => {
       const exists = prev.tabs.find((t) => t.id === tab.id);
-      const nextTabs = exists ? prev.tabs : [...prev.tabs, tab];
-      return { tabs: nextTabs, activeTabId: tab.id };
+      if (exists) {
+        const nextTabs = prev.tabs.map((t) =>
+          t.id === tab.id
+            ? {
+                ...t,
+                title: tab.title ?? t.title,
+                path: tab.path,
+                icon: tab.icon ?? t.icon,
+                data: tab.data !== undefined ? tab.data : t.data,
+              }
+            : t,
+        );
+        return { tabs: nextTabs, activeTabId: tab.id };
+      }
+      return { tabs: [...prev.tabs, tab], activeTabId: tab.id };
     });
   }, []);
 

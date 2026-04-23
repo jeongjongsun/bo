@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmAuditLogHMapper">
+
+    <resultMap id="auditLogListRowMap" type="com.shopeasy.dto.AuditLogListRow">
+        <id property="id" column="id"/>
+        <result property="domainType" column="domain_type"/>
+        <result property="systemMainCd" column="system_main_cd"/>
+        <result property="systemSubCd" column="system_sub_cd"/>
+        <result property="menuCode" column="menu_code"/>
+        <result property="menuNameKo" column="menu_name_ko"/>
+        <result property="actionCode" column="action_code"/>
+        <result property="actionNameKo" column="action_name_ko"/>
+        <result property="entityType" column="entity_type"/>
+        <result property="entityId" column="entity_id"/>
+        <result property="beforeData" column="before_data"/>
+        <result property="afterData" column="after_data"/>
+        <result property="changedFields" column="changed_fields"/>
+        <result property="actorUserId" column="actor_user_id"/>
+        <result property="actedAt" column="acted_at"/>
+    </resultMap>
+
+    <insert id="insertAudit">
+        INSERT INTO om_audit_log_h (
+            domain_type,
+            system_main_cd,
+            system_sub_cd,
+            menu_code,
+            menu_name_ko,
+            action_code,
+            action_name_ko,
+            entity_type,
+            entity_id,
+            before_data,
+            after_data,
+            changed_fields,
+            actor_user_id,
+            request_id,
+            request_ip,
+            user_agent,
+            created_by
+        ) VALUES (
+            #{domainType},
+            #{systemMainCd},
+            #{systemSubCd},
+            #{menuCode},
+            #{menuNameKo},
+            #{actionCode},
+            #{actionNameKo},
+            #{entityType},
+            #{entityId},
+            CAST(#{beforeData} AS JSONB),
+            CAST(#{afterData} AS JSONB),
+            CAST(#{changedFields} AS JSONB),
+            #{actorUserId},
+            #{requestId,jdbcType=VARCHAR},
+            #{requestIp,jdbcType=VARCHAR},
+            #{userAgent,jdbcType=VARCHAR},
+            #{createdBy}
+        )
+    </insert>
+
+    <sql id="auditLogWhere">
+        <where>
+            <if test="systemSubCd != null and systemSubCd != ''">
+                AND h.system_sub_cd = #{systemSubCd}
+            </if>
+            <if test="actionCode != null and actionCode != ''">
+                AND h.action_code = #{actionCode}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    h.menu_name_ko ILIKE '%' || #{keyword} || '%'
+                    OR h.actor_user_id ILIKE '%' || #{keyword} || '%'
+                    OR h.entity_id ILIKE '%' || #{keyword} || '%'
+                    OR h.changed_fields::text ILIKE '%' || #{keyword} || '%'
+                )
+            </if>
+            <if test="fromTs != null and fromTs != ''">
+                AND h.acted_at &gt;= CAST(#{fromTs} AS timestamptz)
+            </if>
+            <if test="toTs != null and toTs != ''">
+                AND h.acted_at &lt; CAST(#{toTs} AS timestamptz)
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectAuditLogCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_audit_log_h h
+        <include refid="auditLogWhere"/>
+    </select>
+
+    <select id="selectAuditLogList" resultMap="auditLogListRowMap">
+        SELECT h.id
+             , h.domain_type
+             , h.system_main_cd
+             , h.system_sub_cd
+             , h.menu_code
+             , h.menu_name_ko
+             , h.action_code
+             , h.action_name_ko
+             , h.entity_type
+             , h.entity_id
+             , COALESCE(h.before_data::text, '{}') AS before_data
+             , COALESCE(h.after_data::text, '{}') AS after_data
+             , COALESCE(h.changed_fields::text, '[]') AS changed_fields
+             , h.actor_user_id
+             , to_char(h.acted_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS acted_at
+          FROM om_audit_log_h h
+        <include refid="auditLogWhere"/>
+         ORDER BY h.acted_at DESC, h.id DESC
+         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+</mapper>

@@ -38,7 +38,8 @@
     "no": "N",
     "prev": "Trước",
     "next": "Sau",
-    "requiredMark": "Bắt buộc"
+    "requiredMark": "Bắt buộc",
+    "close": "Đóng"
   },
   "validation": {
     "phoneInvalid": "Định dạng số điện thoại không hợp lệ. (VD: 010-1234-5678, 02-123-4567)"
@@ -46,7 +47,23 @@
   "auth": {
     "checking": "Đang xác thực...",
     "sessionExpired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
-    "forbidden": "Truy cập bị từ chối."
+    "forbidden": "Truy cập bị từ chối.",
+    "route_denied": "Bạn không có quyền truy cập trang này. Chuyển về bảng điều khiển.",
+    "route_unknown": "URL chưa được đăng ký. Chuyển về bảng điều khiển."
+  },
+  "sidebar": {
+    "favorites": "Yêu thích"
+  },
+  "favorites": {
+    "addTitle": "Thêm vào yêu thích",
+    "removeTitle": "Gỡ khỏi yêu thích",
+    "limit": "Tối đa 5 mục yêu thích.",
+    "toggleError": "Không thể cập nhật yêu thích.",
+    "home_not_allowed": "Không thể thêm bảng điều khiển vào yêu thích.",
+    "not_page": "Chỉ có thể thêm menu trang vào yêu thích.",
+    "menu_not_allowed": "Menu không được phép với tài khoản của bạn.",
+    "already": "Menu này đã có trong yêu thích.",
+    "not_found": "Menu này không có trong yêu thích."
   },
   "error": {
     "session_expired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
@@ -772,6 +789,155 @@
     "duplicate_cd": "Mã chủ hàng đã tồn tại.",
     "serial_exhausted": "Đã vượt giới hạn đánh số tự động (CORP-9999). Liên hệ quản trị.",
     "create_retry_exhausted": "Mã tự động bị trùng lặp liên tục nên không thể hoàn tất đăng ký. Vui lòng thử lại sau."
+  },
+  "menus": {
+    "system_sub_cd_required": "Vui lòng chọn hệ thống (OM/BO).",
+    "menu_nm_ko_required": "Vui lòng nhập tên menu (tiếng Hàn).",
+    "not_found": "Không tìm thấy menu.",
+    "parent_not_found": "Không tìm thấy menu cha.",
+    "parent_system_mismatch": "Menu cha phải cùng hệ thống (OM/BO)."
+  },
+  "authGroups": {
+    "code_required": "Vui lòng kiểm tra mã nhóm quyền.",
+    "not_found": "Không tìm thấy nhóm quyền.",
+    "system_sub_cd_required": "Vui lòng chọn hệ thống (OM/BO).",
+    "invalid_menu_ids": "Có chứa menu không hợp lệ.",
+    "name_required": "Vui lòng nhập tên nhóm quyền.",
+    "duplicate_cd": "Mã nhóm quyền này đã được sử dụng.",
+    "code_invalid": "Chỉ dùng chữ in hoa, số và gạch dưới (_), tối đa 48 ký tự."
+  },
+  "authGroupManage": {
+    "title": "Quản lý quyền",
+    "system": "Hệ thống",
+    "saved": "Đã lưu quyền truy cập.",
+    "deleted": "Đã xóa nhóm quyền.",
+    "deleteConfirm": "Bạn có muốn xóa nhóm quyền đã chọn không?",
+    "deleteConfirmWithUsers": "Tất cả quyền đã cấp cho người dùng thuộc nhóm này sẽ bị xóa.<br>Tiếp tục?",
+    "selectAll": "Chọn tất cả",
+    "unselectAll": "Bỏ chọn tất cả",
+    "selectedCount": "Đã chọn {{count}}",
+    "changeReason": "Lý do thay đổi",
+    "changeReasonRequired": "Vui lòng nhập lý do thay đổi.",
+    "changeReasonPlaceholder": "VD: Điều chỉnh quyền menu cho BO operator",
+    "noMenus": "Không có menu để hiển thị.",
+    "auditTitle": "Lịch sử thay đổi quyền",
+    "noAudits": "Không có lịch sử.",
+    "badge": {
+      "permissionMenu": "Thiết lập quyền",
+      "viewChangeLog": "Xem nhật ký"
+    },
+    "edit": {
+      "title": "Sửa nhóm quyền",
+      "success": "Đã lưu."
+    },
+    "logModal": {
+      "title": "Nhật ký thay đổi"
+    },
+    "col": {
+      "rowNum": "STT",
+      "authGroupCd": "Mã nhóm quyền",
+      "authGroupNm": "Tên nhóm quyền",
+      "permissionMenu": "Thiết lập quyền",
+      "userCount": "Số người dùng",
+      "remark": "Ghi chú",
+      "changeLog": "Nhật ký thay đổi",
+      "delete": "Xóa",
+      "createdAt": "Ngày tạo",
+      "createdBy": "Người tạo",
+      "updatedAt": "Ngày sửa",
+      "updatedBy": "Người sửa"
+    },
+    "modal": {
+      "title": "Thiết lập quyền menu"
+    },
+    "register": {
+      "button": "Thêm nhóm quyền",
+      "title": "Đăng ký nhóm quyền",
+      "authGroupCd": "Mã nhóm quyền",
+      "authGroupCdAuto": "Hệ thống tự cấp mã nhóm quyền khi lưu.",
+      "authGroupNm": "Tên nhóm quyền",
+      "remark": "Ghi chú",
+      "success": "Đã tạo nhóm quyền. Dùng Thiết lập quyền hoặc nhấn mã trên danh sách để cấu hình menu và thông tin."
+    },
+    "audit": {
+      "actionType": "Loại thay đổi",
+      "system": "Hệ thống",
+      "beforeAfter": "Trước/Sau",
+      "changeReason": "Lý do",
+      "actor": "Người thay đổi",
+      "at": "Thời điểm"
+    }
+  },
+  "menuManage": {
+    "title": "Quản lý menu",
+    "lead": "Xem và sửa cây menu theo hệ thống, đăng ký menu con.",
+    "system": "Hệ thống",
+    "treeTitle": "Cấu trúc menu",
+    "expand": "Mở rộng",
+    "collapse": "Thu gọn",
+    "detailTitle": "Thông tin menu",
+    "selectHint": "Chọn một mục trong cây.",
+    "menuId": "Mã menu",
+    "menuIdAuto": "Tự cấp khi lưu",
+    "menuNmKo": "Tên (tiếng Hàn)",
+    "menuNmEn": "Tên (tiếng Anh)",
+    "menuNmJa": "Tên (tiếng Nhật)",
+    "menuNmVi": "Tên (tiếng Việt)",
+    "menuUrl": "URL menu",
+    "isActive": "Đang dùng",
+    "icon": "Biểu tượng",
+    "dispSeq": "Thứ tự hiển thị",
+    "menuType": "Loại menu",
+    "menuTypeGroup": "Nhóm (thư mục)",
+    "menuTypePage": "Trang",
+    "addChild": "Thêm menu con",
+    "addRoot": "Thêm menu cấp trên",
+    "save": "Lưu",
+    "saveAndContinue": "Lưu và tiếp tục",
+    "saved": "Đã lưu.",
+    "created": "Đã tạo.",
+    "deleted": "Đã xóa.",
+    "deleteConfirm": "Xóa menu đã chọn và toàn bộ menu con của nó. Tiếp tục?",
+    "newMenuTitle": "Menu mới",
+    "parentMenuId": "ID menu cha",
+    "parentNone": "Không (cấp trên)"
+  },
+  "auditLog": {
+    "title": "Nhật ký kiểm tra",
+    "filter": {
+      "allActions": "Tất cả hành động",
+      "create": "Đăng ký",
+      "update": "Sửa",
+      "delete": "Xóa",
+      "keywordPlaceholder": "Tìm theo menu/người thực hiện/entity ID/trường thay đổi"
+    },
+    "col": {
+      "rowNum": "STT",
+      "actedAt": "Thời điểm",
+      "systemSubCd": "Hệ thống",
+      "menuNameKo": "Menu",
+      "actionNameKo": "Hành động",
+      "actorUserId": "Người thực hiện",
+      "entityId": "Entity ID",
+      "changedFields": "Trường thay đổi",
+      "dataCompare": "So sánh dữ liệu"
+    },
+    "dataView": "Xem dữ liệu",
+    "compareTitle": "So sánh dữ liệu kiểm tra",
+    "changedKeys": "Làm nổi bật khóa thay đổi",
+    "diffTable": "So sánh chênh lệch",
+    "fieldPath": "Đường dẫn trường",
+    "beforeData": "Before Data",
+    "afterData": "After Data"
+  },
+  "boPages": {
+    "audit_log": "Nhật ký kiểm tra",
+    "error_log": "Nhật ký lỗi",
+    "unmatched_orders": "Đơn chưa khớp",
+    "claim_orders": "Đơn khiếu nại",
+    "mall_connection": "Cài đặt kết nối",
+    "product_gift": "Cài đặt quà tặng",
+    "product_matching": "Ghép nối"
   },
   "gridDemo": {
     "title": "Demo lưới",

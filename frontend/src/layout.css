@@ -1,5 +1,28 @@
 /* ── Layout ── */
 
+/* Phoenix theme: 100vw 백드롭·풀스크린 모달이 스크롤바 너비만큼 가로로 넘침 → 100%로 */
+.modal-backdrop,
+.offcanvas-backdrop {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+}
+
+.phoenix-offcanvas.show ~ .phoenix-offcanvas-backdrop {
+  width: 100% !important;
+  max-width: 100%;
+}
+
+.modal-fullscreen,
+.modal-fullscreen-sm-down,
+.modal-fullscreen-md-down,
+.modal-fullscreen-lg-down,
+.modal-fullscreen-xl-down,
+.modal-fullscreen-xxl-down {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 /* PageLayout: 제목 줄 오른쪽 새로고침 버튼 (전 탭 공통) */
 .page-layout__header-right {
   flex-shrink: 0;
@@ -10,9 +33,48 @@
   gap: 0.35rem;
 }
 
+/* 페이지 타이틀은 대시보드(.home-page h2)와 동일한 크기/굵기 사용 */
+.page-layout__title {
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.page-layout__favorite-btn {
+  color: var(--bs-body-color);
+  opacity: 0.65;
+  line-height: 1;
+  text-decoration: none;
+}
+.page-layout__favorite-btn:hover {
+  opacity: 1;
+}
+.page-layout__favorite-btn--on {
+  color: #ffc107;
+  opacity: 1;
+}
+
+/* 라우트 트리가 뷰포트 높이를 꽉 채우도록 (#root → flex 체인) */
+.app-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-shell__router-outlet {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .layout {
   display: flex;
-  min-height: 100vh;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
 }
 
 .layout__main {
@@ -20,12 +82,19 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  /* flex 기본 min-height:auto 때문에 자식(본문) 최소 높이만큼 늘어나 뷰포트를 넘기며 미세 스크롤이 생길 수 있음 */
+  min-height: 0;
 }
 
 .layout__content {
   flex: 1;
+  min-height: 0;
+  min-width: 0;
   padding: 0.5rem 1rem;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
   background: var(--phoenix-body-bg, #f5f6fa);
 }
 
@@ -439,7 +508,8 @@
 
 .sidebar {
   width: 250px;
-  min-height: 100vh;
+  align-self: stretch;
+  min-height: 0;
   background: #fff;
   border-left: 1px solid var(--om-border-strong);
   border-right: 1px solid var(--om-border);
@@ -984,7 +1054,70 @@
 }
 
 .tab-content__pane {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
   height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* 메뉴관리: 카드 영역이 남은 높이를 채우고, 스크롤은 카드 body 안에서만 발생 */
+.menu-manage-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.menu-manage-page__controls {
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
+}
+
+.menu-manage-page__cards-row {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.menu-manage-page__cards-row > [class*='col-'] {
+  display: flex;
+  min-height: 0;
+}
+
+.menu-manage-page__cards-row .card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.menu-manage-page__cards-row .card-body {
+  min-height: 0;
+}
+
+.menu-manage-page__cards-row .card-header {
+  flex-shrink: 0;
+}
+
+.menu-manage-page__tree-body {
+  height: 620px !important;
+  min-height: 620px !important;
+  max-height: 620px !important;
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+}
+
+.menu-manage-page__detail-body {
+  height: 620px !important;
+  min-height: 620px !important;
+  max-height: 620px !important;
+  overflow-y: auto !important;
 }
 
 /* ── Home Page ── */
@@ -1433,6 +1566,117 @@
 .product-edit__btn--primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ── 메뉴관리: 트리 행 — 호버 시 텍스트 색만 조정(배경·테두리는 Bootstrap 기본) ── */
+.menu-tree-row-btn.btn-outline-secondary:hover:not(:disabled) .menu-tree-row__title,
+.menu-tree-row-btn.btn-outline-secondary:hover:not(:disabled) .menu-tree-row__code,
+.menu-tree-row-btn.btn-outline-secondary:focus-visible:not(:disabled) .menu-tree-row__title,
+.menu-tree-row-btn.btn-outline-secondary:focus-visible:not(:disabled) .menu-tree-row__code {
+  color: #fff !important;
+}
+
+.menu-tree-row-btn.btn-outline-secondary:hover:not(:disabled) .menu-tree-row__code,
+.menu-tree-row-btn.btn-outline-secondary:focus-visible:not(:disabled) .menu-tree-row__code {
+  opacity: 0.88;
+}
+
+.menu-tree-row-btn.btn-primary:hover:not(:disabled) .menu-tree-row__title,
+.menu-tree-row-btn.btn-primary:hover:not(:disabled) .menu-tree-row__code {
+  color: #fff !important;
+}
+
+/* ── 메뉴관리: 트리 접두 아이콘(폴더·리프 점) 정렬 ── */
+.menu-tree__prefix,
+.menu-tree__prefix-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  min-width: 1.375rem;
+  flex-shrink: 0;
+  line-height: 1;
+  color: var(--phoenix-gray-600, #6c757d);
+}
+
+.menu-tree__prefix-btn {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--phoenix-border-radius-sm, 0.25rem);
+}
+
+.menu-tree__prefix-btn:hover {
+  color: var(--phoenix-body-color, #31374a);
+  background-color: var(--om-hover-bg, rgba(0, 0, 0, 0.04));
+}
+
+.menu-tree__prefix-btn:focus-visible {
+  outline: 2px solid var(--phoenix-primary, #3874ff);
+  outline-offset: 1px;
+}
+
+.menu-tree__bullet-wrap {
+  min-height: 1.375rem;
+}
+
+.menu-tree__bullet {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.8;
+}
+
+/* ── 권한관리: 권한 설정 모달 ── */
+.auth-group-manage-modal {
+  max-width: 1040px;
+}
+
+.auth-group-manage-modal__menu-list {
+  height: 320px;
+  overflow-y: auto;
+}
+
+.auth-group-manage-modal__reason-wrap {
+  margin-top: 0.5rem;
+}
+
+.auth-group-manage-modal__footer {
+  padding-bottom: 0;
+}
+
+.auth-group-disabled-input:disabled,
+.auth-group-disabled-input[readonly] {
+  background-color: var(--phoenix-gray-200, #f0f2f5);
+  color: var(--phoenix-gray-700, #4b5563);
+  cursor: not-allowed;
+}
+
+.auth-group-manage-modal__audit-table-wrap {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* ── 권한관리: 권한 그룹 등록 모달(플로팅 필드·푸터 여백) ── */
+.auth-group-register-modal {
+  width: min(100%, 440px);
+}
+
+.auth-group-register-modal__body {
+  padding-bottom: 0.5rem;
+}
+
+.auth-group-register-modal__fields .form-floating:last-of-type {
+  margin-bottom: 0 !important;
+}
+
+.auth-group-register-modal__footer {
+  padding-top: 0.5rem;
+  padding-bottom: 0.65rem;
 }
 
 /* ── SweetAlert2: 제목 h3 스타일, 본문 body 폰트 통일 ── */

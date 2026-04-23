@@ -11,6 +11,7 @@ import com.shopeasy.dto.CorporationDetailUpdateRequest;
 import com.shopeasy.dto.CorporationFieldUpdateRequest;
 import com.shopeasy.dto.CorporationItem;
 import com.shopeasy.dto.CorporationManageRow;
+import com.shopeasy.dto.AuditLogCommand;
 import com.shopeasy.mapper.OmCorporationMMapper;
 import org.apache.poi.ss.usermodel.Row;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -55,16 +57,19 @@ public class CorporationService {
 
     private final OmCorporationMMapper corporationMapper;
     private final ObjectMapper objectMapper;
+    private final AuditService auditService;
     /** PK 중복 시에만 롤백되는 짧은 트랜잭션 (PostgreSQL: 동일 트랜잭션 내 재시도 불가 문제 회피). */
     private final TransactionTemplate insertCorporationTxTemplate;
 
     public CorporationService(
             OmCorporationMMapper corporationMapper,
             ObjectMapper objectMapper,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager,
+            AuditService auditService) {
         this.corporationMapper = corporationMapper;
         this.objectMapper = objectMapper;
-        this.insertCorporationTxTemplate = new TransactionTemplate(transactionManager);
+        this.auditService = auditService;
+        this.insertCorporationTxTemplate = new TransactionTemplate(Objects.requireNonNull(transactionManager));
         this.insertCorporationTxTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
@@ -144,15 +149,28 @@ public class CorporationService {
             throw new IllegalArgumentException(MessageKeys.CORPORATIONS_INVALID_FIELD);
         }
         String cd = request.getCorporationCd().trim();
-        if (corporationMapper.selectManageRow(cd) == null) {
+        CorporationManageRow beforeRow = corporationMapper.selectManageRow(cd);
+        if (beforeRow == null) {
             throw new IllegalArgumentException(MessageKeys.ERROR_NOT_FOUND);
         }
+        String beforeValue = switch (field) {
+            case "corporationNm" -> beforeRow.getCorporationNm();
+            case "businessNo" -> beforeRow.getBusinessNo();
+            case "telNo" -> beforeRow.getTelNo();
+            case "email" -> beforeRow.getEmail();
+            default -> null;
+        };
+        String afterValue;
         if ("corporationNm".equals(field)) {
             String nm = valueToString(request.getValue());
             if (nm == null || nm.isBlank()) {
                 throw new IllegalArgumentException(MessageKeys.CORPORATIONS_NM_REQUIRED);
             }
             corporationMapper.updateCorporationNm(cd, nm.trim(), userId);
+            afterValue = nm.trim();
+            recordAudit("UPDATE", cd, userId,
+                    Map.of("field", field, "value", beforeValue != null ? beforeValue : ""),
+                    Map.of("field", field, "value", afterValue));
             return;
         }
         String jsonKey = jsonKeyForGridField(field);
@@ -163,6 +181,10 @@ public class CorporationService {
         Map<String, Object> merged = readMergedInfo(cd);
         merged.put(jsonKey, newVal);
         corporationMapper.updateCorporationInfoJson(cd, toJson(merged), userId);
+        afterValue = newVal;
+        recordAudit("UPDATE", cd, userId,
+                Map.of("field", field, "value", beforeValue != null ? beforeValue : ""),
+                Map.of("field", field, "value", afterValue));
     }
 
     private static String jsonKeyForGridField(String field) {
@@ -180,7 +202,8 @@ public class CorporationService {
             throw new IllegalArgumentException(MessageKeys.CORPORATIONS_CD_REQUIRED);
         }
         String cd = request.getCorporationCd().trim();
-        if (corporationMapper.selectManageRow(cd) == null) {
+        CorporationManageRow beforeRow = corporationMapper.selectManageRow(cd);
+        if (beforeRow == null) {
             throw new IllegalArgumentException(MessageKeys.ERROR_NOT_FOUND);
         }
         if (request.getCorporationNm() == null || request.getCorporationNm().isBlank()) {
@@ -196,6 +219,17 @@ public class CorporationService {
         merged.put("homepage_url", nullToEmpty(request.getHomepageUrl()));
         merged.put("remark", nullToEmpty(request.getRemark()));
         corporationMapper.updateCorporationRow(cd, request.getCorporationNm().trim(), toJson(merged), userId);
+        Map<String, Object> before = Map.of(
+                "corporationNm", beforeRow.getCorporationNm() != null ? beforeRow.getCorporationNm() : "",
+                "businessNo", beforeRow.getBusinessNo() != null ? beforeRow.getBusinessNo() : "",
+                "telNo", beforeRow.getTelNo() != null ? beforeRow.getTelNo() : "",
+                "email", beforeRow.getEmail() != null ? beforeRow.getEmail() : "");
+        Map<String, Object> after = Map.of(
+                "corporationNm", request.getCorporationNm().trim(),
+                "businessNo", nullToEmpty(request.getBusinessNo()),
+                "telNo", nullToEmpty(request.getTelNo()),
+                "email", nullToEmpty(request.getEmail()));
+        recordAudit("UPDATE", cd, userId, before, after);
     }
 
     private static String nullToEmpty(String s) {
@@ -230,6 +264,7 @@ public class CorporationService {
                     if (rows == 0) {
                         throw new IllegalArgumentException(MessageKeys.ERROR_BAD_REQUEST);
                     }
+                    recordAudit("CREATE", cd, userId, Map.of(), Map.of("corporationNm", nm));
                 });
                 return getCorporationDetail(cd);
             } catch (DataIntegrityViolationException e) {
@@ -301,5 +336,26 @@ public class CorporationService {
         }
         String t = keyword.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    private void recordAudit(String actionCode, String entityId, String actorUserId, Map<String, Object> before, Map<String, Object> after) {
+        try {
+            AuditLogCommand cmd = new AuditLogCommand();
+            cmd.setDomainType("CORPORATION");
+            cmd.setSystemMainCd("SYSTEM");
+            cmd.setSystemSubCd("BO");
+            cmd.setMenuCode("basic-shipper");
+            cmd.setMenuNameKo("화주(법인) 정보");
+            cmd.setActionCode(actionCode);
+            cmd.setEntityType("om_corporation_m");
+            cmd.setEntityId(entityId);
+            cmd.setBeforeData(objectMapper.writeValueAsString(before != null ? before : Map.of()));
+            cmd.setAfterData(objectMapper.writeValueAsString(after != null ? after : Map.of()));
+            cmd.setChangedFields("[]");
+            cmd.setActorUserId(actorUserId != null && !actorUserId.isBlank() ? actorUserId : "system");
+            auditService.record(cmd);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

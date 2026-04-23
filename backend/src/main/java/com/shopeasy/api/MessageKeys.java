@@ -112,5 +112,44 @@ public final class MessageKeys {
     /** codes.excel_export_failed */
     public static final String CODES_EXCEL_EXPORT_FAILED = "codes.excel_export_failed";
 
+    /** menus.system_sub_cd_required */
+    public static final String MENUS_SYSTEM_SUB_CD_REQUIRED = "menus.system_sub_cd_required";
+    /** menus.menu_nm_ko_required */
+    public static final String MENUS_MENU_NM_KO_REQUIRED = "menus.menu_nm_ko_required";
+    /** menus.not_found */
+    public static final String MENUS_NOT_FOUND = "menus.not_found";
+    /** menus.parent_not_found */
+    public static final String MENUS_PARENT_NOT_FOUND = "menus.parent_not_found";
+    /** menus.parent_system_mismatch */
+    public static final String MENUS_PARENT_SYSTEM_MISMATCH = "menus.parent_system_mismatch";
+
+    /** authGroups.code_required */
+    public static final String AUTH_GROUPS_CODE_REQUIRED = "authGroups.code_required";
+    /** authGroups.not_found */
+    public static final String AUTH_GROUPS_NOT_FOUND = "authGroups.not_found";
+    /** authGroups.system_sub_cd_required */
+    public static final String AUTH_GROUPS_SYSTEM_SUB_CD_REQUIRED = "authGroups.system_sub_cd_required";
+    /** authGroups.invalid_menu_ids */
+    public static final String AUTH_GROUPS_INVALID_MENU_IDS = "authGroups.invalid_menu_ids";
+    /** authGroups.name_required */
+    public static final String AUTH_GROUPS_NAME_REQUIRED = "authGroups.name_required";
+    /** authGroups.duplicate_cd */
+    public static final String AUTH_GROUPS_DUPLICATE_CD = "authGroups.duplicate_cd";
+    /** authGroups.code_invalid */
+    public static final String AUTH_GROUPS_CODE_INVALID = "authGroups.code_invalid";
+
+    /** favorites.home_not_allowed */
+    public static final String FAVORITES_HOME_NOT_ALLOWED = "favorites.home_not_allowed";
+    /** favorites.not_page */
+    public static final String FAVORITES_NOT_PAGE = "favorites.not_page";
+    /** favorites.menu_not_allowed */
+    public static final String FAVORITES_MENU_NOT_ALLOWED = "favorites.menu_not_allowed";
+    /** favorites.limit */
+    public static final String FAVORITES_LIMIT = "favorites.limit";
+    /** favorites.already */
+    public static final String FAVORITES_ALREADY = "favorites.already";
+    /** favorites.not_found */
+    public static final String FAVORITES_NOT_FOUND = "favorites.not_found";
+
     private MessageKeys() {}
 }

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FiMenu, FiLogOut } from 'react-icons/fi';
 import { logout } from '@/api/auth';
+import { clearBoAllowedMenuIds } from '@/utils/boAllowedMenuStorage';
 import { fetchCorporations } from '@/api/corporations';
 import { useAuthMe } from '@/hooks/useAuthMe';
 import { useUserSettings } from '@/features/settings/hooks';
@@ -57,6 +58,7 @@ export function TopNavbar({ onMenuToggle }: TopNavbarProps) {
     try {
       await logout();
     } finally {
+      clearBoAllowedMenuIds();
       setCorporation('', '');
       queryClient.clear();
       navigate('/login', { replace: true });

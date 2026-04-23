@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmMenuMMapper">
+
+    <select id="selectFlatBySystem" resultType="com.shopeasy.dto.MenuManageRow">
+        SELECT m.menu_id AS menuId
+             , m.parent_menu_id AS parentMenuId
+             , m.system_main_cd AS systemMainCd
+             , m.system_sub_cd AS systemSubCd
+             , COALESCE(m.menu_nm ->> 'ko', '') AS menuNmKo
+             , COALESCE(m.menu_nm ->> 'en', '') AS menuNmEn
+             , COALESCE(m.menu_nm ->> 'ja', '') AS menuNmJa
+             , COALESCE(m.menu_nm ->> 'vi', '') AS menuNmVi
+             , m.menu_url AS menuUrl
+             , m.is_active AS isActive
+             , m.icon
+             , m.disp_seq AS dispSeq
+             , COALESCE(m.menu_info ->> 'menu_type', '') AS menuType
+             , COALESCE(m.menu_info::text, '{}') AS menuInfoRaw
+          FROM om_menu_m m
+         WHERE m.is_deleted = false
+           AND m.system_main_cd = #{systemMainCd}
+           AND m.system_sub_cd = #{systemSubCd}
+         ORDER BY m.parent_menu_id NULLS FIRST, m.disp_seq ASC, m.menu_id ASC
+    </select>
+
+    <select id="selectOne" resultType="com.shopeasy.dto.MenuManageRow">
+        SELECT m.menu_id AS menuId
+             , m.parent_menu_id AS parentMenuId
+             , m.system_main_cd AS systemMainCd
+             , m.system_sub_cd AS systemSubCd
+             , COALESCE(m.menu_nm ->> 'ko', '') AS menuNmKo
+             , COALESCE(m.menu_nm ->> 'en', '') AS menuNmEn
+             , COALESCE(m.menu_nm ->> 'ja', '') AS menuNmJa
+             , COALESCE(m.menu_nm ->> 'vi', '') AS menuNmVi
+             , m.menu_url AS menuUrl
+             , m.is_active AS isActive
+             , m.icon
+             , m.disp_seq AS dispSeq
+             , COALESCE(m.menu_info ->> 'menu_type', '') AS menuType
+             , COALESCE(m.menu_info::text, '{}') AS menuInfoRaw
+          FROM om_menu_m m
+         WHERE m.is_deleted = false
+           AND m.menu_id = #{menuId}
+    </select>
+
+    <select id="selectMaxNumericSuffix" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(CAST(SUBSTRING(m.menu_id FROM (LENGTH(#{idPrefix}) + 1)) AS INTEGER)), 0)
+          FROM om_menu_m m
+         WHERE m.is_deleted = false
+           AND m.system_sub_cd = #{systemSubCd}
+           AND m.menu_id LIKE #{idPrefix} || '%'
+           AND LENGTH(m.menu_id) > LENGTH(#{idPrefix})
+           AND SUBSTRING(m.menu_id FROM (LENGTH(#{idPrefix}) + 1)) ~ '^[0-9]+$'
+    </select>
+
+    <select id="countActiveBySystemAndIds" resultType="int">
+        SELECT COUNT(*)
+          FROM om_menu_m m
+         WHERE m.is_deleted = false
+           AND m.system_main_cd = #{systemMainCd}
+           AND m.system_sub_cd = #{systemSubCd}
+           AND m.menu_id IN
+        <foreach collection="menuIds" item="menuId" open="(" separator="," close=")">
+            #{menuId}
+        </foreach>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO om_menu_m (
+            menu_id,
+            system_main_cd,
+            system_sub_cd,
+            parent_menu_id,
+            menu_nm,
+            menu_url,
+            is_active,
+            icon,
+            disp_seq,
+            menu_info,
+            created_by,
+            updated_by,
+            is_deleted
+        ) VALUES (
+            #{menuId},
+            #{systemMainCd},
+            #{systemSubCd},
+            #{parentMenuId,jdbcType=VARCHAR},
+            CAST(#{menuNm} AS JSONB),
+            #{menuUrl,jdbcType=VARCHAR},
+            #{isActive},
+            #{icon,jdbcType=VARCHAR},
+            #{dispSeq},
+            CAST(#{menuInfo} AS JSONB),
+            #{userId},
+            #{userId},
+            false
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE om_menu_m
+           SET menu_nm = CAST(#{menuNm} AS JSONB)
+             , menu_url = #{menuUrl,jdbcType=VARCHAR}
+             , is_active = #{isActive}
+             , icon = #{icon,jdbcType=VARCHAR}
+             , disp_seq = #{dispSeq}
+             , menu_info = CAST(#{menuInfo} AS JSONB)
+             , updated_by = #{userId}
+             , updated_at = CURRENT_TIMESTAMP
+         WHERE menu_id = #{menuId}
+           AND is_deleted = false
+    </update>
+
+    <update id="softDeleteCascade">
+        WITH RECURSIVE target AS (
+            SELECT m.menu_id
+              FROM om_menu_m m
+             WHERE m.menu_id = #{menuId}
+               AND m.is_deleted = false
+            UNION ALL
+            SELECT c.menu_id
+              FROM om_menu_m c
+              JOIN target t
+                ON c.parent_menu_id = t.menu_id
+             WHERE c.is_deleted = false
+        )
+        UPDATE om_menu_m
+           SET is_deleted = true
+             , updated_by = #{userId}
+             , updated_at = CURRENT_TIMESTAMP
+         WHERE menu_id IN (SELECT menu_id FROM target)
+           AND is_deleted = false
+    </update>
+</mapper>

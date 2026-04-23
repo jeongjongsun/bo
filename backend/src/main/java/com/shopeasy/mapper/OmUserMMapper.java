@@ -74,4 +74,12 @@ public interface OmUserMMapper {
 
     /** 로그인 경로: 행 잠금 후 user_info 갱신에 사용. */
     OmUserM selectByUserIdForUpdate(@Param("userId") String userId);
+
+    int countByAuthGroup(@Param("authGroupCd") String authGroupCd);
+
+    List<String> selectUserIdsByAuthGroup(@Param("authGroupCd") String authGroupCd);
+
+    int clearAuthGroupByAuthGroup(
+            @Param("authGroupCd") String authGroupCd,
+            @Param("updatedBy") String updatedBy);
 }

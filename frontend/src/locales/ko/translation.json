@@ -38,7 +38,8 @@
     "no": "N",
     "prev": "이전",
     "next": "다음",
-    "requiredMark": "필수"
+    "requiredMark": "필수",
+    "close": "닫기"
   },
   "validation": {
     "phoneInvalid": "연락처/전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678, 02-123-4567)"
@@ -46,7 +47,23 @@
   "auth": {
     "checking": "인증 확인 중...",
     "sessionExpired": "세션이 만료되었습니다. 다시 로그인해 주세요.",
-    "forbidden": "권한이 없습니다."
+    "forbidden": "권한이 없습니다.",
+    "route_denied": "이 화면에 접근할 권한이 없습니다. 대시보드로 이동합니다.",
+    "route_unknown": "등록되지 않은 경로입니다. 대시보드로 이동합니다."
+  },
+  "sidebar": {
+    "favorites": "즐겨찾기"
+  },
+  "favorites": {
+    "addTitle": "즐겨찾기에 추가",
+    "removeTitle": "즐겨찾기에서 제거",
+    "limit": "즐겨찾기는 최대 5개까지 등록할 수 있습니다.",
+    "toggleError": "즐겨찾기를 변경하지 못했습니다.",
+    "home_not_allowed": "대시보드는 즐겨찾기에 등록할 수 없습니다.",
+    "not_page": "즐겨찾기는 화면(페이지) 메뉴만 등록할 수 있습니다.",
+    "menu_not_allowed": "허용되지 않은 메뉴입니다.",
+    "already": "이미 즐겨찾기에 등록된 메뉴입니다.",
+    "not_found": "즐겨찾기에 없는 메뉴입니다."
   },
   "error": {
     "session_expired": "세션이 만료되었습니다. 다시 로그인해 주세요.",
@@ -772,6 +789,155 @@
     "duplicate_cd": "이미 등록된 화주코드입니다.",
     "serial_exhausted": "자동 채번 한도(CORP-9999)를 초과했습니다. 관리자에게 문의하세요.",
     "create_retry_exhausted": "화주 코드 자동 부여가 반복 충돌하여 등록을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요."
+  },
+  "menus": {
+    "system_sub_cd_required": "시스템(OM/BO)을 선택해 주세요.",
+    "menu_nm_ko_required": "메뉴명(한글)을 입력해 주세요.",
+    "not_found": "메뉴를 찾을 수 없습니다.",
+    "parent_not_found": "부모 메뉴를 찾을 수 없습니다.",
+    "parent_system_mismatch": "부모 메뉴와 동일한 시스템(OM/BO)이 아닙니다."
+  },
+  "authGroups": {
+    "code_required": "권한그룹 코드를 확인해 주세요.",
+    "not_found": "권한그룹을 찾을 수 없습니다.",
+    "system_sub_cd_required": "시스템(OM/BO)을 선택해 주세요.",
+    "invalid_menu_ids": "유효하지 않은 메뉴가 포함되어 있습니다.",
+    "name_required": "권한그룹 명을 입력해 주세요.",
+    "duplicate_cd": "이미 사용 중인 권한그룹 코드입니다.",
+    "code_invalid": "코드는 영문 대문자·숫자·밑줄(_)만 사용할 수 있으며 48자 이내입니다."
+  },
+  "authGroupManage": {
+    "title": "권한관리",
+    "system": "시스템",
+    "saved": "권한이 저장되었습니다.",
+    "deleted": "권한그룹이 삭제되었습니다.",
+    "deleteConfirm": "선택한 권한그룹을 삭제하시겠습니까?",
+    "deleteConfirmWithUsers": "소속 사용자에 부여된 권한은 모두 삭제됩니다.<br>계속하시겠습니까?",
+    "selectAll": "전체 선택",
+    "unselectAll": "전체 해제",
+    "selectedCount": "선택 {{count}}건",
+    "changeReason": "변경 사유",
+    "changeReasonRequired": "변경 사유를 입력해 주세요.",
+    "changeReasonPlaceholder": "예: BO 운영자 메뉴 권한 조정",
+    "noMenus": "표시할 메뉴가 없습니다.",
+    "auditTitle": "권한 변경 이력",
+    "noAudits": "이력이 없습니다.",
+    "badge": {
+      "permissionMenu": "권한 설정",
+      "viewChangeLog": "로그 조회"
+    },
+    "edit": {
+      "title": "권한그룹 수정",
+      "success": "저장되었습니다."
+    },
+    "logModal": {
+      "title": "변경 로그"
+    },
+    "col": {
+      "rowNum": "번호",
+      "authGroupCd": "권한그룹 코드",
+      "authGroupNm": "권한그룹 명",
+      "permissionMenu": "권한설정",
+      "userCount": "소속 사용자 수",
+      "remark": "비고",
+      "changeLog": "변경 로그",
+      "delete": "삭제",
+      "createdAt": "등록일",
+      "createdBy": "등록자",
+      "updatedAt": "수정일",
+      "updatedBy": "수정자"
+    },
+    "modal": {
+      "title": "권한 메뉴 설정"
+    },
+    "register": {
+      "button": "권한그룹 등록",
+      "title": "권한그룹 등록",
+      "authGroupCd": "권한그룹 코드",
+      "authGroupCdAuto": "권한그룹 코드는 저장 시 시스템에서 자동 부여됩니다.",
+      "authGroupNm": "권한그룹 명",
+      "remark": "비고",
+      "success": "권한그룹이 등록되었습니다. 목록에서 권한 설정 또는 코드를 눌러 메뉴·정보를 설정하세요."
+    },
+    "audit": {
+      "actionType": "변경유형",
+      "system": "시스템",
+      "beforeAfter": "변경 전/후",
+      "changeReason": "변경 사유",
+      "actor": "변경자",
+      "at": "변경일시"
+    }
+  },
+  "menuManage": {
+    "title": "메뉴관리",
+    "lead": "시스템별 메뉴 트리를 조회·수정하고 하위 메뉴를 등록합니다.",
+    "system": "시스템",
+    "treeTitle": "메뉴 구조",
+    "expand": "펼치기",
+    "collapse": "접기",
+    "detailTitle": "메뉴 정보",
+    "selectHint": "트리에서 메뉴를 선택하세요.",
+    "menuId": "메뉴코드",
+    "menuIdAuto": "저장 시 자동 부여",
+    "menuNmKo": "메뉴명(한글)",
+    "menuNmEn": "메뉴명(영문)",
+    "menuNmJa": "메뉴명(일문)",
+    "menuNmVi": "메뉴명(베트남어)",
+    "menuUrl": "메뉴 URL",
+    "isActive": "사용 여부",
+    "icon": "아이콘",
+    "dispSeq": "표시 순서",
+    "menuType": "메뉴 유형",
+    "menuTypeGroup": "그룹(폴더)",
+    "menuTypePage": "화면",
+    "addChild": "하위메뉴 추가",
+    "addRoot": "최상위 메뉴 추가",
+    "save": "저장",
+    "saveAndContinue": "저장 후 계속",
+    "saved": "저장되었습니다.",
+    "created": "등록되었습니다.",
+    "deleted": "삭제되었습니다.",
+    "deleteConfirm": "선택한 메뉴와 모든 하위 메뉴를 삭제합니다. 계속하시겠습니까?",
+    "newMenuTitle": "신규 메뉴",
+    "parentMenuId": "부모 메뉴 ID",
+    "parentNone": "없음 (최상위)"
+  },
+  "auditLog": {
+    "title": "감사이력",
+    "filter": {
+      "allActions": "전체 액션",
+      "create": "등록",
+      "update": "수정",
+      "delete": "삭제",
+      "keywordPlaceholder": "메뉴명/수행자/엔터티ID/변경항목 검색"
+    },
+    "col": {
+      "rowNum": "번호",
+      "actedAt": "발생일시",
+      "systemSubCd": "시스템",
+      "menuNameKo": "메뉴명",
+      "actionNameKo": "액션",
+      "actorUserId": "수행자",
+      "entityId": "엔터티 ID",
+      "changedFields": "변경항목",
+      "dataCompare": "데이터 비교"
+    },
+    "dataView": "데이터 조회",
+    "compareTitle": "감사 데이터 비교",
+    "changedKeys": "변경 키 하이라이트",
+    "diffTable": "변경 비교",
+    "fieldPath": "필드 경로",
+    "beforeData": "Before Data",
+    "afterData": "After Data"
+  },
+  "boPages": {
+    "audit_log": "감사이력",
+    "error_log": "에러이력",
+    "unmatched_orders": "비매칭 주문",
+    "claim_orders": "클레임 주문",
+    "mall_connection": "접속정보 관리",
+    "product_gift": "사은품 지급 설정",
+    "product_matching": "매칭 정보"
   },
   "gridDemo": {
     "title": "그리드 데모",

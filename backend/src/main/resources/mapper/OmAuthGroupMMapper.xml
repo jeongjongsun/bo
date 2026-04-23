@@ -20,4 +20,10 @@
            AND COALESCE(is_deleted, false) = false
     </select>
 
+    <select id="countByCdAll" resultType="int">
+        SELECT COUNT(*)
+          FROM om_auth_group_m
+         WHERE auth_group_cd = #{authGroupCd}
+    </select>
+
 </mapper>

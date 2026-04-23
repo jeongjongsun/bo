@@ -1,0 +1,29 @@
+---
+description: 서비스 등록/수정/삭제 감사이력 자동 저장 규칙
+globs: **/service/*.java
+alwaysApply: false
+---
+
+# 감사이력 자동 저장 규칙
+
+서비스 계층에서 발생하는 등록/수정/삭제는 감사이력을 자동 저장한다.
+
+- 대상 액션: `CREATE`, `UPDATE`, `DELETE`
+- 저장 위치: DB 테이블(BO/OM 공통 `om_audit_log_h` 우선)
+- 자동화 원칙: 컨트롤러/사용자 추가 입력 없이 Service에서 자동 기록
+- 필수 메타: `actor_user_id`, `acted_at`, `request_id`(있으면), `request_ip`(있으면)
+- 가독성: `menu_name_ko`, `action_name_ko(등록/수정/삭제)`를 함께 저장
+- 시스템 구분: `system_main_cd`, `system_sub_cd(BO/OM)`를 함께 저장
+- 변경 추적: 가능하면 `before_data`, `after_data`, `changed_fields`를 저장
+
+## 트랜잭션 정책
+
+- 본 처리와 감사이력 저장은 같은 서비스 트랜잭션에서 처리한다.
+- 감사이력 저장 실패 시 전체 트랜잭션을 실패시킨다.
+- 실패 시도(권한 거부/검증 실패/예외 발생 전 단계)는 감사이력에 저장하지 않는다.
+- 신규 서비스/신규 CUD 메서드 작성 시 `AuditService.record(...)` 연동을 필수로 포함한다.
+
+## 보안/마스킹 정책
+
+- 현재 마스킹 기준이 미정이면 원문 저장 전 보안 리스크를 먼저 검토한다.
+- 비밀번호/토큰/인증정보 등 명백한 민감정보는 저장하지 않는다.

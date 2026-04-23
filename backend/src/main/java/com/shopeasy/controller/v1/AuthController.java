@@ -5,16 +5,20 @@ import com.shopeasy.config.SessionAuthInterceptor;
 import com.shopeasy.dto.AuthLoginResult;
 import com.shopeasy.dto.LoginRequest;
 import com.shopeasy.entity.OmUserM;
+import com.shopeasy.dto.BoSidebarMenuDto;
+import com.shopeasy.mapper.OmAuthGroupMenuRMapper;
 import com.shopeasy.service.AuthService;
+import com.shopeasy.service.BoSidebarMenuService;
+import com.shopeasy.service.UserMenuFavoriteService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +37,23 @@ public class AuthController {
     static final String SESSION_USER_NM = "userNm";
     static final String SESSION_AUTH_GROUP = "authGroup";
 
-    private final AuthService authService;
+    private static final String BO_SYSTEM_MAIN = "SYSTEM";
+    private static final String BO_SYSTEM_SUB = "BO";
 
-    public AuthController(AuthService authService) {
+    private final AuthService authService;
+    private final OmAuthGroupMenuRMapper authGroupMenuRMapper;
+    private final BoSidebarMenuService boSidebarMenuService;
+    private final UserMenuFavoriteService userMenuFavoriteService;
+
+    public AuthController(
+            AuthService authService,
+            OmAuthGroupMenuRMapper authGroupMenuRMapper,
+            BoSidebarMenuService boSidebarMenuService,
+            UserMenuFavoriteService userMenuFavoriteService) {
         this.authService = authService;
+        this.authGroupMenuRMapper = authGroupMenuRMapper;
+        this.boSidebarMenuService = boSidebarMenuService;
+        this.userMenuFavoriteService = userMenuFavoriteService;
     }
 
     /**
@@ -66,10 +83,18 @@ public class AuthController {
 
         log.info("세션 생성, userId={}, sessionId={}", user.getUserId(), session.getId());
 
+        List<String> allowedMenuIds = resolveAllowedBoMenuIds(user.getAuthGroup());
+        List<BoSidebarMenuDto> boSidebarMenus = boSidebarMenuService.buildVisibleMenus(allowedMenuIds);
+        List<String> favoriteMenuIds =
+                userMenuFavoriteService.listVisibleOrdered(user.getUserId(), allowedMenuIds);
+
         Map<String, Object> userData = new LinkedHashMap<>();
         userData.put("userId", user.getUserId());
         userData.put("name", user.getUserNm());
         userData.put("roles", buildRoles(user));
+        userData.put("allowedMenuIds", allowedMenuIds);
+        userData.put("boSidebarMenus", boSidebarMenus);
+        userData.put("favoriteMenuIds", favoriteMenuIds);
 
         return ResponseEntity.ok(ApiResponse.ok(userData));
     }
@@ -107,16 +132,29 @@ public class AuthController {
         user.put("name", userNm);
         user.put("roles", authGroup != null ? List.of(authGroup) : List.of("USER"));
 
-        // TODO: 실제 메뉴·권한은 authGroup 기반 DB 조회로 대체
-        List<Map<String, Object>> menus = List.of(
-                Map.of("id", "M001", "name", "대시보드", "path", "/", "icon", "Dashboard", "children", List.of())
-        );
-        List<String> permissions = List.of("USER_READ");
+        List<String> allowedMenuIds = resolveAllowedBoMenuIds(authGroup);
+        List<BoSidebarMenuDto> boSidebarMenus = boSidebarMenuService.buildVisibleMenus(allowedMenuIds);
+        List<String> favoriteMenuIds = userMenuFavoriteService.listVisibleOrdered(userId, allowedMenuIds);
+        List<Map<String, Object>> menus = List.of(new LinkedHashMap<>(Map.of(
+                "id", "home",
+                "name", "Dashboard",
+                "path", "/",
+                "icon", "Dashboard",
+                "children", List.of())));
+        List<String> permissions = new ArrayList<>();
+        if (authGroup != null && !authGroup.isBlank()) {
+            permissions.add(authGroup.trim());
+        } else {
+            permissions.add("USER");
+        }
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("user", user);
         data.put("menus", menus);
         data.put("permissions", permissions);
+        data.put("allowedMenuIds", allowedMenuIds);
+        data.put("boSidebarMenus", boSidebarMenus);
+        data.put("favoriteMenuIds", favoriteMenuIds);
 
         return ResponseEntity.ok(ApiResponse.ok(data));
     }
@@ -124,6 +162,15 @@ public class AuthController {
     private List<String> buildRoles(OmUserM user) {
         String authGroup = user.getAuthGroup();
         return authGroup != null ? List.of(authGroup) : List.of("USER");
+    }
+
+    private List<String> resolveAllowedBoMenuIds(String authGroupCd) {
+        if (authGroupCd == null || authGroupCd.isBlank()) {
+            return List.of();
+        }
+        List<String> ids = authGroupMenuRMapper.selectActiveMenuIdsByAuthGroupAndSystem(
+                authGroupCd.trim(), BO_SYSTEM_MAIN, BO_SYSTEM_SUB);
+        return ids != null ? ids : List.of();
     }
 
     /** X-Forwarded-For 우선(첫 hop), 없으면 remoteAddr. */

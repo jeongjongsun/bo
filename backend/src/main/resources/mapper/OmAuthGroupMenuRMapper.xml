@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmAuthGroupMenuRMapper">
+
+    <select id="selectMenuIdsByGroupAndSystem" resultType="string">
+        SELECT r.menu_id
+          FROM om_auth_group_menu_r r
+         WHERE r.auth_group_cd = #{authGroupCd}
+           AND r.system_main_cd = #{systemMainCd}
+           AND r.system_sub_cd = #{systemSubCd}
+           AND COALESCE(r.is_deleted, false) = false
+         ORDER BY r.menu_id ASC
+    </select>
+
+    <select id="selectActiveMenuIdsByAuthGroupAndSystem" resultType="string">
+        SELECT r.menu_id
+          FROM om_auth_group_menu_r r
+          INNER JOIN om_menu_m m
+                  ON m.menu_id = r.menu_id
+                 AND COALESCE(m.is_deleted, false) = false
+                 AND COALESCE(m.is_active, true) = true
+                 AND m.system_main_cd = #{systemMainCd}
+                 AND m.system_sub_cd = #{systemSubCd}
+         WHERE r.auth_group_cd = #{authGroupCd}
+           AND r.system_main_cd = #{systemMainCd}
+           AND r.system_sub_cd = #{systemSubCd}
+           AND COALESCE(r.is_deleted, false) = false
+         ORDER BY r.menu_id ASC
+    </select>
+
+    <update id="softDeleteByGroupAndSystem">
+        UPDATE om_auth_group_menu_r
+           SET is_deleted = true
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{userId}
+         WHERE auth_group_cd = #{authGroupCd}
+           AND system_main_cd = #{systemMainCd}
+           AND system_sub_cd = #{systemSubCd}
+           AND COALESCE(is_deleted, false) = false
+    </update>
+
+    <update id="softDeleteByGroup">
+        UPDATE om_auth_group_menu_r
+           SET is_deleted = true
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{userId}
+         WHERE auth_group_cd = #{authGroupCd}
+           AND COALESCE(is_deleted, false) = false
+    </update>
+
+    <insert id="insertBatch">
+        INSERT INTO om_auth_group_menu_r (
+            auth_group_cd,
+            menu_id,
+            system_main_cd,
+            system_sub_cd,
+            created_by,
+            updated_by,
+            is_deleted
+        )
+        VALUES
+        <foreach collection="menuIds" item="menuId" separator=",">
+            (
+                #{authGroupCd},
+                #{menuId},
+                #{systemMainCd},
+                #{systemSubCd},
+                #{userId},
+                #{userId},
+                false
+            )
+        </foreach>
+        ON CONFLICT (auth_group_cd, menu_id)
+        DO UPDATE
+           SET system_main_cd = EXCLUDED.system_main_cd
+             , system_sub_cd = EXCLUDED.system_sub_cd
+             , is_deleted = false
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = EXCLUDED.updated_by
+    </insert>
+
+</mapper>

@@ -1,4 +1,12 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useImperativeHandle,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   AllCommunityModule,
   themeBalham,
@@ -25,36 +33,84 @@ export interface DataGridRef {
 
 const modules = [AllCommunityModule];
 
+function getScrollableAncestor(start: HTMLElement | null): HTMLElement {
+  let cur: HTMLElement | null = start?.parentElement ?? null;
+  while (cur) {
+    const { overflowY } = getComputedStyle(cur);
+    if (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') {
+      return cur;
+    }
+    cur = cur.parentElement;
+  }
+  const root = document.scrollingElement;
+  return root instanceof HTMLElement ? root : document.documentElement;
+}
+
+function availableHeightBelowElement(
+  el: HTMLElement,
+  scrollRoot: HTMLElement,
+  bottomOffset: number,
+): number {
+  const elRect = el.getBoundingClientRect();
+  const rootRect = scrollRoot.getBoundingClientRect();
+  const clientTopEdge = rootRect.top + scrollRoot.clientTop;
+  const topWithinClient = elRect.top - clientTopEdge;
+  return scrollRoot.clientHeight - topWithinClient - bottomOffset;
+}
+
 /**
- * 그리드 컨테이너 위치 ~ 뷰포트 하단까지 남은 높이를 실시간 계산.
- * height="auto" 일 때만 사용된다.
+ * height="auto"일 때 스크롤 조상(~.layout__content) 기준 남은 높이(px).
+ * AG Grid는 명시 높이가 필요하므로 flex-only 높이는 사용하지 않음.
  */
 function useAutoHeight(
   containerRef: React.RefObject<HTMLDivElement | null>,
-  bottomOffset = 16,
+  bottomOffset: number,
+  enabled: boolean,
 ) {
   const [height, setHeight] = useState(400);
+  const lastAppliedRef = useRef<number | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!enabled) return;
     const el = containerRef.current;
     if (!el) return;
 
     const update = () => {
-      const top = el.getBoundingClientRect().top;
-      setHeight(Math.max(200, window.innerHeight - top - bottomOffset));
+      const node = containerRef.current;
+      if (!node) return;
+      const scrollRoot = getScrollableAncestor(node);
+      /** 대시보드처럼 본문 스크롤이 덜 나오게: 계산 오차·margin·gap·DPR·스크롤바 흡수 */
+      const slack = 36;
+      const available = availableHeightBelowElement(node, scrollRoot, bottomOffset + slack);
+      const vv = window.visualViewport;
+      const elTop = node.getBoundingClientRect().top;
+      const cap =
+        vv != null && vv.height > 0
+          ? vv.offsetTop + vv.height - elTop - bottomOffset - slack
+          : Number.POSITIVE_INFINITY;
+      const next = Math.max(120, Math.floor(Math.min(available, cap)));
+      if (lastAppliedRef.current === next) return;
+      lastAppliedRef.current = next;
+      setHeight(next);
     };
 
+    lastAppliedRef.current = null;
     update();
     window.addEventListener('resize', update);
+    window.visualViewport?.addEventListener('resize', update);
 
-    const ro = new ResizeObserver(update);
-    ro.observe(el.parentElement ?? document.body);
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(update);
+    });
+    const scrollRoot = getScrollableAncestor(el);
+    if (scrollRoot !== el) ro.observe(scrollRoot);
 
     return () => {
       window.removeEventListener('resize', update);
+      window.visualViewport?.removeEventListener('resize', update);
       ro.disconnect();
     };
-  }, [containerRef, bottomOffset]);
+  }, [containerRef, bottomOffset, enabled]);
 
   return height;
 }
@@ -66,9 +122,9 @@ export interface DataGridProps<TData = unknown> {
   paginationPageSize?: number;
   paginationPageSizeSelector?: number[] | boolean;
   loading?: boolean;
-  /** 고정 px 값 또는 'auto'(뷰포트 하단까지 자동 채움). 기본값 'auto'. */
+  /** 고정 px 값 또는 'auto'(스크롤 조상 기준 남은 높이). 기본값 'auto'. */
   height?: 'auto' | number;
-  /** height="auto" 일 때 하단 여백(px). 기본 16. */
+  /** height="auto"일 때 하단 여백(px). 기본 16. */
   bottomOffset?: number;
   exportFileName?: string;
   showExportButton?: boolean;
@@ -113,8 +169,9 @@ function DataGridInner<TData = unknown>({
   const { t, i18n } = useTranslation();
   const gridRef = useRef<AgGridReact<TData>>(null);
   const gridContainerRef = useRef<HTMLDivElement>(null);
-  const autoHeight = useAutoHeight(gridContainerRef, bottomOffset);
-  const resolvedHeight = height === 'auto' ? autoHeight : height;
+  const isAutoHeight = height === 'auto';
+  const autoHeight = useAutoHeight(gridContainerRef, bottomOffset, isAutoHeight);
+  const resolvedHeight = typeof height === 'number' ? height : autoHeight;
 
   const handleExportExcel = useCallback(() => {
     const api = gridRef.current?.api;

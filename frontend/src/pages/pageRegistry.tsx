@@ -10,6 +10,9 @@ import { OrderList } from '@/features/orders/OrderList';
 import { ShipperList } from '@/features/shipper/ShipperList';
 import { UserList } from '@/features/users/UserList';
 import { CommonCodeList } from '@/features/commonCode/CommonCodeList';
+import { MenuManagePage } from '@/features/menuManage/MenuManagePage';
+import { AuthGroupManagePage } from '@/features/authGroupManage/AuthGroupManagePage';
+import { AuditLogPage } from '@/features/auditLog/AuditLogPage';
 
 /**
  * 메뉴 path → 페이지 컴포넌트 매핑.
@@ -39,9 +42,9 @@ function placeholder(name: string) {
 registry['/basic/shipper'] = ShipperList;
 registry['/basic/users'] = UserList;
 registry['/system/common-code'] = CommonCodeList;
-registry['/system/menus'] = placeholder('메뉴관리');
-registry['/system/authorities'] = placeholder('권한관리');
-registry['/log/audit'] = placeholder('감사이력');
+registry['/system/menus'] = MenuManagePage;
+registry['/system/authorities'] = AuthGroupManagePage;
+registry['/log/audit'] = AuditLogPage;
 registry['/log/error'] = placeholder('에러이력');
 
 // 주문 관리 (국내 B2C / 해외 B2C / 국내 B2B / 해외 B2B / 기타주문 = 동일 OrderList, sales_type_cd 로 그리드만 구분)

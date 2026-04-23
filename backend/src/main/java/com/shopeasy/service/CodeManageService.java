@@ -12,6 +12,7 @@ import com.shopeasy.dto.CodeManageChildRegisterRequest;
 import com.shopeasy.dto.CodeManageGroupRegisterRequest;
 import com.shopeasy.dto.CodeManageRow;
 import com.shopeasy.dto.CodeRowRaw;
+import com.shopeasy.dto.AuditLogCommand;
 import com.shopeasy.mapper.OmCodeMMapper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -21,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,10 +42,12 @@ public class CodeManageService {
 
     private final OmCodeMMapper omCodeMMapper;
     private final ObjectMapper objectMapper;
+    private final AuditService auditService;
 
-    public CodeManageService(OmCodeMMapper omCodeMMapper, ObjectMapper objectMapper) {
+    public CodeManageService(OmCodeMMapper omCodeMMapper, ObjectMapper objectMapper, AuditService auditService) {
         this.omCodeMMapper = omCodeMMapper;
         this.objectMapper = objectMapper;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -100,8 +105,11 @@ public class CodeManageService {
         try {
             ObjectNode codeNm = readObject(raw.getCodeNm());
             ObjectNode codeInfo = readObject(raw.getCodeInfo());
+            String beforeData = objectMapper.writeValueAsString(buildCodeAuditState(mainCd, subCd, codeNm, codeInfo));
             applyGridField(field, request.getValue(), codeNm, codeInfo);
             persistJson(mainCd, subCd, codeNm, codeInfo, updatedBy);
+            recordAudit("UPDATE", mainCd + ":" + subCd, updatedBy, beforeData,
+                    objectMapper.writeValueAsString(buildCodeAuditState(mainCd, subCd, codeNm, codeInfo)));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
@@ -136,6 +144,7 @@ public class CodeManageService {
         try {
             ObjectNode codeNm = readObject(raw.getCodeNm());
             ObjectNode codeInfo = readObject(raw.getCodeInfo());
+            String beforeData = objectMapper.writeValueAsString(buildCodeAuditState(mainCd, subCd, codeNm, codeInfo));
             codeNm.put("ko", request.getCodeNmKo().trim());
             if (request.getCodeNmEn() != null) {
                 codeNm.put("en", request.getCodeNmEn().trim());
@@ -153,6 +162,8 @@ public class CodeManageService {
                 codeInfo.put("etc2", request.getEtc2());
             }
             persistJson(mainCd, subCd, codeNm, codeInfo, updatedBy);
+            recordAudit("UPDATE", mainCd + ":" + subCd, updatedBy, beforeData,
+                    objectMapper.writeValueAsString(buildCodeAuditState(mainCd, subCd, codeNm, codeInfo)));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
@@ -198,6 +209,8 @@ public class CodeManageService {
                     objectMapper.writeValueAsString(codeNm),
                     objectMapper.writeValueAsString(codeInfo),
                     createdBy);
+            recordAudit("CREATE", CODE_GROUP_MAIN + ":" + subCd, createdBy, "{}",
+                    objectMapper.writeValueAsString(buildCodeAuditState(CODE_GROUP_MAIN, subCd, codeNm, codeInfo)));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
@@ -254,6 +267,8 @@ public class CodeManageService {
                     objectMapper.writeValueAsString(codeNm),
                     objectMapper.writeValueAsString(codeInfo),
                     createdBy);
+            recordAudit("CREATE", parentMainCd + ":" + subCd, createdBy, "{}",
+                    objectMapper.writeValueAsString(buildCodeAuditState(parentMainCd, subCd, codeNm, codeInfo)));
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
@@ -413,5 +428,31 @@ public class CodeManageService {
         }
         String t = keyword.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    private Map<String, Object> buildCodeAuditState(String mainCd, String subCd, ObjectNode codeNm, ObjectNode codeInfo) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("mainCd", mainCd);
+        out.put("subCd", subCd);
+        out.put("codeNm", codeNm);
+        out.put("codeInfo", codeInfo);
+        return out;
+    }
+
+    private void recordAudit(String actionCode, String entityId, String actorUserId, String beforeData, String afterData) {
+        AuditLogCommand cmd = new AuditLogCommand();
+        cmd.setDomainType("CODE");
+        cmd.setSystemMainCd("SYSTEM");
+        cmd.setSystemSubCd("BO");
+        cmd.setMenuCode("system-common-code");
+        cmd.setMenuNameKo("공통코드 관리");
+        cmd.setActionCode(actionCode);
+        cmd.setEntityType("om_code_m");
+        cmd.setEntityId(entityId);
+        cmd.setBeforeData(beforeData);
+        cmd.setAfterData(afterData);
+        cmd.setChangedFields("[]");
+        cmd.setActorUserId(actorUserId != null && !actorUserId.isBlank() ? actorUserId : "system");
+        auditService.record(cmd);
     }
 }

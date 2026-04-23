@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmAuthGroupManageMapper">
+
+    <select id="selectManageList" resultType="com.shopeasy.dto.AuthGroupManageRow">
+        SELECT ag.auth_group_cd AS authGroupCd
+             , ag.auth_group_nm AS authGroupNm
+             , COALESCE(ag.is_active, true) AS isActive
+             , (
+                SELECT COUNT(*)
+                  FROM om_user_m u
+                 WHERE COALESCE(u.is_deleted, false) = false
+                   AND COALESCE(u.user_info ->> 'auth_group', '') = ag.auth_group_cd
+               ) AS userCount
+             , ag.remark
+             , to_char(ag.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , ag.created_by AS createdBy
+             , to_char(ag.updated_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , ag.updated_by AS updatedBy
+          FROM om_auth_group_m ag
+         WHERE COALESCE(ag.is_deleted, false) = false
+         ORDER BY ag.sort_seq ASC, ag.auth_group_cd ASC
+    </select>
+
+    <select id="selectManageOne" resultType="com.shopeasy.dto.AuthGroupManageRow">
+        SELECT ag.auth_group_cd AS authGroupCd
+             , ag.auth_group_nm AS authGroupNm
+             , COALESCE(ag.is_active, true) AS isActive
+             , (
+                SELECT COUNT(*)
+                  FROM om_user_m u
+                 WHERE COALESCE(u.is_deleted, false) = false
+                   AND COALESCE(u.user_info ->> 'auth_group', '') = ag.auth_group_cd
+               ) AS userCount
+             , ag.remark
+             , to_char(ag.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS createdAt
+             , ag.created_by AS createdBy
+             , to_char(ag.updated_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS updatedAt
+             , ag.updated_by AS updatedBy
+          FROM om_auth_group_m ag
+         WHERE ag.auth_group_cd = #{authGroupCd}
+           AND COALESCE(ag.is_deleted, false) = false
+    </select>
+
+    <update id="softDelete">
+        UPDATE om_auth_group_m
+           SET is_deleted = true
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{userId}
+         WHERE auth_group_cd = #{authGroupCd}
+           AND COALESCE(is_deleted, false) = false
+    </update>
+
+    <update id="updateGroupInfo">
+        UPDATE om_auth_group_m
+           SET auth_group_nm = #{authGroupNm}
+             , remark = #{remark,jdbcType=VARCHAR}
+             , updated_at = CURRENT_TIMESTAMP
+             , updated_by = #{userId}
+         WHERE auth_group_cd = #{authGroupCd}
+           AND COALESCE(is_deleted, false) = false
+    </update>
+
+    <select id="selectMaxSortSeq" resultType="int">
+        SELECT COALESCE(MAX(ag.sort_seq), 0)
+          FROM om_auth_group_m ag
+         WHERE COALESCE(ag.is_deleted, false) = false
+    </select>
+
+    <select id="selectMaxAuthPrefixedSerial" resultType="int">
+        SELECT COALESCE(MAX(CAST(SUBSTRING(ag.auth_group_cd FROM 6) AS INTEGER)), 0)
+          FROM om_auth_group_m ag
+         WHERE ag.auth_group_cd ~ '^AUTH-[0-9]{4}$'
+    </select>
+
+    <insert id="insert">
+        INSERT INTO om_auth_group_m (
+            auth_group_cd,
+            auth_group_nm,
+            auth_group_info,
+            is_active,
+            sort_seq,
+            remark,
+            created_by,
+            updated_by,
+            is_deleted
+        ) VALUES (
+            #{authGroupCd},
+            #{authGroupNm},
+            '{}'::jsonb,
+            true,
+            #{sortSeq},
+            #{remark,jdbcType=VARCHAR},
+            #{userId},
+            #{userId},
+            false
+        )
+    </insert>
+
+</mapper>

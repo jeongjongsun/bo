@@ -244,10 +244,10 @@ export function CodeEditModal({ mainCd, subCd, onClose }: CodeEditModalProps) {
               </div>
             </div>
             <div className="product-modal__footer">
-              <button type="button" className="btn btn-phoenix-secondary" onClick={onClose}>
+              <button type="button" className="btn btn-phoenix-secondary btn-sm" onClick={onClose}>
                 {t('common.cancel')}
               </button>
-              <button type="submit" className="btn btn-primary" disabled={pending}>
+              <button type="submit" className="btn btn-phoenix-primary btn-sm" disabled={pending}>
                 {pending ? t('common.loading') : t('common.save')}
               </button>
             </div>

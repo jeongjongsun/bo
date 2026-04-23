@@ -1,120 +1,103 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  FiPieChart, FiShoppingCart, FiPackage, FiXCircle, FiRefreshCw,
-  FiHome, FiGlobe, FiBriefcase, FiMap, FiGrid, FiList,
-  FiGift, FiLink, FiKey, FiLayers,
-  FiChevronRight,
-  FiShoppingBag, FiSettings,
-  FiDatabase, FiUsers, FiSliders, FiHash, FiMenu, FiShield,
-  FiFileText, FiClipboard, FiAlertCircle,
-} from 'react-icons/fi';
+import { FiPieChart, FiChevronRight } from 'react-icons/fi';
 import { useTabStore, DASHBOARD_TAB_ID } from '@/store/useTabStore';
+import { useAuthMe } from '@/hooks/useAuthMe';
+import { readBoAllowedMenuIdsFromSession } from '@/utils/boAllowedMenuStorage';
+import { renderBoMenuFiIcon } from '@/utils/boMenuFiIcon';
+import type { BoSidebarMenu } from '@/api/auth';
 
-interface SubMenu {
-  id: string;
-  label: string;
-  path: string;
-  icon: React.ReactNode;
+function pickMenuName(m: BoSidebarMenu, lang: string): string {
+  const normalizedLang = (lang || '').trim().toLowerCase();
+  const primarySubtag = normalizedLang.split('-').find((part) => part && part.trim().length > 0);
+  const l = primarySubtag || 'ko';
+  if (l === 'en' && m.menuNmEn) return m.menuNmEn;
+  if (l === 'ja' && m.menuNmJa) return m.menuNmJa;
+  if (l === 'vi' && m.menuNmVi) return m.menuNmVi;
+  return m.menuNmKo || m.menuId;
 }
 
-interface MenuGroup {
-  id: string;
-  section: string;
-  label: string;
-  icon: React.ReactNode;
-  /** 단일 메뉴일 때 직접 이동 경로 (children 없이 사용) */
-  path?: string;
-  children: SubMenu[];
+function buildChildrenByParent(menus: BoSidebarMenu[]): Map<string | null, BoSidebarMenu[]> {
+  const map = new Map<string | null, BoSidebarMenu[]>();
+  for (const m of menus) {
+    const p = m.parentMenuId ?? null;
+    if (!map.has(p)) map.set(p, []);
+    map.get(p)!.push(m);
+  }
+  for (const [, arr] of map) {
+    arr.sort((a, b) => (a.dispSeq ?? 0) - (b.dispSeq ?? 0) || a.menuId.localeCompare(b.menuId));
+  }
+  return map;
 }
-
-const menuData: MenuGroup[] = [
-  {
-    id: 'basic',
-    section: '기초정보',
-    label: '기초정보',
-    icon: <FiDatabase size={16} />,
-    children: [
-      { id: 'basic-shipper', label: '화주(법인) 정보', path: '/basic/shipper', icon: <FiBriefcase size={14} /> },
-      { id: 'basic-users', label: '사용자 정보', path: '/basic/users', icon: <FiUsers size={14} /> },
-    ],
-  },
-  {
-    id: 'system',
-    section: '운영환경 설정',
-    label: '운영환경 설정',
-    icon: <FiSliders size={16} />,
-    children: [
-      { id: 'system-common-code', label: '공통코드', path: '/system/common-code', icon: <FiHash size={14} /> },
-      { id: 'system-menus', label: '메뉴관리', path: '/system/menus', icon: <FiMenu size={14} /> },
-      { id: 'system-authorities', label: '권한관리', path: '/system/authorities', icon: <FiShield size={14} /> },
-      { id: 'settings', label: '환경설정', path: '/settings', icon: <FiSettings size={14} /> },
-    ],
-  },
-  {
-    id: 'logs',
-    section: '로그정보',
-    label: '로그정보',
-    icon: <FiFileText size={16} />,
-    children: [
-      { id: 'log-audit', label: '감사이력', path: '/log/audit', icon: <FiClipboard size={14} /> },
-      { id: 'log-error', label: '에러이력', path: '/log/error', icon: <FiAlertCircle size={14} /> },
-    ],
-  },
-  {
-    id: 'order', section: 'Apps', label: '주문 관리', icon: <FiShoppingCart size={16} />,
-    children: [
-      { id: 'order-domestic-b2c', label: '국내 B2C 주문', path: '/order', icon: <FiHome size={14} /> },
-      { id: 'order-overseas-b2c', label: '해외 B2C 주문', path: '/order/overseas-b2c', icon: <FiGlobe size={14} /> },
-      { id: 'order-domestic-b2b', label: '국내 B2B 주문', path: '/order/domestic-b2b', icon: <FiBriefcase size={14} /> },
-      { id: 'order-overseas-b2b', label: '해외 B2B 주문', path: '/order/overseas-b2b', icon: <FiMap size={14} /> },
-      { id: 'order-other', label: '기타주문', path: '/order/other', icon: <FiGrid size={14} /> },
-      { id: 'order-unmatched', label: '비매칭 주문', path: '/order/unmatched', icon: <FiXCircle size={14} /> },
-    ],
-  },
-  {
-    id: 'order-claim', section: 'Apps', label: '클레임 주문', icon: <FiRefreshCw size={16} />,
-    path: '/order/claim',
-    children: [],
-  },
-  {
-    id: 'mall', section: 'Apps', label: '쇼핑몰 관리', icon: <FiShoppingBag size={16} />,
-    children: [
-      { id: 'mall-list', label: '쇼핑몰/상점 관리', path: '/mall', icon: <FiLayers size={14} /> },
-      { id: 'mall-connection', label: '접속정보 관리', path: '/mall/connection', icon: <FiKey size={14} /> },
-    ],
-  },
-  {
-    id: 'product', section: 'Apps', label: '상품 관리', icon: <FiPackage size={16} />,
-    children: [
-      { id: 'product-info', label: '상품 정보', path: '/product', icon: <FiList size={14} /> },
-      { id: 'product-gift', label: '사은품 지급 설정', path: '/product/gift', icon: <FiGift size={14} /> },
-      { id: 'product-matching', label: '매칭 정보', path: '/product/matching', icon: <FiLink size={14} /> },
-    ],
-  },
-];
 
 interface SidebarProps {
   collapsed: boolean;
 }
 
 export function Sidebar({ collapsed }: SidebarProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [collapsedHoverId, setCollapsedHoverId] = useState<string | null>(null);
   const { openTab, activeTabId } = useTabStore();
+  const { data: authMe } = useAuthMe();
   const dashboardTitle = t('dashboard.title');
+
+  const boMenus = authMe?.boSidebarMenus ?? [];
+  const fromApi = authMe?.allowedMenuIds;
+  const fromSession = readBoAllowedMenuIdsFromSession();
+  const rawAllowed = fromApi ?? fromSession;
+
+  const childrenByParent = useMemo(() => buildChildrenByParent(boMenus), [boMenus]);
+
+  const rootMenus = useMemo(() => {
+    const roots = childrenByParent.get(null) ?? [];
+    return roots.filter((m) => m.menuId !== 'home');
+  }, [childrenByParent]);
+
+  const rootsWithSection = useMemo(() => {
+    let prev: string | null = null;
+    return rootMenus.map((group) => {
+      const sec = group.sidebarSection ?? '';
+      const showSection = sec !== '' && sec !== prev;
+      prev = sec;
+      return { group, showSection };
+    });
+  }, [rootMenus]);
+
+  const favoriteIds = useMemo(() => {
+    const fav = authMe?.favoriteMenuIds ?? [];
+    const allowed = rawAllowed != null ? new Set(rawAllowed) : null;
+    return fav.filter((id) => id && id !== 'home' && (allowed == null || allowed.has(id)));
+  }, [authMe?.favoriteMenuIds, rawAllowed]);
+
+  const menuById = useMemo(() => new Map(boMenus.map((m) => [m.menuId, m])), [boMenus]);
+
+  const resolveFavoriteRow = useCallback(
+    (menuId: string) => {
+      const m = menuById.get(menuId);
+      if (!m || m.menuType?.toUpperCase() !== 'PAGE' || !m.menuUrl) return null;
+      return m;
+    },
+    [menuById],
+  );
 
   const toggleMenu = (id: string) => {
     if (collapsed) return;
     setOpenMenus((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const sections = [...new Set(menuData.map((g) => g.section))];
+  const openPageTab = (m: BoSidebarMenu) => {
+    const title = pickMenuName(m, i18n.language);
+    openTab({
+      id: m.tabId || m.menuId,
+      title,
+      path: m.menuUrl || '/',
+      icon: renderBoMenuFiIcon(m.icon, 14),
+    });
+  };
 
   return (
     <nav className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
-      {/* 로고 — 클릭 시 대시보드 탭으로 열림 */}
       <div className="sidebar__brand">
         <button
           type="button"
@@ -128,7 +111,6 @@ export function Sidebar({ collapsed }: SidebarProps) {
       </div>
 
       <div className="sidebar__content">
-        {/* 대시보드 — 닫을 수 없는 기본 탭 */}
         <ul className="sidebar__nav">
           <li>
             <button
@@ -142,100 +124,136 @@ export function Sidebar({ collapsed }: SidebarProps) {
           </li>
         </ul>
 
-        {/* Menu groups by section */}
-        {sections.map((section) => (
-          <div key={section}>
-            {!collapsed && <p className="sidebar__section-label">{section}</p>}
-            <ul className="sidebar__nav">
-              {menuData
-                .filter((g) => g.section === section)
-                .map((group) => {
-                  const isSingle = group.path != null && group.children.length === 0;
-                  if (isSingle) {
-                    return (
-                      <li key={group.id}>
-                        <button
-                          className={`sidebar__link ${activeTabId === group.id ? 'active' : ''}`}
-                          onClick={() =>
-                            openTab({ id: group.id, title: group.label, path: group.path!, icon: group.icon })
-                          }
-                        >
-                          {group.icon}
-                          {!collapsed && <span>{group.label}</span>}
-                        </button>
-                      </li>
-                    );
-                  }
-                  const showPopover = collapsed && group.children.length > 0 && collapsedHoverId === group.id;
-                  return (
-                    <li key={group.id} className={collapsed && group.children.length > 0 ? 'sidebar__li--has-popover' : ''}>
-                      <div
-                        className="sidebar__group-wrap"
-                        onMouseEnter={() => collapsed && group.children.length > 0 && setCollapsedHoverId(group.id)}
-                        onMouseLeave={() => collapsed && setCollapsedHoverId(null)}
-                      >
-                        <button
-                          type="button"
-                          className={`sidebar__link sidebar__link--group ${openMenus[group.id] ? 'open' : ''} ${showPopover ? 'sidebar__link--hover' : ''}`}
-                          onClick={() => toggleMenu(group.id)}
-                        >
-                          {group.icon}
-                          {!collapsed && (
-                            <>
-                              <span>{group.label}</span>
-                              <FiChevronRight
-                                size={12}
-                                className={`sidebar__arrow ${openMenus[group.id] ? 'sidebar__arrow--open' : ''}`}
-                              />
-                            </>
-                          )}
-                        </button>
-                        {collapsed && group.children.length > 0 && (
-                          <div className={`sidebar__popover ${showPopover ? 'sidebar__popover--show' : ''}`}>
-                            <div className="sidebar__popover-title">{group.label}</div>
-                            <ul className="sidebar__popover-list">
-                              {group.children.map((child) => (
-                                <li key={child.id}>
-                                  <button
-                                    type="button"
-                                    className={`sidebar__popover-link ${activeTabId === child.id ? 'active' : ''}`}
-                                    onClick={() => {
-                                      openTab({ id: child.id, title: child.label, path: child.path, icon: child.icon });
-                                      setCollapsedHoverId(null);
-                                    }}
-                                  >
-                                    {child.label}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                      {openMenus[group.id] && !collapsed && (
-                        <ul className="sidebar__sub">
-                          {group.children.map((child) => (
-                            <li key={child.id}>
-                              <button
-                                type="button"
-                                className={`sidebar__link sidebar__link--sub ${activeTabId === child.id ? 'active' : ''}`}
-                                onClick={() =>
-                                  openTab({ id: child.id, title: child.label, path: child.path, icon: child.icon })
-                                }
-                              >
-                                {child.icon}
-                                <span>{child.label}</span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                })}
+        {favoriteIds.length > 0 && (
+          <>
+            {!collapsed && <p className="sidebar__section-label">{t('sidebar.favorites')}</p>}
+            <ul className="sidebar__nav sidebar__nav--favorites">
+              {favoriteIds.map((fid) => {
+                const m = resolveFavoriteRow(fid);
+                if (!m) return null;
+                const tabId = m.tabId || m.menuId;
+                return (
+                  <li key={fid}>
+                    <button
+                      type="button"
+                      className={`sidebar__link ${activeTabId === tabId ? 'active' : ''}`}
+                      onClick={() => openPageTab(m)}
+                    >
+                      {renderBoMenuFiIcon(m.icon, 16)}
+                      {!collapsed && <span>{pickMenuName(m, i18n.language)}</span>}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-          </div>
-        ))}
+          </>
+        )}
+
+        {rootsWithSection.map(({ group, showSection }) => {
+          const section = group.sidebarSection ?? '';
+
+          const isPageRoot = group.menuType?.toUpperCase() === 'PAGE' && group.menuUrl;
+          if (isPageRoot) {
+            const tabId = group.tabId || group.menuId;
+            return (
+              <div key={group.menuId}>
+                {!collapsed && showSection && section && <p className="sidebar__section-label">{section}</p>}
+                <ul className="sidebar__nav">
+                  <li>
+                    <button
+                      type="button"
+                      className={`sidebar__link ${activeTabId === tabId ? 'active' : ''}`}
+                      onClick={() => openPageTab(group)}
+                    >
+                      {renderBoMenuFiIcon(group.icon, 16)}
+                      {!collapsed && <span>{pickMenuName(group, i18n.language)}</span>}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            );
+          }
+
+          const sub = childrenByParent.get(group.menuId) ?? [];
+          if (sub.length === 0) return null;
+
+          const showPopover = collapsed && sub.length > 0 && collapsedHoverId === group.menuId;
+
+          return (
+            <div key={group.menuId}>
+              {!collapsed && showSection && section && <p className="sidebar__section-label">{section}</p>}
+              <ul className="sidebar__nav">
+                <li className={collapsed && sub.length > 0 ? 'sidebar__li--has-popover' : ''}>
+                  <div
+                    className="sidebar__group-wrap"
+                    onMouseEnter={() => collapsed && sub.length > 0 && setCollapsedHoverId(group.menuId)}
+                    onMouseLeave={() => collapsed && setCollapsedHoverId(null)}
+                  >
+                    <button
+                      type="button"
+                      className={`sidebar__link sidebar__link--group ${openMenus[group.menuId] ? 'open' : ''} ${showPopover ? 'sidebar__link--hover' : ''}`}
+                      onClick={() => toggleMenu(group.menuId)}
+                    >
+                      {renderBoMenuFiIcon(group.icon, 16)}
+                      {!collapsed && (
+                        <>
+                          <span>{pickMenuName(group, i18n.language)}</span>
+                          <FiChevronRight
+                            size={12}
+                            className={`sidebar__arrow ${openMenus[group.menuId] ? 'sidebar__arrow--open' : ''}`}
+                          />
+                        </>
+                      )}
+                    </button>
+                    {collapsed && sub.length > 0 && (
+                      <div className={`sidebar__popover ${showPopover ? 'sidebar__popover--show' : ''}`}>
+                        <div className="sidebar__popover-title">{pickMenuName(group, i18n.language)}</div>
+                        <ul className="sidebar__popover-list">
+                          {sub.map((child) => {
+                            const cid = child.tabId || child.menuId;
+                            return (
+                              <li key={child.menuId}>
+                                <button
+                                  type="button"
+                                  className={`sidebar__popover-link ${activeTabId === cid ? 'active' : ''}`}
+                                  onClick={() => {
+                                    openPageTab(child);
+                                    setCollapsedHoverId(null);
+                                  }}
+                                >
+                                  {pickMenuName(child, i18n.language)}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  {openMenus[group.menuId] && !collapsed && (
+                    <ul className="sidebar__sub">
+                      {sub.map((child) => {
+                        const cid = child.tabId || child.menuId;
+                        return (
+                          <li key={child.menuId}>
+                            <button
+                              type="button"
+                              className={`sidebar__link sidebar__link--sub ${activeTabId === cid ? 'active' : ''}`}
+                              onClick={() => openPageTab(child)}
+                            >
+                              {renderBoMenuFiIcon(child.icon, 14)}
+                              <span>{pickMenuName(child, i18n.language)}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </li>
+              </ul>
+            </div>
+          );
+        })}
       </div>
     </nav>
   );

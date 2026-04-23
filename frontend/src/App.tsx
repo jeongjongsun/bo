@@ -24,23 +24,27 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <CorporationProvider>
-        <TabProvider>
-          <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/*"
-                element={
-                  <AuthGuard>
-                    <MainLayout />
-                  </AuthGuard>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-        </TabProvider>
-      </CorporationProvider>
+      <div className="app-shell">
+        <CorporationProvider>
+          <TabProvider>
+            <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+              <div className="app-shell__router-outlet">
+                <Routes>
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route
+                    path="/*"
+                    element={
+                      <AuthGuard>
+                        <MainLayout />
+                      </AuthGuard>
+                    }
+                  />
+                </Routes>
+              </div>
+            </BrowserRouter>
+          </TabProvider>
+        </CorporationProvider>
+      </div>
     </QueryClientProvider>
   );
 }

@@ -13,4 +13,7 @@ public interface OmAuthGroupMMapper {
     List<AuthGroupOptionDto> selectActiveOptions();
 
     int countByCd(@Param("authGroupCd") String authGroupCd);
+
+    /** 삭제된 행 포함 동일 PK 존재 여부 (신규 등록 시 PK 충돌 방지). */
+    int countByCdAll(@Param("authGroupCd") String authGroupCd);
 }

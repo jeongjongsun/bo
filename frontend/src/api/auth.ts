@@ -18,10 +18,31 @@ export interface MenuItem {
   children: MenuItem[];
 }
 
+/** GET /auth/me 의 boSidebarMenus 항목 (DB OM_MENU_M 기반). */
+export interface BoSidebarMenu {
+  menuId: string;
+  parentMenuId: string | null;
+  menuType: string;
+  tabId: string;
+  menuUrl: string | null;
+  icon: string | null;
+  sidebarSection: string | null;
+  menuNmKo: string;
+  menuNmEn: string;
+  menuNmJa: string;
+  menuNmVi: string;
+  dispSeq: number;
+}
+
 export interface AuthMeData {
   user: AuthUser;
   menus: MenuItem[];
   permissions: string[];
+  /** BO 사이드바에 표시할 om_menu_m.menu_id 목록 (권한그룹 매핑 기준). */
+  allowedMenuIds?: string[];
+  boSidebarMenus?: BoSidebarMenu[];
+  /** 허용 메뉴와 교집합·home 제외·최대 5건 순서. */
+  favoriteMenuIds?: string[];
 }
 
 export interface LoginRequest {
@@ -33,6 +54,9 @@ export interface LoginResponse {
   userId: string;
   name: string;
   roles: string[];
+  allowedMenuIds?: string[];
+  boSidebarMenus?: BoSidebarMenu[];
+  favoriteMenuIds?: string[];
 }
 
 export async function fetchAuthMe(): Promise<AuthMeData> {

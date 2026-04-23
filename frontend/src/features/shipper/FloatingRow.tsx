@@ -8,6 +8,7 @@ export function FloatingRow({
   requiredLabel,
   children,
   style,
+  invalidFeedback,
 }: {
   id: string;
   label: string;
@@ -15,6 +16,8 @@ export function FloatingRow({
   requiredLabel?: string;
   children: ReactElement;
   style?: CSSProperties;
+  /** Bootstrap `invalid-feedback`: must follow control inside same wrapper for `:invalid ~` selectors. */
+  invalidFeedback?: string;
 }) {
   const childWithId = cloneElement(children, { id });
   return (
@@ -31,6 +34,7 @@ export function FloatingRow({
           </>
         )}
       </label>
+      {invalidFeedback ? <div className="invalid-feedback">{invalidFeedback}</div> : null}
     </div>
   );
 }

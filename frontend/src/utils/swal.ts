@@ -6,22 +6,28 @@
  */
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import DOMPurify from 'dompurify';
 
 const MySwal = withReactContent(Swal);
 
 const defaultOptions = {
   showCloseButton: false,
   confirmButtonText: '확인',
+  // Prevent html/body forced auto-height + scrollbar compensation shifts
+  // that can make AG Grid look like it "refreshed" when alert opens/closes.
+  heightAuto: false,
+  scrollbarPadding: false,
 };
 
 /** 문장 구분(. ) 또는 줄바꿈(\\n)이 있으면 <br>로 변환해 html로 표시 */
 function textOrHtml(content: string) {
   const t = content.trim();
   if (!t) return { text: '' };
+  if (/<br\s*\/?>/i.test(t)) return { html: DOMPurify.sanitize(t) };
   let out = t;
   if (out.includes('\n')) out = out.replace(/\n/g, '<br>');
   if (out.includes('. ')) out = out.replace(/\. /g, '.<br>');
-  if (out !== t) return { html: out };
+  if (out !== t) return { html: DOMPurify.sanitize(out) };
   return { text: t };
 }
 

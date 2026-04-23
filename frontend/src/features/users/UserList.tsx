@@ -152,7 +152,7 @@ export function UserList() {
       {
         field: 'userId',
         headerName: t('users.col.userId'),
-        width: 130,
+        width: 150,
         pinned: 'left',
         sortable: false,
         cellStyle: { textAlign: 'center' },

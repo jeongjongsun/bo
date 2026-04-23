@@ -1,5 +1,7 @@
 import { useTabStore } from '@/store/useTabStore';
 import { getPageComponent } from '@/pages/pageRegistry';
+import { TabPanePathProvider } from '@/components/layout/TabPanePathContext';
+import { normalizeBoPathname } from '@/config/boAppRoutes';
 
 /**
  * 탭 콘텐츠 영역.
@@ -17,13 +19,17 @@ export function TabContent() {
         const PageComponent = getPageComponent(tab.path);
         if (!PageComponent) return null;
 
+        const panePath = normalizeBoPathname((tab.path || '/').split('?')[0] || '/');
+
         return (
           <div
             key={tab.id}
             className="tab-content__pane"
             style={{ display: tab.id === activeTabId ? 'block' : 'none' }}
           >
-            <PageComponent tab={tab} />
+            <TabPanePathProvider path={panePath}>
+              <PageComponent tab={tab} />
+            </TabPanePathProvider>
           </div>
         );
       })}

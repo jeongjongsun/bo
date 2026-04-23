@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FaRegUser } from 'react-icons/fa';
 import { FiKey, FiEye, FiEyeOff, FiGlobe } from 'react-icons/fi';
 import { login } from '@/api/auth';
+import { persistBoAllowedMenuIds } from '@/utils/boAllowedMenuStorage';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import { showError } from '@/utils/swal';
 
@@ -27,11 +28,14 @@ export function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: () => {
+    onSuccess: (payload) => {
       if (rememberMe) {
         localStorage.setItem(SAVED_USER_KEY, userId);
       } else {
         localStorage.removeItem(SAVED_USER_KEY);
+      }
+      if (payload?.allowedMenuIds !== undefined) {
+        persistBoAllowedMenuIds(payload.allowedMenuIds);
       }
       queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       navigate('/', { replace: true });

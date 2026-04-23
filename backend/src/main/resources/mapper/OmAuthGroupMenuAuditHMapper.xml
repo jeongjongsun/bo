@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmAuthGroupMenuAuditHMapper">
+
+    <resultMap id="auditRowMap" type="com.shopeasy.dto.AuthGroupMenuAuditRow">
+        <id property="id" column="id"/>
+        <result property="actionType" column="action_type"/>
+        <result property="systemMainCd" column="system_main_cd"/>
+        <result property="systemSubCd" column="system_sub_cd"/>
+        <result property="beforeMenuIds" column="before_menu_ids"/>
+        <result property="afterMenuIds" column="after_menu_ids"/>
+        <result property="affectedUserCount" column="affected_user_count"/>
+        <result property="changeReason" column="change_reason"/>
+        <result property="requestId" column="request_id"/>
+        <result property="requestIp" column="request_ip"/>
+        <result property="userAgent" column="user_agent"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+    </resultMap>
+
+    <insert id="insertAudit">
+        INSERT INTO om_auth_group_menu_audit_h (
+            auth_group_cd,
+            action_type,
+            system_main_cd,
+            system_sub_cd,
+            before_menu_ids,
+            after_menu_ids,
+            affected_user_count,
+            change_reason,
+            request_id,
+            request_ip,
+            user_agent,
+            created_by
+        ) VALUES (
+            #{authGroupCd},
+            #{actionType},
+            #{systemMainCd},
+            #{systemSubCd},
+            CAST(#{beforeMenuIds} AS JSONB),
+            CAST(#{afterMenuIds} AS JSONB),
+            #{affectedUserCount},
+            #{changeReason,jdbcType=VARCHAR},
+            #{requestId,jdbcType=VARCHAR},
+            #{requestIp,jdbcType=VARCHAR},
+            #{userAgent,jdbcType=VARCHAR},
+            #{createdBy}
+        )
+    </insert>
+
+    <select id="selectAuditCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_auth_group_menu_audit_h h
+         WHERE h.auth_group_cd = #{authGroupCd}
+    </select>
+
+    <select id="selectAuditList" resultMap="auditRowMap">
+        SELECT h.id
+             , h.action_type
+             , h.system_main_cd
+             , h.system_sub_cd
+             , COALESCE(h.before_menu_ids::text, '[]') AS before_menu_ids
+             , COALESCE(h.after_menu_ids::text, '[]') AS after_menu_ids
+             , h.affected_user_count
+             , h.change_reason
+             , h.request_id
+             , h.request_ip
+             , h.user_agent
+             , to_char(h.created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS created_at
+             , h.created_by
+          FROM om_auth_group_menu_audit_h h
+         WHERE h.auth_group_cd = #{authGroupCd}
+         ORDER BY h.created_at DESC, h.id DESC
+         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+</mapper>

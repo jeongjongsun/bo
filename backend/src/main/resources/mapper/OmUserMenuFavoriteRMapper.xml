@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmUserMenuFavoriteRMapper">
+
+    <select id="selectMenuIdsOrdered" resultType="string">
+        SELECT f.menu_id
+          FROM om_user_menu_favorite_r f
+         WHERE f.user_id = #{userId}
+         ORDER BY f.disp_seq ASC, f.menu_id ASC
+    </select>
+
+    <select id="existsByUserAndMenu" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+              FROM om_user_menu_favorite_r f
+             WHERE f.user_id = #{userId}
+               AND f.menu_id = #{menuId}
+        )
+    </select>
+
+    <select id="countByUser" resultType="int">
+        SELECT COUNT(*)
+          FROM om_user_menu_favorite_r f
+         WHERE f.user_id = #{userId}
+    </select>
+
+    <select id="selectMaxDispSeq" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(f.disp_seq), -1)
+          FROM om_user_menu_favorite_r f
+         WHERE f.user_id = #{userId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO om_user_menu_favorite_r (user_id, menu_id, disp_seq)
+        VALUES (#{userId}, #{menuId}, #{dispSeq})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM om_user_menu_favorite_r
+         WHERE user_id = #{userId}
+           AND menu_id = #{menuId}
+    </delete>
+
+    <delete id="deleteForUser">
+        DELETE FROM om_user_menu_favorite_r
+         WHERE user_id = #{userId}
+    </delete>
+
+    <delete id="deleteForAuthGroupUsersNotInMenuIds">
+        DELETE FROM om_user_menu_favorite_r f
+         WHERE EXISTS (
+             SELECT 1
+               FROM om_user_m u
+              WHERE u.user_id = f.user_id
+                AND COALESCE(u.is_deleted, false) = false
+                AND COALESCE(u.user_info ->> 'auth_group', '') = #{authGroupCd}
+           )
+        <choose>
+            <when test="menuIds == null || menuIds.isEmpty()">
+           AND TRUE
+            </when>
+            <otherwise>
+           AND f.menu_id NOT IN
+                <foreach collection="menuIds" item="mid" open="(" separator="," close=")">
+                    #{mid}
+                </foreach>
+            </otherwise>
+        </choose>
+    </delete>
+
+    <delete id="deleteAllForUserIds">
+        DELETE FROM om_user_menu_favorite_r f
+         WHERE f.user_id IN
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+
+</mapper>
