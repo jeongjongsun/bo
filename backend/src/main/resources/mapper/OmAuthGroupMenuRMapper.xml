@@ -27,7 +27,57 @@
            AND r.system_main_cd = #{systemMainCd}
            AND r.system_sub_cd = #{systemSubCd}
            AND COALESCE(r.is_deleted, false) = false
+           AND COALESCE(r.can_view, false) = true
          ORDER BY r.menu_id ASC
+    </select>
+
+    <select id="selectMenuPermissionsByGroupAndSystem" resultType="com.shopeasy.dto.AuthGroupMenuPermissionDto">
+        SELECT r.menu_id AS menuId
+             , COALESCE(r.can_view, false) AS canView
+             , COALESCE(r.can_create, false) AS canCreate
+             , COALESCE(r.can_update, false) AS canUpdate
+             , COALESCE(r.can_delete, false) AS canDelete
+             , COALESCE(r.can_excel_download, false) AS canExcelDownload
+             , COALESCE(r.can_approve, false) AS canApprove
+          FROM om_auth_group_menu_r r
+         WHERE r.auth_group_cd = #{authGroupCd}
+           AND r.system_main_cd = #{systemMainCd}
+           AND r.system_sub_cd = #{systemSubCd}
+           AND COALESCE(r.is_deleted, false) = false
+         ORDER BY r.menu_id ASC
+    </select>
+
+    <select id="selectPermissionCodesByAuthGroupAndSystem" resultType="string">
+        SELECT DISTINCT CONCAT(
+                   CASE
+                       WHEN v.menu_id = 'basic-users' THEN 'user'
+                       ELSE REPLACE(v.menu_id, '-', '_')
+                   END,
+                   ':',
+                   v.action
+               ) AS permission_code
+          FROM om_auth_group_menu_permission_v v
+         WHERE v.auth_group_cd = #{authGroupCd}
+           AND v.system_main_cd = #{systemMainCd}
+           AND v.system_sub_cd = #{systemSubCd}
+           AND v.allowed = true
+         ORDER BY permission_code ASC
+    </select>
+
+    <select id="selectPermissionCodesByAuthGroup" resultType="string">
+        SELECT DISTINCT CONCAT(
+                   CASE
+                       WHEN v.menu_id = 'basic-users' THEN 'user'
+                       ELSE REPLACE(v.menu_id, '-', '_')
+                   END,
+                   ':',
+                   v.action
+               ) AS permission_code
+          FROM om_auth_group_menu_permission_v v
+         WHERE v.auth_group_cd = #{authGroupCd}
+           AND v.system_main_cd = #{systemMainCd}
+           AND v.allowed = true
+         ORDER BY permission_code ASC
     </select>
 
     <update id="softDeleteByGroupAndSystem">
@@ -56,17 +106,29 @@
             menu_id,
             system_main_cd,
             system_sub_cd,
+            can_view,
+            can_create,
+            can_update,
+            can_delete,
+            can_excel_download,
+            can_approve,
             created_by,
             updated_by,
             is_deleted
         )
         VALUES
-        <foreach collection="menuIds" item="menuId" separator=",">
+        <foreach collection="menuPermissions" item="item" separator=",">
             (
                 #{authGroupCd},
-                #{menuId},
+                #{item.menuId},
                 #{systemMainCd},
                 #{systemSubCd},
+                #{item.canView},
+                #{item.canCreate},
+                #{item.canUpdate},
+                #{item.canDelete},
+                #{item.canExcelDownload},
+                #{item.canApprove},
                 #{userId},
                 #{userId},
                 false
@@ -76,6 +138,12 @@
         DO UPDATE
            SET system_main_cd = EXCLUDED.system_main_cd
              , system_sub_cd = EXCLUDED.system_sub_cd
+             , can_view = EXCLUDED.can_view
+             , can_create = EXCLUDED.can_create
+             , can_update = EXCLUDED.can_update
+             , can_delete = EXCLUDED.can_delete
+             , can_excel_download = EXCLUDED.can_excel_download
+             , can_approve = EXCLUDED.can_approve
              , is_deleted = false
              , updated_at = CURRENT_TIMESTAMP
              , updated_by = EXCLUDED.updated_by
