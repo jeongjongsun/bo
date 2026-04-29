@@ -16,6 +16,7 @@ export interface BoAppRouteDef {
 export const BO_APP_ROUTES: BoAppRouteDef[] = [
   { path: '/', menuId: null, tabId: 'home', titleKey: 'dashboard.title' },
   { path: '/basic/shipper', menuId: 'basic-shipper', tabId: 'basic-shipper', titleKey: 'shipper.title' },
+  { path: '/basic/malls', menuId: 'basic-malls', tabId: 'basic-malls', titleKey: 'malls.title' },
   { path: '/basic/users', menuId: 'basic-users', tabId: 'basic-users', titleKey: 'users.title' },
   { path: '/system/common-code', menuId: 'system-common-code', tabId: 'system-common-code', titleKey: 'commonCode.title' },
   { path: '/system/menus', menuId: 'system-menus', tabId: 'system-menus', titleKey: 'menuManage.title' },
