@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
 import { PageLayout } from '@/components/layout/PageLayout';
-import { fetchCorporations } from '@/api/corporations';
-import { useUserSettings, useSaveUserSettings, useProfile, useUpdateProfile } from './hooks';
+import { useSaveSystemConfig, useSystemConfig } from './hooks';
 import { showSuccess, showError } from '@/utils/swal';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
@@ -11,76 +9,74 @@ import { useHasMenuActionPermissionByPath } from '@/hooks/useActionPermission';
 export function UserSettingsPage() {
   const { t } = useTranslation();
   const canUpdate = useHasMenuActionPermissionByPath('/settings', 'update');
-  const { data: settings, isLoading: settingsLoading } = useUserSettings();
-  const { data: profile, isLoading: profileLoading } = useProfile();
-  const { data: corporations = [] } = useQuery({
-    queryKey: ['corporations', 'list'],
-    queryFn: fetchCorporations,
-    staleTime: 5 * 60 * 1000,
-  });
-  const saveMutation = useSaveUserSettings();
-  const updateProfileMutation = useUpdateProfile();
-
-  const [defaultCorporationCd, setDefaultCorporationCd] = useState('');
-  const [profileName, setProfileName] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-
-  useEffect(() => {
-    if (settings) {
-      setDefaultCorporationCd(settings.defaultCorporationCd ?? '');
-    }
-  }, [settings]);
+  const { data: systemConfig, isLoading: systemConfigLoading } = useSystemConfig();
+  const saveSystemConfigMutation = useSaveSystemConfig();
+  const [maxPasswordFailCount, setMaxPasswordFailCount] = useState(5);
+  const [maxInactiveLoginDays, setMaxInactiveLoginDays] = useState(90);
+  const [allowDuplicateLogin, setAllowDuplicateLogin] = useState(false);
+  const [smtpHost, setSmtpHost] = useState('');
+  const [smtpPort, setSmtpPort] = useState('');
+  const [smtpUsername, setSmtpUsername] = useState('');
+  const [smtpPasswordEnc, setSmtpPasswordEnc] = useState('');
+  const [smtpFromEmail, setSmtpFromEmail] = useState('');
+  const [smtpFromName, setSmtpFromName] = useState('');
+  const [smtpUseTls, setSmtpUseTls] = useState(true);
+  const [smtpUseSsl, setSmtpUseSsl] = useState(false);
+  const [smtpAuthRequired, setSmtpAuthRequired] = useState(true);
+  const [smtpConnectionTimeoutMs, setSmtpConnectionTimeoutMs] = useState(10000);
+  const [smtpReadTimeoutMs, setSmtpReadTimeoutMs] = useState(10000);
+  const [smtpWriteTimeoutMs, setSmtpWriteTimeoutMs] = useState(10000);
 
   useEffect(() => {
-    if (profile) {
-      setProfileName(profile.name ?? '');
+    if (systemConfig) {
+      setMaxPasswordFailCount(systemConfig.maxPasswordFailCount ?? 5);
+      setMaxInactiveLoginDays(systemConfig.maxInactiveLoginDays ?? 90);
+      setAllowDuplicateLogin(!!systemConfig.allowDuplicateLogin);
+      setSmtpHost(systemConfig.smtpHost ?? '');
+      setSmtpPort(systemConfig.smtpPort != null ? String(systemConfig.smtpPort) : '');
+      setSmtpUsername(systemConfig.smtpUsername ?? '');
+      setSmtpPasswordEnc(systemConfig.smtpPasswordEnc ?? '');
+      setSmtpFromEmail(systemConfig.smtpFromEmail ?? '');
+      setSmtpFromName(systemConfig.smtpFromName ?? '');
+      setSmtpUseTls(systemConfig.smtpUseTls ?? true);
+      setSmtpUseSsl(systemConfig.smtpUseSsl ?? false);
+      setSmtpAuthRequired(systemConfig.smtpAuthRequired ?? true);
+      setSmtpConnectionTimeoutMs(systemConfig.smtpConnectionTimeoutMs ?? 10000);
+      setSmtpReadTimeoutMs(systemConfig.smtpReadTimeoutMs ?? 10000);
+      setSmtpWriteTimeoutMs(systemConfig.smtpWriteTimeoutMs ?? 10000);
     }
-  }, [profile]);
+  }, [systemConfig]);
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  const handleSystemConfigSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canUpdate) return;
-    const hasPassword = newPassword.trim() !== '' || newPasswordConfirm.trim() !== '';
-    if (hasPassword && newPassword.trim() !== newPasswordConfirm.trim()) {
-      showError(t('common.error'), t('settings.profile.password_mismatch'));
-      return;
-    }
-    updateProfileMutation.mutate(
+    saveSystemConfigMutation.mutate(
       {
-        name: profileName.trim(),
-        ...(newPassword.trim() ? { newPassword: newPassword.trim(), newPasswordConfirm: newPasswordConfirm.trim() } : {}),
+        maxPasswordFailCount,
+        maxInactiveLoginDays,
+        allowDuplicateLogin,
+        smtpHost: smtpHost.trim() || null,
+        smtpPort: smtpPort.trim() ? Number(smtpPort) : null,
+        smtpUsername: smtpUsername.trim() || null,
+        smtpPasswordEnc: smtpPasswordEnc.trim() || null,
+        smtpFromEmail: smtpFromEmail.trim() || null,
+        smtpFromName: smtpFromName.trim() || null,
+        smtpUseTls,
+        smtpUseSsl,
+        smtpAuthRequired,
+        smtpConnectionTimeoutMs,
+        smtpReadTimeoutMs,
+        smtpWriteTimeoutMs,
       },
       {
-        onSuccess: () => {
-          showSuccess(t('common.saved'), t('settings.profile.saveSuccess'));
-          setNewPassword('');
-          setNewPasswordConfirm('');
-        },
+        onSuccess: () => showSuccess(t('common.saved'), t('settings.system.saveSuccess')),
         onError: (err) =>
-          showError(t('common.error'), getApiErrorMessage(err, t('settings.profile.saveFail'), t)),
+          showError(t('common.error'), getApiErrorMessage(err, t('settings.system.saveFail'), t)),
       },
     );
   };
 
-  /** 환경설정 항목 변경 시 즉시 저장 (저장 버튼 없이) */
-  const saveSettings = useCallback(
-    (patch: { defaultCorporationCd?: string | null }) => {
-      if (!canUpdate) return;
-      saveMutation.mutate(
-        {
-          defaultCorporationCd: patch.defaultCorporationCd !== undefined ? patch.defaultCorporationCd : (defaultCorporationCd || null),
-        },
-        {
-          onError: (err) =>
-            showError(t('common.error'), getApiErrorMessage(err, t('settings.saveFail'), t)),
-        },
-      );
-    },
-    [canUpdate, defaultCorporationCd, saveMutation, t],
-  );
-
-  if (settingsLoading && !settings) {
+  if (systemConfigLoading && !systemConfig) {
     return (
       <PageLayout title={t('settings.title')}>
         <div className="card shadow-none border">
@@ -94,112 +90,160 @@ export function UserSettingsPage() {
 
   return (
     <PageLayout title={t('settings.title')} lead={t('settings.lead')}>
-      {/* 개인정보 */}
+      <form onSubmit={handleSystemConfigSubmit} className="settings-form">
+        <div className="card shadow-none border mb-4">
+        <div className="card-body">
+          <h5 className="card-title mb-3">{t('settings.system.title')}</h5>
+            <div className="row mb-3">
+              <div className="col-6">
+                <div className="form-floating mb-2">
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="maxPasswordFailCount"
+                    min={1}
+                    value={maxPasswordFailCount}
+                    onChange={(e) => setMaxPasswordFailCount(Number(e.target.value || 1))}
+                    placeholder=" "
+                  />
+                  <label htmlFor="maxPasswordFailCount">{t('settings.system.maxPasswordFailCount')}</label>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="form-floating mb-2">
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="maxInactiveLoginDays"
+                    min={0}
+                    value={maxInactiveLoginDays}
+                    onChange={(e) => setMaxInactiveLoginDays(Number(e.target.value || 0))}
+                    placeholder=" "
+                  />
+                  <label htmlFor="maxInactiveLoginDays">{t('settings.system.maxInactiveLoginDays')}</label>
+                </div>
+              </div>
+            </div>
+            <div className="row mb-3">
+              <div className="col-6">
+                <div className="form-check form-switch mt-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="allowDuplicateLogin"
+                    checked={allowDuplicateLogin}
+                    onChange={(e) => setAllowDuplicateLogin(e.target.checked)}
+                  />
+                  <label className="form-check-label" htmlFor="allowDuplicateLogin">
+                    {t('settings.system.allowDuplicateLogin')}
+                  </label>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
       <div className="card shadow-none border mb-4">
         <div className="card-body">
-          <h5 className="card-title mb-3">{t('settings.profile.title')}</h5>
-          <form onSubmit={handleProfileSubmit} className="settings-form">
-            <div className="form-floating mb-2">
-              <input
-                type="text"
-                className="form-control"
-                id="profileName"
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                placeholder=" "
-                aria-label={t('settings.profile.name')}
-              />
-              <label htmlFor="profileName">{t('settings.profile.name')}</label>
-            </div>
-            <div className="row mb-2">
+          <h5 className="card-title mb-3">{t('settings.system.emailTitle')}</h5>
+          <div>
+            <div className="row mb-3">
               <div className="col-6">
                 <div className="form-floating mb-2">
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="newPassword"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    autoComplete="new-password"
-                    placeholder=" "
-                    aria-describedby="passwordHelp passwordComplexity"
-                  />
-                  <label htmlFor="newPassword">{t('settings.profile.newPassword')}</label>
+                  <input type="text" className="form-control" id="smtpHost" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} placeholder=" " />
+                  <label htmlFor="smtpHost">{t('settings.system.smtpHost')}</label>
                 </div>
               </div>
               <div className="col-6">
                 <div className="form-floating mb-2">
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="newPasswordConfirm"
-                    value={newPasswordConfirm}
-                    onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                    autoComplete="new-password"
-                    placeholder=" "
-                  />
-                  <label htmlFor="newPasswordConfirm">{t('settings.profile.newPasswordConfirm')}</label>
+                  <input type="number" className="form-control" id="smtpPort" value={smtpPort} onChange={(e) => setSmtpPort(e.target.value)} placeholder=" " />
+                  <label htmlFor="smtpPort">{t('settings.system.smtpPort')}</label>
                 </div>
               </div>
             </div>
-            <div className="row">
-              <div className="col-12">
-                <div id="passwordHelp" className="form-text mb-2">
-                  {t('settings.profile.passwordHelp')}
+            <div className="row mb-3">
+              <div className="col-6">
+                <div className="form-floating mb-2">
+                  <input type="text" className="form-control" id="smtpUsername" value={smtpUsername} onChange={(e) => setSmtpUsername(e.target.value)} placeholder=" " />
+                  <label htmlFor="smtpUsername">{t('settings.system.smtpUsername')}</label>
                 </div>
-                <div id="passwordComplexity" className="form-text mb-2">
-                  {t('settings.profile.passwordComplexity')}
+              </div>
+              <div className="col-6">
+                <div className="form-floating mb-2">
+                  <input type="password" className="form-control" id="smtpPasswordEnc" value={smtpPasswordEnc} onChange={(e) => setSmtpPasswordEnc(e.target.value)} placeholder=" " />
+                  <label htmlFor="smtpPasswordEnc">{t('settings.system.smtpPasswordEnc')}</label>
                 </div>
               </div>
             </div>
+            <div className="row mb-3">
+              <div className="col-6">
+                <div className="form-floating mb-2">
+                  <input type="email" className="form-control" id="smtpFromEmail" value={smtpFromEmail} onChange={(e) => setSmtpFromEmail(e.target.value)} placeholder=" " />
+                  <label htmlFor="smtpFromEmail">{t('settings.system.smtpFromEmail')}</label>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="form-floating mb-2">
+                  <input type="text" className="form-control" id="smtpFromName" value={smtpFromName} onChange={(e) => setSmtpFromName(e.target.value)} placeholder=" " />
+                  <label htmlFor="smtpFromName">{t('settings.system.smtpFromName')}</label>
+                </div>
+              </div>
+            </div>
+            <div className="row mb-3">
+              <div className="col-4">
+                <div className="form-check form-switch mt-2">
+                  <input className="form-check-input" type="checkbox" role="switch" id="smtpUseTls" checked={smtpUseTls} onChange={(e) => setSmtpUseTls(e.target.checked)} />
+                  <label className="form-check-label" htmlFor="smtpUseTls">{t('settings.system.smtpUseTls')}</label>
+                </div>
+              </div>
+              <div className="col-4">
+                <div className="form-check form-switch mt-2">
+                  <input className="form-check-input" type="checkbox" role="switch" id="smtpUseSsl" checked={smtpUseSsl} onChange={(e) => setSmtpUseSsl(e.target.checked)} />
+                  <label className="form-check-label" htmlFor="smtpUseSsl">{t('settings.system.smtpUseSsl')}</label>
+                </div>
+              </div>
+              <div className="col-4">
+                <div className="form-check form-switch mt-2">
+                  <input className="form-check-input" type="checkbox" role="switch" id="smtpAuthRequired" checked={smtpAuthRequired} onChange={(e) => setSmtpAuthRequired(e.target.checked)} />
+                  <label className="form-check-label" htmlFor="smtpAuthRequired">{t('settings.system.smtpAuthRequired')}</label>
+                </div>
+              </div>
+            </div>
+            <div className="row mb-3">
+              <div className="col-4">
+                <div className="form-floating mb-2">
+                  <input type="number" className="form-control" id="smtpConnectionTimeoutMs" min={0} value={smtpConnectionTimeoutMs} onChange={(e) => setSmtpConnectionTimeoutMs(Number(e.target.value || 0))} placeholder=" " />
+                  <label htmlFor="smtpConnectionTimeoutMs">{t('settings.system.smtpConnectionTimeoutMs')}</label>
+                </div>
+              </div>
+              <div className="col-4">
+                <div className="form-floating mb-2">
+                  <input type="number" className="form-control" id="smtpReadTimeoutMs" min={0} value={smtpReadTimeoutMs} onChange={(e) => setSmtpReadTimeoutMs(Number(e.target.value || 0))} placeholder=" " />
+                  <label htmlFor="smtpReadTimeoutMs">{t('settings.system.smtpReadTimeoutMs')}</label>
+                </div>
+              </div>
+              <div className="col-4">
+                <div className="form-floating mb-2">
+                  <input type="number" className="form-control" id="smtpWriteTimeoutMs" min={0} value={smtpWriteTimeoutMs} onChange={(e) => setSmtpWriteTimeoutMs(Number(e.target.value || 0))} placeholder=" " />
+                  <label htmlFor="smtpWriteTimeoutMs">{t('settings.system.smtpWriteTimeoutMs')}</label>
+                </div>
+              </div>
+            </div>
+            <div className="form-text mb-3">{t('settings.system.help')}</div>
             <div>
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={updateProfileMutation.isPending || profileLoading || !canUpdate}
+                disabled={saveSystemConfigMutation.isPending || systemConfigLoading || !canUpdate}
               >
-                {updateProfileMutation.isPending ? t('common.saving') : t('common.save')}
+                {saveSystemConfigMutation.isPending ? t('common.saving') : t('common.save')}
               </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      {/* 환경설정 — 변경 시 즉시 저장 */}
-      <div className="card shadow-none border settings-preferences-card">
-        <div className="card-body">
-          <div className="settings-form">
-            <div className="row mb-4">
-              <div className="col-6">
-                <h5 className="card-title mb-3">{t('settings.defaultCorporation.title')}</h5>
-                <div className="form-floating mb-2">
-                  <select
-                    className="form-select w-auto"
-                    id="defaultCorporationCd"
-                    value={defaultCorporationCd}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setDefaultCorporationCd(v);
-                      saveSettings({ defaultCorporationCd: v || null });
-                    }}
-                    disabled={saveMutation.isPending || !canUpdate}
-                    aria-label={t('settings.defaultCorporation.label')}
-                  >
-                    <option value="">{t('settings.defaultCorporation.none')}</option>
-                    {corporations.map((c) => (
-                      <option key={c.corporationCd} value={c.corporationCd}>
-                        {c.corporationNm} ({c.corporationCd})
-                      </option>
-                    ))}
-                  </select>
-                  <label htmlFor="defaultCorporationCd">{t('settings.defaultCorporation.label')}</label>
-                </div>
-                <div className="form-text">{t('settings.defaultCorporation.help')}</div>
-              </div>
             </div>
           </div>
         </div>
       </div>
+      </form>
     </PageLayout>
   );
 }
