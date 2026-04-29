@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class CodeManageChildRegisterRequest {
 
-    /** CODE 행의 sub_cd와 동일한 그룹 코드 (예: ORDER_TYPE). */
+    /** CODE 행의 sub_cd와 동일한 그룹 코드 (예: ORDER_TYPE, ORDER_CHANNEL_TYPE). */
     private String parentMainCd;
     private String subCd;
     private String codeNmKo;
