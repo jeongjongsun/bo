@@ -12,7 +12,7 @@
 --   - system_sub_cd = 'BO' (백오피스). OMS 전용 메뉴는 별도 행으로 OM에 추가하면 됨.
 --   - icon: react-icons/fi 의 export 이름 (Sidebar와 동일 문자열로 매핑 가능).
 --   - menu_info.sidebar_section: UI 섹션 라벨(기초정보, Apps 등) 복원용.
---   - 주문/쇼핑몰/상품 관련 메뉴는 BO 정리 단계에서 제외됨.
+--   - 주문/상품 등 일부 메뉴는 BO 정리 단계에서 제외됨. 기초정보의 쇼핑몰 마스터(om_mall_m)는 시드에 포함.
 
 -- ---------------------------------------------------------------------------
 -- 1depth: 대시보드 + 그룹
@@ -108,6 +108,13 @@ INSERT INTO om_menu_m (
     '/basic/shipper', true, 'FiBriefcase', 10,
     '{"menu_type":"PAGE"}'::jsonb,
     NULL
+),
+(
+    'basic-malls', 'SYSTEM', 'BO', 'basic',
+    '{"ko":"쇼핑몰 정보","en":"Mall Information","ja":"ショッピングモール情報","vi":"Thông tin sàn TMĐT"}'::jsonb,
+    '/basic/malls', true, 'FiShoppingBag', 15,
+    '{"menu_type":"PAGE"}'::jsonb,
+    'om_mall_m; docs/ddl/om_mall_m.sql'
 ),
 (
     'basic-users', 'SYSTEM', 'BO', 'basic',
