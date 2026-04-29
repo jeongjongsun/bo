@@ -11,4 +11,64 @@
          LIMIT 1
     </select>
 
+    <select id="selectSystemConfig" resultType="com.shopeasy.dto.SystemConfigDto">
+        SELECT id
+             , max_password_fail_count AS maxPasswordFailCount
+             , max_inactive_login_days AS maxInactiveLoginDays
+             , allow_duplicate_login AS allowDuplicateLogin
+             , smtp_host AS smtpHost
+             , smtp_port AS smtpPort
+             , smtp_username AS smtpUsername
+             , smtp_password_enc AS smtpPasswordEnc
+             , smtp_from_email AS smtpFromEmail
+             , smtp_from_name AS smtpFromName
+             , smtp_use_tls AS smtpUseTls
+             , smtp_use_ssl AS smtpUseSsl
+             , smtp_auth_required AS smtpAuthRequired
+             , smtp_connection_timeout_ms AS smtpConnectionTimeoutMs
+             , smtp_read_timeout_ms AS smtpReadTimeoutMs
+             , smtp_write_timeout_ms AS smtpWriteTimeoutMs
+          FROM om_config_m
+         WHERE id = 1
+         LIMIT 1
+    </select>
+
+    <insert id="insertDefaultRowIfAbsent">
+        INSERT INTO om_config_m (
+            id,
+            max_password_fail_count,
+            max_inactive_login_days,
+            allow_duplicate_login,
+            smtp_use_tls,
+            smtp_use_ssl,
+            smtp_auth_required,
+            smtp_connection_timeout_ms,
+            smtp_read_timeout_ms,
+            smtp_write_timeout_ms
+        )
+        VALUES (1, 5, 90, false, true, false, true, 10000, 10000, 10000)
+        ON CONFLICT (id) DO NOTHING
+    </insert>
+
+    <update id="updateSystemConfig">
+        UPDATE om_config_m
+           SET max_password_fail_count = #{maxPasswordFailCount}
+             , max_inactive_login_days = #{maxInactiveLoginDays}
+             , allow_duplicate_login = #{allowDuplicateLogin}
+             , smtp_host = #{smtpHost}
+             , smtp_port = #{smtpPort}
+             , smtp_username = #{smtpUsername}
+             , smtp_password_enc = #{smtpPasswordEnc}
+             , smtp_from_email = #{smtpFromEmail}
+             , smtp_from_name = #{smtpFromName}
+             , smtp_use_tls = #{smtpUseTls}
+             , smtp_use_ssl = #{smtpUseSsl}
+             , smtp_auth_required = #{smtpAuthRequired}
+             , smtp_connection_timeout_ms = #{smtpConnectionTimeoutMs}
+             , smtp_read_timeout_ms = #{smtpReadTimeoutMs}
+             , smtp_write_timeout_ms = #{smtpWriteTimeoutMs}
+             , updated_at = CURRENT_TIMESTAMP
+         WHERE id = 1
+    </update>
+
 </mapper>
