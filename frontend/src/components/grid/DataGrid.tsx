@@ -16,6 +16,7 @@ import type {
   ColDef,
   GridReadyEvent,
   CellValueChangedEvent,
+  ProcessCellForExportParams,
   GetRowIdParams,
   SelectionChangedEvent,
 } from 'ag-grid-community';
@@ -142,6 +143,8 @@ export interface DataGridProps<TData = unknown> {
   footer?: React.ReactNode;
   /** true면 인접 행의 동일한 셀 값을 세로로 묶어 표시 (AG Grid enableCellSpan). */
   enableCellSpan?: boolean;
+  /** Ctrl+C 클립보드 값 가공 (Excel 붙여넣기 포맷 커스터마이징). */
+  processCellForClipboard?: (params: ProcessCellForExportParams<TData>) => string | number | null;
 }
 
 function DataGridInner<TData = unknown>({
@@ -165,6 +168,7 @@ function DataGridInner<TData = unknown>({
   toolbarSecondary,
   footer,
   enableCellSpan = false,
+  processCellForClipboard,
 }: DataGridProps<TData>, ref: React.Ref<DataGridRef>) {
   const { t, i18n } = useTranslation();
   const gridRef = useRef<AgGridReact<TData>>(null);
@@ -340,6 +344,7 @@ function DataGridInner<TData = unknown>({
               enableCellTextSelection
               ensureDomOrder
               enableCellSpan={enableCellSpan}
+              processCellForClipboard={processCellForClipboard}
             />
           </div>
           {footer != null && <div className="data-grid-footer">{footer}</div>}
