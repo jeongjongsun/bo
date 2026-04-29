@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopeasy.api.ErrorCodes;
 import com.shopeasy.dto.AuthLoginResult;
+import com.shopeasy.dto.SystemConfigDto;
 import com.shopeasy.entity.OmUserM;
 import com.shopeasy.mapper.OmConfigMapper;
 import com.shopeasy.mapper.OmUserMMapper;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,6 +37,7 @@ public class AuthService {
     private static final String IP_LIMIT_YES = "Y";
 
     private static final int DEFAULT_MAX_PASSWORD_FAIL = 5;
+    private static final int DEFAULT_MAX_INACTIVE_LOGIN_DAYS = 90;
 
     /** user_info.last_login_dtm 저장 시 사용 (DB/문서 표준: Asia/Seoul). */
     private static final ZoneId LOGIN_TIMEZONE = ZoneId.of("Asia/Seoul");
@@ -82,6 +85,11 @@ public class AuthService {
                 log.warn("로그인 실패 - IP 미허용, userId={}, clientIp={}", uid, clientIp);
                 return AuthLoginResult.fail(HttpStatus.FORBIDDEN, ErrorCodes.ERR_ACCESS_IP_NOT_ALLOWED, "error.access_ip_not_allowed");
             }
+        }
+
+        if (isLongInactiveBlocked(user)) {
+            log.warn("로그인 실패 - 장기 미접속 초과, userId={}", uid);
+            return AuthLoginResult.fail(HttpStatus.FORBIDDEN, ErrorCodes.ERR_ACCOUNT_NOT_ACTIVE, "error.long_inactive_login_blocked");
         }
 
         String storedHash = user.getPassword();
@@ -135,6 +143,38 @@ public class AuthService {
             log.warn("max_password_fail_count 조회 실패, 기본값 사용: {}", e.getMessage());
         }
         return DEFAULT_MAX_PASSWORD_FAIL;
+    }
+
+    private int resolveMaxInactiveLoginDays() {
+        try {
+            SystemConfigDto config = configMapper.selectSystemConfig();
+            Integer v = config != null ? config.getMaxInactiveLoginDays() : null;
+            if (v != null && v >= 0) {
+                return v;
+            }
+        } catch (Exception e) {
+            log.warn("max_inactive_login_days 조회 실패, 기본값 사용: {}", e.getMessage());
+        }
+        return DEFAULT_MAX_INACTIVE_LOGIN_DAYS;
+    }
+
+    private boolean isLongInactiveBlocked(OmUserM user) {
+        int maxDays = resolveMaxInactiveLoginDays();
+        if (maxDays <= 0) {
+            return false;
+        }
+        Object raw = user.getUserInfoMap().get("last_login_dtm");
+        if (raw == null || raw.toString().isBlank()) {
+            return false;
+        }
+        try {
+            OffsetDateTime lastLogin = OffsetDateTime.parse(raw.toString());
+            long inactiveDays = ChronoUnit.DAYS.between(lastLogin.toLocalDate(), OffsetDateTime.now(LOGIN_TIMEZONE).toLocalDate());
+            return inactiveDays > maxDays;
+        } catch (Exception e) {
+            log.warn("last_login_dtm 파싱 실패, userId={}, value={}", user.getUserId(), raw);
+            return false;
+        }
     }
 
     private void persistUserInfoMerge(String userId, OmUserM base, Map<String, Object> overrides) throws JsonProcessingException {
