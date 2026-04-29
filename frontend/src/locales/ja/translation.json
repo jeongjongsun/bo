@@ -70,6 +70,7 @@
     "session_expired": "セッションの有効期限が切れました。再度サインインしてください。",
     "login_failed": "一致するユーザー情報が見つかりません。",
     "account_not_active": "このアカウントは利用できません。管理者にお問い合わせください。",
+    "long_inactive_login_blocked": "長期未接続の許容日数を超えたため、ログインできません。管理者にお問い合わせください。",
     "login_grade_not_allowed": "サインインが許可されていない等級です。",
     "access_ip_not_allowed": "接続が許可されたIPではありません。",
     "account_locked": "パスワード失敗回数の上限に達し、アカウントがロックされました。管理者にお問い合わせください。",
@@ -104,9 +105,31 @@
   },
   "settings": {
     "title": "設定",
-    "lead": "設定を保存します。ログイン中のアカウントにのみ適用されます。",
+    "lead": "システム全体に適用される運用設定とユーザー基本値を管理します。",
     "saveSuccess": "設定を保存しました。",
     "saveFail": "設定の保存に失敗しました。",
+    "system": {
+      "title": "システム共通設定",
+      "emailTitle": "メール送信設定",
+      "saveSuccess": "システム設定を保存しました。",
+      "saveFail": "システム設定の保存に失敗しました。",
+      "maxPasswordFailCount": "パスワード失敗の最大回数",
+      "maxInactiveLoginDays": "長期未接続の許容最大日数",
+      "allowDuplicateLogin": "重複ログイン許可 (BO/OM 共通)",
+      "smtpHost": "SMTP サーバー",
+      "smtpPort": "SMTP ポート",
+      "smtpUsername": "SMTP アカウント",
+      "smtpPasswordEnc": "SMTP パスワード(暗号化値)",
+      "smtpFromEmail": "送信元メールアドレス",
+      "smtpFromName": "送信者名",
+      "smtpUseTls": "TLS 使用",
+      "smtpUseSsl": "SSL 使用",
+      "smtpAuthRequired": "SMTP 認証使用",
+      "smtpConnectionTimeoutMs": "接続タイムアウト(ms)",
+      "smtpReadTimeoutMs": "読み取りタイムアウト(ms)",
+      "smtpWriteTimeoutMs": "書き込みタイムアウト(ms)",
+      "help": "ここで保存した値は BO/OM 全体に共通適用されます。"
+    },
     "defaultCorporation": {
       "title": "デフォルト法人",
       "label": "デフォルト法人",
@@ -178,6 +201,26 @@
       "faxNo": "FAX",
       "homepageUrl": "ホームページURL",
       "remark": "備考"
+    }
+  },
+  "malls": {
+    "title": "ショッピングモール情報",
+    "searchPlaceholder": "コード・名称・URL・販売区分・API情報で検索",
+    "toolbar": {
+      "showAll": "全件"
+    },
+    "col": {
+      "rowNum": "番号",
+      "mallCd": "モールコード",
+      "mallNm": "モール名",
+      "mallUrl": "モールURL",
+      "apiConnectionInfo": "API接続情報",
+      "salesTypeCd": "販売区分",
+      "isActive": "使用",
+      "createdAt": "登録日時",
+      "updatedAt": "更新日時",
+      "createdBy": "登録者",
+      "updatedBy": "更新者"
     }
   },
   "users": {
