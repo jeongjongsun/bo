@@ -36,7 +36,7 @@ ON CONFLICT (main_cd, sub_cd) DO UPDATE SET
   code_info = EXCLUDED.code_info,
   updated_at = CURRENT_TIMESTAMP;
 
--- 4) 판매구분 상세 코드 (SALES_TYPE 하위, om_mall_m.mall_info.sales_type_cd)
+-- 4) 판매구분 상세 코드 (SALES_TYPE 하위, 레거시·호환용. 쇼핑몰 채널 구분은 ORDER_CHANNEL_TYPE 권장: docs/dml/cm_code_m_insert_order_channel_type.sql)
 INSERT INTO CM_CODE_M (main_cd, sub_cd, code_nm, code_info) VALUES
 ('SALES_TYPE', 'B2C_DOMESTIC', '{"ko":"B2C 국내","en":"B2C Domestic"}',   '{"use_yn":"Y","disp_seq":1}'),
 ('SALES_TYPE', 'B2C_OVERSEAS',  '{"ko":"B2C 해외","en":"B2C Overseas"}',   '{"use_yn":"Y","disp_seq":2}'),
