@@ -70,6 +70,7 @@
     "session_expired": "세션이 만료되었습니다. 다시 로그인해 주세요.",
     "login_failed": "일치하는 사용자 정보가 없습니다.",
     "account_not_active": "사용할 수 없는 계정 상태입니다. 관리자에게 문의하세요.",
+    "long_inactive_login_blocked": "장기 미접속 허용 기간을 초과하여 로그인할 수 없습니다. 관리자에게 문의하세요.",
     "login_grade_not_allowed": "로그인할 수 없는 등급입니다.",
     "access_ip_not_allowed": "접속 가능한 IP가 아닙니다.",
     "account_locked": "비밀번호 실패 횟수 초과로 계정이 잠겼습니다. 관리자에게 문의하세요.",
@@ -104,9 +105,31 @@
   },
   "settings": {
     "title": "환경설정",
-    "lead": "사용자별 환경설정을 저장합니다. 로그인한 계정에만 적용됩니다.",
+    "lead": "시스템 전체에 적용되는 운영 환경과 사용자 기본값을 설정합니다.",
     "saveSuccess": "환경설정이 저장되었습니다.",
     "saveFail": "환경설정 저장에 실패했습니다.",
+    "system": {
+      "title": "시스템 전역 환경설정",
+      "emailTitle": "이메일 발송 설정",
+      "saveSuccess": "시스템 환경설정이 저장되었습니다.",
+      "saveFail": "시스템 환경설정 저장에 실패했습니다.",
+      "maxPasswordFailCount": "비밀번호 실패 최대 횟수",
+      "maxInactiveLoginDays": "장기 미접속 허용 최대 일수",
+      "allowDuplicateLogin": "중복 로그인 허용 (BO/OM 공통)",
+      "smtpHost": "SMTP 서버",
+      "smtpPort": "SMTP 포트",
+      "smtpUsername": "SMTP 계정",
+      "smtpPasswordEnc": "SMTP 비밀번호(암호화 값)",
+      "smtpFromEmail": "기본 발신 이메일",
+      "smtpFromName": "기본 발신자 이름",
+      "smtpUseTls": "TLS 사용",
+      "smtpUseSsl": "SSL 사용",
+      "smtpAuthRequired": "SMTP 인증 사용",
+      "smtpConnectionTimeoutMs": "연결 타임아웃(ms)",
+      "smtpReadTimeoutMs": "읽기 타임아웃(ms)",
+      "smtpWriteTimeoutMs": "쓰기 타임아웃(ms)",
+      "help": "여기서 저장한 항목은 시스템 전체(BO/OM)에 공통으로 적용됩니다."
+    },
     "defaultCorporation": {
       "title": "기본 법인(화주사)",
       "label": "기본 법인 선택",
@@ -178,6 +201,26 @@
       "faxNo": "팩스번호",
       "homepageUrl": "홈페이지 URL",
       "remark": "비고"
+    }
+  },
+  "malls": {
+    "title": "쇼핑몰 정보",
+    "searchPlaceholder": "코드·명·URL·판매구분·API정보 검색",
+    "toolbar": {
+      "showAll": "전체"
+    },
+    "col": {
+      "rowNum": "번호",
+      "mallCd": "쇼핑몰코드",
+      "mallNm": "쇼핑몰명",
+      "mallUrl": "쇼핑몰 URL",
+      "apiConnectionInfo": "API 연결정보",
+      "salesTypeCd": "판매구분",
+      "isActive": "사용",
+      "createdAt": "등록일시",
+      "updatedAt": "수정일시",
+      "createdBy": "등록자",
+      "updatedBy": "수정자"
     }
   },
   "users": {
