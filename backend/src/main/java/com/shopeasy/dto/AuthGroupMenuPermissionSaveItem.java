@@ -2,7 +2,7 @@ package com.shopeasy.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /** 권한그룹-메뉴별 액션 권한 저장 항목. */
 @Getter
