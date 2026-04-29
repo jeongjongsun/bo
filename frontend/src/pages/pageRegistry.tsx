@@ -4,6 +4,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { HomePage } from '@/pages/HomePage';
 import { UserSettingsPage } from '@/features/settings/UserSettingsPage';
 import { ShipperList } from '@/features/shipper/ShipperList';
+import { MallList } from '@/features/malls/MallList';
 import { UserList } from '@/features/users/UserList';
 import { CommonCodeList } from '@/features/commonCode/CommonCodeList';
 import { MenuManagePage } from '@/features/menuManage/MenuManagePage';
@@ -36,6 +37,7 @@ function placeholder(name: string) {
 
 // BO — 기초정보 / 운영환경 설정 / 로그정보 (플레이스홀더)
 registry['/basic/shipper'] = ShipperList;
+registry['/basic/malls'] = MallList;
 registry['/basic/users'] = UserList;
 registry['/system/common-code'] = CommonCodeList;
 registry['/system/menus'] = MenuManagePage;
