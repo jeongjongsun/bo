@@ -70,6 +70,7 @@
     "session_expired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
     "login_failed": "Không tìm thấy thông tin người dùng trùng khớp.",
     "account_not_active": "Tài khoản không thể sử dụng. Vui lòng liên hệ quản trị viên.",
+    "long_inactive_login_blocked": "Đăng nhập bị chặn do vượt quá số ngày không đăng nhập cho phép. Vui lòng liên hệ quản trị viên.",
     "login_grade_not_allowed": "Cấp của bạn không được phép đăng nhập.",
     "access_ip_not_allowed": "IP của bạn không nằm trong danh sách được phép.",
     "account_locked": "Tài khoản đã bị khóa do nhập sai mật khẩu quá nhiều lần. Vui lòng liên hệ quản trị viên.",
@@ -104,9 +105,31 @@
   },
   "settings": {
     "title": "Cài đặt",
-    "lead": "Lưu tùy chọn của bạn. Chỉ áp dụng cho tài khoản đang đăng nhập.",
+    "lead": "Quản lý cấu hình vận hành áp dụng toàn hệ thống và giá trị mặc định người dùng.",
     "saveSuccess": "Đã lưu cài đặt.",
     "saveFail": "Lưu cài đặt thất bại.",
+    "system": {
+      "title": "Cài đặt toàn hệ thống",
+      "emailTitle": "Cài đặt gửi email",
+      "saveSuccess": "Đã lưu cài đặt hệ thống.",
+      "saveFail": "Lưu cài đặt hệ thống thất bại.",
+      "maxPasswordFailCount": "Số lần nhập sai mật khẩu tối đa",
+      "maxInactiveLoginDays": "Số ngày không đăng nhập tối đa",
+      "allowDuplicateLogin": "Cho phép đăng nhập trùng (BO/OM)",
+      "smtpHost": "Máy chủ SMTP",
+      "smtpPort": "Cổng SMTP",
+      "smtpUsername": "Tài khoản SMTP",
+      "smtpPasswordEnc": "Mật khẩu SMTP (giá trị mã hóa)",
+      "smtpFromEmail": "Email người gửi mặc định",
+      "smtpFromName": "Tên người gửi mặc định",
+      "smtpUseTls": "Dùng TLS",
+      "smtpUseSsl": "Dùng SSL",
+      "smtpAuthRequired": "Yêu cầu xác thực SMTP",
+      "smtpConnectionTimeoutMs": "Timeout kết nối (ms)",
+      "smtpReadTimeoutMs": "Timeout đọc (ms)",
+      "smtpWriteTimeoutMs": "Timeout ghi (ms)",
+      "help": "Các giá trị lưu tại đây sẽ áp dụng chung cho toàn bộ BO/OM."
+    },
     "defaultCorporation": {
       "title": "Công ty mặc định",
       "label": "Công ty mặc định",
@@ -178,6 +201,26 @@
       "faxNo": "Fax",
       "homepageUrl": "URL trang chủ",
       "remark": "Ghi chú"
+    }
+  },
+  "malls": {
+    "title": "Thông tin sàn TMĐT",
+    "searchPlaceholder": "Tìm theo mã, tên, URL, loại bán, API…",
+    "toolbar": {
+      "showAll": "Tất cả"
+    },
+    "col": {
+      "rowNum": "STT",
+      "mallCd": "Mã sàn",
+      "mallNm": "Tên sàn",
+      "mallUrl": "URL sàn",
+      "apiConnectionInfo": "Kết nối API",
+      "salesTypeCd": "Phân loại bán",
+      "isActive": "Sử dụng",
+      "createdAt": "Ngày tạo",
+      "updatedAt": "Ngày sửa",
+      "createdBy": "Người tạo",
+      "updatedBy": "Người sửa"
     }
   },
   "users": {
