@@ -70,6 +70,7 @@
     "session_expired": "Session expired. Please sign in again.",
     "login_failed": "No matching account information was found.",
     "account_not_active": "This account cannot be used. Please contact an administrator.",
+    "long_inactive_login_blocked": "Login is blocked because the long inactivity limit was exceeded. Please contact an administrator.",
     "login_grade_not_allowed": "Your role is not allowed to sign in.",
     "access_ip_not_allowed": "Your IP address is not allowed to connect.",
     "account_locked": "This account has been locked after too many failed password attempts. Please contact an administrator.",
@@ -104,9 +105,31 @@
   },
   "settings": {
     "title": "Settings",
-    "lead": "Save your preferences. Applied only to the logged-in account.",
+    "lead": "Manage system-wide operational configuration and user defaults.",
     "saveSuccess": "Settings saved.",
     "saveFail": "Failed to save settings.",
+    "system": {
+      "title": "System-wide settings",
+      "emailTitle": "Email delivery settings",
+      "saveSuccess": "System settings have been saved.",
+      "saveFail": "Failed to save system settings.",
+      "maxPasswordFailCount": "Maximum password failure count",
+      "maxInactiveLoginDays": "Maximum allowed inactive days",
+      "allowDuplicateLogin": "Allow duplicate login (BO/OM)",
+      "smtpHost": "SMTP host",
+      "smtpPort": "SMTP port",
+      "smtpUsername": "SMTP username",
+      "smtpPasswordEnc": "SMTP password (encrypted value)",
+      "smtpFromEmail": "Default sender email",
+      "smtpFromName": "Default sender name",
+      "smtpUseTls": "Use TLS",
+      "smtpUseSsl": "Use SSL",
+      "smtpAuthRequired": "Require SMTP auth",
+      "smtpConnectionTimeoutMs": "Connection timeout (ms)",
+      "smtpReadTimeoutMs": "Read timeout (ms)",
+      "smtpWriteTimeoutMs": "Write timeout (ms)",
+      "help": "Values saved here are applied system-wide across BO and OM."
+    },
     "defaultCorporation": {
       "title": "Default corporation",
       "label": "Default corporation",
@@ -178,6 +201,26 @@
       "faxNo": "Fax",
       "homepageUrl": "Homepage URL",
       "remark": "Remark"
+    }
+  },
+  "malls": {
+    "title": "Mall information",
+    "searchPlaceholder": "Search by code, name, URL, sales type, API info…",
+    "toolbar": {
+      "showAll": "All"
+    },
+    "col": {
+      "rowNum": "No.",
+      "mallCd": "Mall code",
+      "mallNm": "Mall name",
+      "mallUrl": "Mall URL",
+      "apiConnectionInfo": "API connection",
+      "salesTypeCd": "Sales type",
+      "isActive": "Active",
+      "createdAt": "Created at",
+      "updatedAt": "Updated at",
+      "createdBy": "Created by",
+      "updatedBy": "Updated by"
     }
   },
   "users": {
