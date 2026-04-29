@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopeasy.mapper.OmMallMMapper">
+
+    <sql id="manageListWhere">
+        <where>
+            is_deleted = false
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    mall_cd ILIKE '%' || #{keyword} || '%'
+                    OR mall_nm ILIKE '%' || #{keyword} || '%'
+                    OR COALESCE(mall_info ->> 'mall_url', '') ILIKE '%' || #{keyword} || '%'
+                    OR COALESCE(mall_info ->> 'sales_type_cd', '') ILIKE '%' || #{keyword} || '%'
+                    OR COALESCE(api_connection_info ->> 'base_url', '') ILIKE '%' || #{keyword} || '%'
+                    OR COALESCE(api_connection_info::text, '') ILIKE '%' || #{keyword} || '%'
+                )
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectManageListCount" resultType="long">
+        SELECT COUNT(*)
+          FROM om_mall_m
+        <include refid="manageListWhere"/>
+    </select>
+
+    <select id="selectManageList" resultType="com.shopeasy.dto.MallManageRow">
+        SELECT mall_cd
+             , mall_nm
+             , mall_info ->> 'mall_url'       AS mall_url
+             , mall_info ->> 'sales_type_cd' AS sales_type_cd
+             , api_connection_info::text     AS api_connection_info_json
+             , is_active
+             , to_char(created_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS created_at
+             , to_char(updated_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD HH24:MI:SS') AS updated_at
+             , created_by
+             , updated_by
+          FROM om_mall_m
+        <include refid="manageListWhere"/>
+         ORDER BY mall_cd
+         LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>
