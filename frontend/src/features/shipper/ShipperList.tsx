@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { ColDef, ICellRendererParams, CellValueChangedEvent } from 'ag-grid-community';
+import type {
+  ColDef,
+  ICellRendererParams,
+  CellValueChangedEvent,
+  ProcessCellForExportParams,
+} from 'ag-grid-community';
 import { useTranslation } from 'react-i18next';
 import { FiDownload, FiFilter, FiPlus, FiRotateCcw, FiSearch } from 'react-icons/fi';
 import { DataGrid, DataGridPaginationFooter } from '@/components/grid';
@@ -88,6 +93,23 @@ export function ShipperList() {
       showError(t('common.error'), getApiErrorMessage(err, t('common.error'), t));
     }
   }, [appliedKeyword, canExcelDownload, i18n.language, t]);
+
+  const processCellForClipboard = useCallback(
+    (params: ProcessCellForExportParams<CorporationManageRow>) => {
+      const value = params.value == null ? '' : String(params.value);
+      const normalized = value.replace(/\r?\n/g, ' ').replace(/\t/g, ' ').trim();
+      if (!normalized) return '';
+
+      const field = params.column.getColDef().field;
+      if (field === 'businessNo' || field === 'telNo') {
+        const escaped = normalized.replace(/"/g, '""');
+        return `="${escaped}"`;
+      }
+
+      return normalized;
+    },
+    [],
+  );
 
   const columnDefs = useMemo<ColDef<CorporationManageRow>[]>(
     () => [
@@ -282,6 +304,7 @@ export function ShipperList() {
         }
         getRowId={(params) => params.data?.corporationCd ?? ''}
         onCellValueChanged={handleCellValueChanged}
+        processCellForClipboard={processCellForClipboard}
       />
     </PageLayout>
   );
